@@ -8,6 +8,9 @@ package dataanalyzer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -42,8 +45,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public double yCor = 0;
     
     
+    CategoricalHashMap dataMap;
     public DataAnalyzer() {
         initComponents();
+        
+        dataMap = new CategoricalHashMap();
+        
         
         //create the global object crosshairs
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
