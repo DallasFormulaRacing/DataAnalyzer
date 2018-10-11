@@ -21,6 +21,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -56,8 +59,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public double yCor = 0;
     
     
+    CategoricalHashMap dataMap;
     public DataAnalyzer() {
         initComponents();
+        
+        dataMap = new CategoricalHashMap();
+        
         
         //create the global object crosshairs
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
