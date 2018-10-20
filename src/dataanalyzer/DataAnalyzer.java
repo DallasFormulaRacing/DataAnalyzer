@@ -204,32 +204,25 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
     }
     
-    //CHANGE DATA BASED ON TITLE===================================================================================================================
     private XYSeriesCollection getDataCollection(String title, int[] laps){
-        final XYSeriesCollection data = new XYSeriesCollection();
-        for(int i = 0; i < laps.length; i++){
-            switch(laps[i]){
-                case 0:
-                    final XYSeries series = new XYSeries("Lap 1");
-                    series.add(1.0, 500.2);
-                    series.add(5.0, 694.1);
-                    series.add(4.0, 100.0);
-                    series.add(12.5, 734.4);
-                    data.addSeries(series);
-                    break;
-                
-                case 1:
-                    final XYSeries series2 = new XYSeries("Lap 2");
-                    series2.add(1.0, 400.2);
-                    series2.add(5.0, 670.1);
-                    series2.add(4.0, 200.0);
-                    series2.add(12.5, 734.4);
-                    data.addSeries(series2);
-                    break;
-            }
-        }
+        final XYSeriesCollection graphData = new XYSeriesCollection();
+        LinkedList<LogObject> data = dataMap.getList(title);
+        final XYSeries series = new XYSeries("");
+        //final XYSeries[] series = new XYSeries[laps.length];
         
-        return data;
+        for(LogObject d : data){
+            String[] values = d.toString().split(",");
+            series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
+        }
+        graphData.addSeries(series);
+        
+//        for(int i = 0; i < laps.length; i++){
+//            XYSeries s = series[i];
+//            s.setKey("Lap " + laps[i]);
+//            graphData.addSeries(s);
+//        }
+        
+        return graphData;
     }
     
     // When the chart is clicked
