@@ -303,6 +303,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
     }
+    
+    public void importCSV(String filepath) {
+        //Ashish's code will go here.
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JInternalFrame chartFrame;
