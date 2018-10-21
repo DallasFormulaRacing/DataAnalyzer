@@ -191,7 +191,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         xCordLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         yCordLabel = new javax.swing.JLabel();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         importCSVBtn = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
@@ -239,12 +239,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
         fileMenu.add(importCSVBtn);
 
-        jMenuBar1.add(fileMenu);
+        menuBar.add(fileMenu);
 
         editMenu.setText("Edit");
-        jMenuBar1.add(editMenu);
+        menuBar.add(editMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -298,32 +298,39 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
+            
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
             @Override
             public void approveSelection() {
                 File chosenFile = getSelectedFile();
+                
+                // Make sure that the chosen file exists
                 if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
                     String filePath = chosenFile.getAbsolutePath();
                     int lastIndex = filePath.lastIndexOf(".");
                     String fileExtension = filePath.substring(lastIndex, 
                             filePath.length());
+                    
+                    // approve selection if it is a .csv file
                     if (fileExtension.equals(".csv")) {
                         super.approveSelection();
                     } else {
-                        // do nothing - we don't want to approve that selection
+                        // do nothing - that selection should not be approved
                     }
                         
                 }
             }
         };
         
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
         int choice = fileChooser.showOpenDialog(null);
-        System.out.println("choice: " + choice);
-        System.out.println("choice == APPROVE_OPTION?: " + 
-                (choice == JFileChooser.APPROVE_OPTION));
-        File chosenFile = fileChooser.getSelectedFile();
-        String chosenFilePath = chosenFile.getAbsolutePath();
-        importCSV(chosenFilePath);
-        
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+            importCSV(chosenFilePath);
+        }
     }//GEN-LAST:event_importCSVBtnClicked
 
     /**
@@ -364,7 +371,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public void importCSV(String filepath) {
         //Ashish's code will go here.
         
-        System.out.println("Filepath: " + filepath);
+        // System.out.println("Filepath: " + filepath);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -375,9 +382,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JMenuItem importCSVBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList<String> listView;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JTextField searchField;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
