@@ -8,9 +8,11 @@ package dataanalyzer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.swing.JFileChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -180,6 +182,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileChooser = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         listView = new javax.swing.JList<>();
         searchField = new javax.swing.JTextField();
@@ -188,6 +191,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         xCordLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         yCordLabel = new javax.swing.JLabel();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        importCSVBtn = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -221,6 +228,23 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jLabel2.setText("X Cord:");
 
         yCordLabel.setText("jLabel2");
+
+        fileMenu.setText("File");
+
+        importCSVBtn.setText("Import CSV");
+        importCSVBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importCSVBtnClicked(evt);
+            }
+        });
+        fileMenu.add(importCSVBtn);
+
+        menuBar.add(fileMenu);
+
+        editMenu.setText("Edit");
+        menuBar.add(editMenu);
+
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -258,7 +282,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
                             .addComponent(yCordLabel))
-                        .addGap(0, 5, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -268,6 +292,46 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void importCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importCSVBtnClicked
+        // TODO add your handling code here:
+        
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+            
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File chosenFile = getSelectedFile();
+                
+                // Make sure that the chosen file exists
+                if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
+                    String filePath = chosenFile.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    String fileExtension = filePath.substring(lastIndex, 
+                            filePath.length());
+                    
+                    // approve selection if it is a .csv file
+                    if (fileExtension.equals(".csv")) {
+                        super.approveSelection();
+                    } else {
+                        // do nothing - that selection should not be approved
+                    }
+                        
+                }
+            }
+        };
+        
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+            importCSV(chosenFilePath);
+        }
+    }//GEN-LAST:event_importCSVBtnClicked
 
     /**
      * @param args the command line arguments
@@ -306,14 +370,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     public void importCSV(String filepath) {
         //Ashish's code will go here.
+        
+        // System.out.println("Filepath: " + filepath);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JInternalFrame chartFrame;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem importCSVBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList<String> listView;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JTextField searchField;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
