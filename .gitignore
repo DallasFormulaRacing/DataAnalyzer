@@ -2,7 +2,7 @@
 *.class
 
 #Project setup files
-nbproject/private
+nbproject/private/
 
 # Log file
 *.log
