@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+#Project setup files
+nbproject/private
+
 # Log file
 *.log
 
