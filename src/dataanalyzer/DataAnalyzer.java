@@ -9,9 +9,12 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -369,10 +372,34 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     public void importCSV(String filepath) {
-        //Ashish's code will go here.
-        
-        // System.out.println("Filepath: " + filepath);
+      //Ashish's code will go here 
+      try{
+            File file = new File(filepath);
+            Scanner sc = new Scanner(file);
+            //stores all tags within file
+            ArrayList<String> tags = new ArrayList<>();
+            while(sc.hasNextLine()){
+                String line = sc.nextLine();
+                if(line.equals("END")){
+                // necessary so that END statements don't get added to 'tags' ArrayList
+                }
+                else if(Character.isLetter(line.charAt(0))){
+                    tags.add(line);
+                }
+                else if(Character.isDigit(line.charAt(0))){
+                    final String DELIMITER = ",";
+                    String[] values = line.split(DELIMITER);
+                    //dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                    dataMap.put(new SimpleLogObject((tags.get(tags.size()-1)), Double.parseDouble(values[1]), Long.parseLong(values[0])));            
+              }
+          }
+      } catch(FileNotFoundException x){
+            System.out.println("Error");
+      }
+          
     }
+        // System.out.println("Filepath: " + filepath);
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JInternalFrame chartFrame;
