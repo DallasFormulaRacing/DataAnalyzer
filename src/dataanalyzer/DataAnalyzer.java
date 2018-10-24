@@ -10,11 +10,8 @@ import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.Arrays;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
@@ -40,78 +37,40 @@ import org.jfree.ui.RectangleEdge;
  */
 public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListener {
 
-    //chartpanel object
-    //exists so that it can be accessed in the chartmouselistener methods.
+    // Chartpanel object exists so that it can be accessed in the chartmouselistener methods.
     ChartPanel chartPanel;
 
-    //x and y crosshairs
+    // X and Y crosshairs
     Crosshair xCrosshair;
     Crosshair yCrosshair;
 
-    //x and y vals
+    // X and Y vals
     public double xCor = 0;
     public double yCor = 0;
 
+    // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
     CategoricalHashMap dataMap;
 
     public DataAnalyzer() {
         initComponents();
 
+        // Create a new hash map
         dataMap = new CategoricalHashMap();
 
-        //create the global object crosshairs
+        // Init the graph with some dummy data until there is data given to read
+        showEmptyGraph();
+        
+        // Create the global object crosshairs
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
         this.yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.yCrosshair.setLabelVisible(true);
-
-        //Get the tag list after reading the CSV
-        //ArrayList<String> tags = CSVREADER.tags;
-        ArrayList<String> tags = new ArrayList<>(Arrays.asList("TIME,RPM", "TIME,DISTANCE", "TIME,COOLANT TEMP"));
-        // Add different types of data that we are collecting and want to show
-        String[] title = new String[tags.size()];
-
-        //Make a list of titles
-        String str = "";
-        for (int i = 0; i < title.length; i++) {
-            str = "";
-            str += tags.get(i).split(",")[1];
-            str += " vs ";
-            str += tags.get(i).split(",")[0];
-            title[i] = str;
-        }
-        // Add the list of titles to the data List View 
-        dataList.setListData(title);
-
-        //init the graph with some dummy data until there is data given to read
-        showEmptyGraph();
-
-        //If another item is selected in the data combo box, change the chart
-        dataList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent arg0) {
-                if (!arg0.getValueIsAdjusting()) {
-                    // passes the data type index, all the laps currently selected, and the data type name
-                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
-                }
-            }
-        });
-
-        //If a different or another lap is selected, change the graph accordingly
-        lapList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent arg0) {
-                if (!arg0.getValueIsAdjusting()) {
-                    // passes the data type index, all the laps currently selected, and the data type name
-                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
-                }
-            }
-        });
     }
 
     private void showEmptyGraph() {
         final XYSeriesCollection data = new XYSeriesCollection();
 
+        // Add values of (Age, Happiness)
         final XYSeries series = new XYSeries("Me");
         series.add(0, 70);
         series.add(5, 80);
@@ -124,7 +83,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         series.add(30, 0.1);
         data.addSeries(series);
 
-        // create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
+        // Create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "Happiness vs Age",
                 "Age",
@@ -136,22 +95,22 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 false
         );
 
-        //instantiate chart panel object from the object created from ChartFactory
+        // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
-        //set the size of the panel
+        // Set the size of the panel
         chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        //mouse listener
+        // Mouse listener
         chartPanel.addChartMouseListener(this);
 
-        //The form has a subframe inside the mainframe
-        //set the subframe's content to be the chartpanel
+        // The form has a subframe inside the mainframe
+        // Set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
     }
 
     private void setChart(String tag, int[] laps, String title) {
 
-        //Gets the specific data based on what kind of data we want to show for which 
+        // Gets the specific data based on what kind of data we want to show for which 
         final XYSeriesCollection data = getDataCollection(tag, laps);
 
         // Gets the independent variable from the title of the data
@@ -159,7 +118,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Gets the dependent variable from the title of the data
         String yAxis = title.split(" vs ")[0];
 
-        // create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
+        // Create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
         JFreeChart chart = ChartFactory.createXYLineChart(
                 title,
                 xAxis,
@@ -171,31 +130,31 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 false
         );
 
-        //instantiate chart panel object from the object created from ChartFactory
+        // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
-        //set the size of the panel
+        // Set the size of the panel
         chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        //mouse listener
+        // Mouse listener
         chartPanel.addChartMouseListener(this);
 
-        //The form has a subframe inside the mainframe
-        //set the subframe's content to be the chartpanel
+        // The form has a subframe inside the mainframe
+        // Set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
     }
 
     private XYSeriesCollection getDataCollection(String tag, int[] laps) {
 
-        //XY Series Collection allows there to be multiple data lines on the graph
+        // XY Series Collection allows there to be multiple data lines on the graph
         final XYSeriesCollection graphData = new XYSeriesCollection();
         // Get the list of data elements based on the tag
         LinkedList<LogObject> data = dataMap.getList(tag);
-        //Declare the series to add the data elements to
+        // Declare the series to add the data elements to
         final XYSeries series = new XYSeries("");
 
-        //We could make a XYSeries Array if we wanted to show different lap data
-        //final XYSeries[] series = new XYSeries[laps.length];
-        //Iterate through each data element in the received dataMap LinkedList
+        // We could make a XYSeries Array if we wanted to show different lap data
+        // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+        // Iterate through each data element in the received dataMap LinkedList
         for (LogObject d : data) {
             //Get the x and y values by seprating them by the comma
             String[] values = d.toString().split(",");
@@ -203,75 +162,76 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
         }
 
-        //Each series in the series ary would have the lap data from laps ary
-//        for(int i = 0; i < laps.length; i++){
-//            XYSeries s = series[i];
-//            s.setKey("Lap " + laps[i]);
-//            graphData.addSeries(s);
-//        }
-        //Add the series to the XYCollection
+//      Each series in the series array would have the lap data from laps ary
+//      for(int i = 0; i < laps.length; i++){
+//          XYSeries s = series[i];
+//          s.setKey("Lap " + laps[i]);
+//          graphData.addSeries(s);
+//      }
+
+        // Add the series to the XYCollection
         graphData.addSeries(series);
-        //Return the XYCollection
+        // Return the XYCollection
         return graphData;
     }
 
     // When the chart is clicked
     @Override
     public void chartMouseClicked(ChartMouseEvent cme) {
-        //create a static cursor that isnt cleared every time
+        // Create a static cursor that isnt cleared every time
     }
 
     //when the mouse moves over the chart
     @Override
     public void chartMouseMoved(ChartMouseEvent cme) {
 
-        //the data area of where the chart is.
+        // The data area of where the chart is.
         Rectangle2D dataArea = this.chartPanel.getScreenDataArea();
-        //get the chart from the chart mouse event
+        // Get the chart from the chart mouse event
         JFreeChart chart = cme.getChart();
-        //Get the xy plot object from the chart
+        // Get the xy plot object from the chart
         XYPlot plot = (XYPlot) chart.getPlot();
-        //clear all markers
-        //this will be a problem for static markers we want to create
+        // Clear all markers
+        // This will be a problem for static markers we want to create
         plot.clearDomainMarkers();
-        //get the xAxis
+        // Get the xAxis
         ValueAxis xAxis = plot.getDomainAxis();
-        //get the xCordinate from the xPositon of the mouse
+        // Get the xCordinate from the xPositon of the mouse
         xCor = xAxis.java2DToValue(cme.getTrigger().getX(), dataArea,
                 RectangleEdge.BOTTOM);
-        //find the y cordinate from the plots data set given a x cordinate
+        // Find the y cordinate from the plots data set given a x cordinate
         yCor = DatasetUtilities.findYValue(plot.getDataset(), 0, xCor);
-        //create a marker at the x Coordinate with black paint
+        // Create a marker at the x Coordinate with black paint
         ValueMarker marker = new ValueMarker(xCor);
         marker.setPaint(Color.BLACK);
-        //add a marker on the x axis given a marker. This essentially makes the marker verticle
+        // Add a marker on the x axis given a marker. This essentially makes the marker verticle
         plot.addDomainMarker(marker);
-        //all the statics that need to be shows should be added to plot
+        // All the statics that need to be shows should be added to plot
 
-        //string object that holds values for all the series on the plot.
+        // String object that holds values for all the series on the plot.
         String yCordss = "";
-        //repeat the loop for each series in the plot
+        // Repeat the loop for each series in the plot
         for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
-            //get the collection from the plots data set
+            // Get the collection from the plots data set
             XYSeriesCollection col = (XYSeriesCollection) plot.getDataset();
-            //get the plots name from the series's object
+            // Get the plots name from the series's object
             String plotName = plot.getDataset().getSeriesKey(i).toString();
-            //create a new collection 
+            // Create a new collection 
             XYSeriesCollection col2 = new XYSeriesCollection();
-            //add the series with the name we found to the other collection
-            //we do this because the findYValue() method takes a collection
+            // Add the series with the name we found to the other collection
+            // We do this because the findYValue() method takes a collection
             col2.addSeries(col.getSeries(plotName));
-            //get the y value for the current series.
+            // Get the y value for the current series.
             double val = DatasetUtilities.findYValue(col2, 0, xCor);
-            //add the name and value to the string
-            yCordss += plotName + "\n" + val + "\n\n\n";
+            // Add the value to the string
+            yCordss += val + "\n";
         }
 
-        //set the textviews at the bottom of the file.
+        // Set the textviews at the bottom of the file.
         xCordLabel.setText(xCor + "");
         yCordLabel.setText(yCordss);
 
-        //set this objects crosshair data to the value we have
+        // Set this objects crosshair data to the value we have
         this.xCrosshair.setValue(xCor);
         this.yCrosshair.setValue(yCor);
     }
@@ -325,7 +285,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         xCordLabel.setText("jLabel2");
 
-        jLabel2.setText("X Cord:");
+        jLabel2.setText("Y Cord:");
 
         yCordLabel.setText("jLabel2");
 
@@ -473,29 +433,84 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
 
     public void importCSV(String filepath) {
-        //Ashish's code will go here 
         // System.out.println("Filepath: " + filepath);
+        // Store all the tags in the csv file
+        ArrayList<String> tags = new ArrayList<>();
         try {
+            // Create a new file from the filepath
             File file = new File(filepath);
+            // Scan the file
             Scanner sc = new Scanner(file);
-            //stores all tags within file
-            ArrayList<String> tags = new ArrayList<>();
+            
+            // While there is a next line
             while (sc.hasNextLine()) {
+                // Store the line
                 String line = sc.nextLine();
+                // If the line represents an END of the current tag
                 if (line.equals("END")) {
-                    // necessary so that END statements don't get added to 'tags' ArrayList
+                    // Do nothing
+                    // Necessary so that END statements don't get added to 'tags' ArrayList
                 } else if (Character.isLetter(line.charAt(0))) {
+                    // If the first character is a letter
+                    // Then add the line to the tags list
                     tags.add(line);
                 } else if (Character.isDigit(line.charAt(0))) {
+                    // If the first character is a digit
+                    // Then divide the list in 2 values by ,
                     final String DELIMITER = ",";
                     String[] values = line.split(DELIMITER);
-                    //dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                    // And add the values to the hashmap with their correct tag
+                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
                     dataMap.put(new SimpleLogObject((tags.get(tags.size() - 1)), Double.parseDouble(values[1]), Long.parseLong(values[0])));
                 }
             }
         } catch (FileNotFoundException x) {
 
         }
+        
+        // Fill the data list with titles
+        fillDataList(tags);
+        
+    }
+    
+    private void fillDataList(ArrayList<String> tags){
+        // Use the tags list to get the title for each tag
+        String[] titles = new String[tags.size()];
+
+        // Make a list of titles
+        // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"
+        String str = "";
+        for (int i = 0; i < titles.length; i++) {
+            str = "";
+            str += tags.get(i).split(",")[1];
+            str += " vs ";
+            str += tags.get(i).split(",")[0];
+            titles[i] = str;
+        }
+        // Add the list of titles to the data List View 
+        dataList.setListData(titles);
+
+        // If another item is selected in the data combo box, change the chart
+        dataList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent arg0) {
+                if (!arg0.getValueIsAdjusting()) {
+                    // Passes the data type index, all the laps currently selected, and the data type name
+                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                }
+            }
+        });
+
+        // If a different or another lap is selected, change the graph accordingly
+        lapList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent arg0) {
+                if (!arg0.getValueIsAdjusting()) {
+                    // Passes the data type index, all the laps currently selected, and the data type name
+                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                }
+            }
+        });
     }
 
 
