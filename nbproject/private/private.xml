@@ -2,6 +2,14 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+<<<<<<< HEAD
+        <group>
+            <file>file:/D:/Project/DataAnalyzer/src/dataanalyzer/DataAnalyzer.java</file>
+            <file>file:/D:/Project/DataAnalyzer/src/dataanalyzer/LogObject.java</file>
+            <file>file:/D:/Project/DataAnalyzer/src/dataanalyzer/CategoricalHashMap.java</file>
+        </group>
+=======
         <group/>
+>>>>>>> upstream/master
     </open-files>
 </project-private>
