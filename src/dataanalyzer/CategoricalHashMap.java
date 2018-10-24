@@ -36,7 +36,7 @@ public class CategoricalHashMap {
     
     private void put(LogObject lo, LinkedList<LogObject>[] table) {
         //calculate the index from the tag
-        int index = lo.getTAG().hashCode() % table.length;
+        int index = Math.abs(lo.getTAG().hashCode()) % table.length;
 
         //find next null, empty, or matching tag position
         while(table[index] != null && !table[index].isEmpty() && !table[index].getFirst().getTAG().equals(lo.getTAG())) {
