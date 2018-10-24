@@ -7,23 +7,18 @@ package dataanalyzer;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.geom.Rectangle2D;
-import java.util.Vector;
-import javafx.scene.control.SelectionMode;
-import javax.swing.DefaultListModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Arrays;
+import java.util.ArrayList;
+import javax.swing.JFileChooser;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -42,96 +37,81 @@ import org.jfree.ui.RectangleEdge;
 /**
  *
  * @author aribdhuka
- * I did work too -Nikhil
  */
 public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListener {
 
     //chartpanel object
     //exists so that it can be accessed in the chartmouselistener methods.
     ChartPanel chartPanel;
-        
+
     //x and y crosshairs
     Crosshair xCrosshair;
     Crosshair yCrosshair;
-    
+
     //x and y vals
     public double xCor = 0;
     public double yCor = 0;
-    
-    
+
     CategoricalHashMap dataMap;
+
     public DataAnalyzer() {
         initComponents();
-        
+
         dataMap = new CategoricalHashMap();
-        
-        
+
         //create the global object crosshairs
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
         this.yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-        this.yCrosshair.setLabelVisible(true); 
-        
-        // Add different types of data that we are collecting and want to show
-        String[] data = {"RPM vs Time", "RPM vs Distance", "Wheel speed vs Time", "Coolant Temp vs Time"};
-        //Populate the data list view with given data types
-        dataList.setListData(data);
-        
-        //lapList just shows different laps, so we can select and show multiple laps on one graph
-        lapList.setListData(new String[] {"Lap 1", "Lap 2"});
-        
-        //init the graph with the first items in combo box and lap 1
-        showEmptyGraph();           
-         
-        //If another item is selected in the data combo box, change the chart
-        dataList.addListSelectionListener(new ListSelectionListener(){
-            @Override
-            public void valueChanged(ListSelectionEvent arg0) {
-                if (!arg0.getValueIsAdjusting()) {
-                    // passes the data type index, all the laps currently selected, and the data type name
-                    setChart(data[dataList.getSelectedIndex()], lapList.getSelectedIndices());
-                }
-            }
-        });
-        
-        //If a different or another lap is selected, change the graph accordingly
-        lapList.addListSelectionListener(new ListSelectionListener(){
-            @Override
-            public void valueChanged(ListSelectionEvent arg0) {
-                if (!arg0.getValueIsAdjusting()) {
-                    // passes the data type index, all the laps currently selected, and the data type name
-                    setChart(data[dataList.getSelectedIndex()], lapList.getSelectedIndices());
-                }
-            }
-        });
-        
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-              filter();
-            }
-            public void removeUpdate(DocumentEvent e) {
-              filter();
-            }
-            public void insertUpdate(DocumentEvent e) {
-              filter();
-            }
+        this.yCrosshair.setLabelVisible(true);
 
-            public void filter() {
-                String input = searchField.getText().toString();
-                Vector<String> filteredList = new Vector<>();
-                for(String str : data){
-                    if(str.toUpperCase().contains(input.toUpperCase())){
-                        filteredList.add(str);
-                    }
+        //Get the tag list after reading the CSV
+        //ArrayList<String> tags = CSVREADER.tags;
+        ArrayList<String> tags = new ArrayList<>(Arrays.asList("TIME,RPM", "TIME,DISTANCE", "TIME,COOLANT TEMP"));
+        // Add different types of data that we are collecting and want to show
+        String[] title = new String[tags.size()];
+
+        //Make a list of titles
+        String str = "";
+        for (int i = 0; i < title.length; i++) {
+            str = "";
+            str += tags.get(i).split(",")[1];
+            str += " vs ";
+            str += tags.get(i).split(",")[0];
+            title[i] = str;
+        }
+        // Add the list of titles to the data List View 
+        dataList.setListData(title);
+
+        //init the graph with some dummy data until there is data given to read
+        showEmptyGraph();
+
+        //If another item is selected in the data combo box, change the chart
+        dataList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent arg0) {
+                if (!arg0.getValueIsAdjusting()) {
+                    // passes the data type index, all the laps currently selected, and the data type name
+                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
                 }
-                dataList.setListData(filteredList);
+            }
+        });
+
+        //If a different or another lap is selected, change the graph accordingly
+        lapList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent arg0) {
+                if (!arg0.getValueIsAdjusting()) {
+                    // passes the data type index, all the laps currently selected, and the data type name
+                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                }
             }
         });
     }
-    
-    private void showEmptyGraph(){
+
+    private void showEmptyGraph() {
         final XYSeriesCollection data = new XYSeriesCollection();
-        
+
         final XYSeries series = new XYSeries("Me");
         series.add(0, 70);
         series.add(5, 80);
@@ -146,21 +126,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
         JFreeChart chart = ChartFactory.createXYLineChart(
-            "Happiness vs Age",
-            "Age",
-            "Happiness",
-            data,
-            PlotOrientation.VERTICAL,
-            true,
-            true,
-            false
+                "Happiness vs Age",
+                "Age",
+                "Happiness",
+                data,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
         );
-        
+
         //instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
         //set the size of the panel
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600)); 
-        
+        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+
         //mouse listener
         chartPanel.addChartMouseListener(this);
 
@@ -168,12 +148,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
     }
-    
-    private void setChart(String title, int[] laps){
-        
+
+    private void setChart(String tag, int[] laps, String title) {
+
         //Gets the specific data based on what kind of data we want to show for which 
-        final XYSeriesCollection data = getDataCollection(title, laps);
-        
+        final XYSeriesCollection data = getDataCollection(tag, laps);
+
         // Gets the independent variable from the title of the data
         String xAxis = title.split(" vs ")[1];  //split title by vs, we get ["RPM", "Time"] or something like that
         // Gets the dependent variable from the title of the data
@@ -181,21 +161,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
         JFreeChart chart = ChartFactory.createXYLineChart(
-            title,
-            xAxis, 
-            yAxis, 
-            data,
-            PlotOrientation.VERTICAL,
-            true,
-            true,
-            false
+                title,
+                xAxis,
+                yAxis,
+                data,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
         );
-        
+
         //instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
         //set the size of the panel
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600)); 
-        
+        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+
         //mouse listener
         chartPanel.addChartMouseListener(this);
 
@@ -203,28 +183,38 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
     }
-    
-    private XYSeriesCollection getDataCollection(String title, int[] laps){
+
+    private XYSeriesCollection getDataCollection(String tag, int[] laps) {
+
+        //XY Series Collection allows there to be multiple data lines on the graph
         final XYSeriesCollection graphData = new XYSeriesCollection();
-        LinkedList<LogObject> data = dataMap.getList(title);
+        // Get the list of data elements based on the tag
+        LinkedList<LogObject> data = dataMap.getList(tag);
+        //Declare the series to add the data elements to
         final XYSeries series = new XYSeries("");
+
+        //We could make a XYSeries Array if we wanted to show different lap data
         //final XYSeries[] series = new XYSeries[laps.length];
-        
-        for(LogObject d : data){
+        //Iterate through each data element in the received dataMap LinkedList
+        for (LogObject d : data) {
+            //Get the x and y values by seprating them by the comma
             String[] values = d.toString().split(",");
+            //Add the x and y value to the series
             series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
         }
-        graphData.addSeries(series);
-        
+
+        //Each series in the series ary would have the lap data from laps ary
 //        for(int i = 0; i < laps.length; i++){
 //            XYSeries s = series[i];
 //            s.setKey("Lap " + laps[i]);
 //            graphData.addSeries(s);
 //        }
-        
+        //Add the series to the XYCollection
+        graphData.addSeries(series);
+        //Return the XYCollection
         return graphData;
     }
-    
+
     // When the chart is clicked
     @Override
     public void chartMouseClicked(ChartMouseEvent cme) {
@@ -234,7 +224,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //when the mouse moves over the chart
     @Override
     public void chartMouseMoved(ChartMouseEvent cme) {
-        
+
         //the data area of where the chart is.
         Rectangle2D dataArea = this.chartPanel.getScreenDataArea();
         //get the chart from the chart mouse event
@@ -247,7 +237,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //get the xAxis
         ValueAxis xAxis = plot.getDomainAxis();
         //get the xCordinate from the xPositon of the mouse
-        xCor = xAxis.java2DToValue(cme.getTrigger().getX(), dataArea, 
+        xCor = xAxis.java2DToValue(cme.getTrigger().getX(), dataArea,
                 RectangleEdge.BOTTOM);
         //find the y cordinate from the plots data set given a x cordinate
         yCor = DatasetUtilities.findYValue(plot.getDataset(), 0, xCor);
@@ -257,11 +247,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //add a marker on the x axis given a marker. This essentially makes the marker verticle
         plot.addDomainMarker(marker);
         //all the statics that need to be shows should be added to plot
-        
+
         //string object that holds values for all the series on the plot.
         String yCordss = "";
         //repeat the loop for each series in the plot
-        for(int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
+        for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
             //get the collection from the plots data set
             XYSeriesCollection col = (XYSeriesCollection) plot.getDataset();
             //get the plots name from the series's object
@@ -276,25 +266,26 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             //add the name and value to the string
             yCordss += plotName + "\n" + val + "\n\n\n";
         }
-        
+
         //set the textviews at the bottom of the file.
         xCordLabel.setText(xCor + "");
         yCordLabel.setText(yCordss);
-        
+
         //set this objects crosshair data to the value we have
         this.xCrosshair.setValue(xCor);
         this.yCrosshair.setValue(yCor);
     }
 
-    private void searchFieldActionPerformed(java.awt.event.ActionEvent evt) {                                            
-        // TODO add your handling code here:
-    }                                           
-
-
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        fileChooser = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
         dataList = new javax.swing.JList<>();
         searchField = new javax.swing.JTextField();
@@ -305,6 +296,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         yCordLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lapList = new javax.swing.JList<>();
+        menuBar = new javax.swing.JMenuBar();
+        fileMenu = new javax.swing.JMenu();
+        importCSVBtn = new javax.swing.JMenuItem();
+        editMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -336,6 +331,23 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         jScrollPane2.setViewportView(lapList);
 
+        fileMenu.setText("File");
+
+        importCSVBtn.setText("Import CSV");
+        importCSVBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importCSVBtnClicked(evt);
+            }
+        });
+        fileMenu.add(importCSVBtn);
+
+        menuBar.add(fileMenu);
+
+        editMenu.setText("Edit");
+        menuBar.add(editMenu);
+
+        setJMenuBar(menuBar);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -345,7 +357,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)
                     .addComponent(searchField)
-                    .addComponent(jScrollPane2))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chartFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 899, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -376,14 +388,54 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(16, Short.MAX_VALUE))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void importCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importCSVBtnClicked
+        // TODO add your handling code here:
+
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File chosenFile = getSelectedFile();
+
+                // Make sure that the chosen file exists
+                if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
+                    String filePath = chosenFile.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    String fileExtension = filePath.substring(lastIndex,
+                            filePath.length());
+
+                    // approve selection if it is a .csv file
+                    if (fileExtension.equals(".csv")) {
+                        super.approveSelection();
+                    } else {
+                        // do nothing - that selection should not be approved
+                    }
+
+                }
+            }
+        };
+
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+            importCSV(chosenFilePath);
+        }
+    }//GEN-LAST:event_importCSVBtnClicked
 
     /**
      * @param args the command line arguments
@@ -420,15 +472,46 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
     }
 
+    public void importCSV(String filepath) {
+        //Ashish's code will go here 
+        // System.out.println("Filepath: " + filepath);
+        try {
+            File file = new File(filepath);
+            Scanner sc = new Scanner(file);
+            //stores all tags within file
+            ArrayList<String> tags = new ArrayList<>();
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                if (line.equals("END")) {
+                    // necessary so that END statements don't get added to 'tags' ArrayList
+                } else if (Character.isLetter(line.charAt(0))) {
+                    tags.add(line);
+                } else if (Character.isDigit(line.charAt(0))) {
+                    final String DELIMITER = ",";
+                    String[] values = line.split(DELIMITER);
+                    //dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                    dataMap.put(new SimpleLogObject((tags.get(tags.size() - 1)), Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                }
+            }
+        } catch (FileNotFoundException x) {
+
+        }
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JInternalFrame chartFrame;
     private javax.swing.JList<String> dataList;
+    private javax.swing.JMenu editMenu;
+    private javax.swing.JFileChooser fileChooser;
+    private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem importCSVBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList<String> lapList;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JTextField searchField;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
