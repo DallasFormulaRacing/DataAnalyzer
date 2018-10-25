@@ -11,7 +11,7 @@ package dataanalyzer;
  */
 public class SimpleLogObject extends LogObject {
     
-    double value;
+    protected double value;
     
     public SimpleLogObject() {
         super();
@@ -30,6 +30,10 @@ public class SimpleLogObject extends LogObject {
 
     public void setValue(double value) {
         this.value = value;
+    }
+    
+    public String toString() {
+        return time + "," + value;
     }
     
 }
