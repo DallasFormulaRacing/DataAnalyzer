@@ -9,7 +9,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.PrintWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -423,7 +426,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -462,6 +465,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     // And add the values to the hashmap with their correct tag
                     // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
                     dataMap.put(new SimpleLogObject((tags.get(tags.size() - 1)), Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                
                 }
             }
         } catch (FileNotFoundException x) {
@@ -470,8 +474,53 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Fill the data list with titles
         fillDataList(tags);
+        // Sends ArrayLisy 'tags' to hashMapToCSV
+        hashMapToCSV(tags);
         
     }
+    
+    public void hashMapToCSV(ArrayList<String> tags)
+    {
+        try {
+            // Creates a new csv file to put data into. File is located within 'DataAnalyzer' git folder
+            FileOutputStream csv = new FileOutputStream(new File("sample.csv"), true);
+            // Allows program to print/write data into file
+            PrintWriter pw = new PrintWriter(csv);
+            // Allows to change dataset within LinkedList 'dataMap' 
+            int count = 0;
+            
+            // Loop continues based on total number of tags in array 'tags' from importCSV
+            for (int i = 0; i < tags.size(); i++){
+                // Gets tag for dataset from array 'tags' in importCSV
+                String tag = tags.get(count);
+                // Creates array of SimpleLogObject that only includes data from 'dataMap' under 'tag'
+                ArrayList<SimpleLogObject> data = new ArrayList(dataMap.getList(tag));
+                // Prints 'tag' before data is printed
+                pw.println(tag);
+                
+                // Loop that prints data under 'tag' on separate lines
+                for (int x = 0; x < data.size(); x++){
+                    // Allows for data to be split by comma for placement in csv 
+                    final String DELIMITER = ",";
+                    // Splits data by commas to be printed into csv file
+                    String[] obj = ((data.get(x)).toString()).split(DELIMITER);
+                    // Prints each piece of data to a unique cell on one line
+                    pw.println(obj[0] + "," + obj[1]);
+                    // Sends single data line to print in file
+                    pw.flush();
+                }
+                // Allows for next dataset under the next tag to be extracted and printer
+                count++;
+            }
+            
+            System.out.println ("File sample.csv has been created" );
+            
+        } catch (IOException x) {
+            
+        }
+    }  
+ 
+    
     
     private void fillDataList(ArrayList<String> tags){
         // Use the tags list to get the title for each tag
