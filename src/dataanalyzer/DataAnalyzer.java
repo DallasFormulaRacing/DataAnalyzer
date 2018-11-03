@@ -500,8 +500,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Fill the data list with titles
         fillDataList(tags);
-        // Sends ArrayLisy 'tags' to hashMapToCSV
-        hashMapToCSV(tags);
         
     }
     
