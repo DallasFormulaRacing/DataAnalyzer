@@ -53,12 +53,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
     CategoricalHashMap dataMap;
+    
+    //Stores all the static markers the user has created
+    CategoricalHashTable<CategorizedValueMarker> staticMarkers;
 
     public DataAnalyzer() {
         initComponents();
 
         // Create a new hash map
         dataMap = new CategoricalHashMap();
+        
+        //init the arraylist of static markers
+        staticMarkers = new CategoricalHashTable<>();
 
         // Init the graph with some dummy data until there is data given to read
         showEmptyGraph();
@@ -182,6 +188,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     @Override
     public void chartMouseClicked(ChartMouseEvent cme) {
         // Create a static cursor that isnt cleared every time
+        ValueMarker marker = new ValueMarker(xCor);
+        //static markers are blue
+        marker.setPaint(Color.BLUE);
+        //calculate the tag
+        String tag = cme.getChart().getTitle().getText();
+        String[] arr = tag.split(" ");
+        //add to the list of static markers
+        staticMarkers.put(new CategorizedValueMarker(arr[0] + "," + arr[2], marker));
     }
 
     //when the mouse moves over the chart
@@ -209,6 +223,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         marker.setPaint(Color.BLACK);
         // Add a marker on the x axis given a marker. This essentially makes the marker verticle
         plot.addDomainMarker(marker);
+        
+        //calculate the tag
+        String[] arr = chart.getTitle().getText().split(" ");
+        //get the linked list
+        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(arr[0] + "," + arr[2]);
+        //if the linked list is not null
+        if(markers != null) {
+            //draw every domain marker saved for this chart
+            for(CategorizedValueMarker v : markers) {
+                plot.addDomainMarker(v.getMarker());
+            }
+        }
         // All the statics that need to be shows should be added to plot
 
         // String object that holds values for all the series on the plot.
@@ -580,4 +606,44 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
     // End of variables declaration//GEN-END:variables
+    
+    /**
+     * Class that holds CategorizedValueMarkers
+     * Essentially just ValueMarkers and a String that defines which category they belong to
+     */
+    private class CategorizedValueMarker implements CategoricalHashTableInterface {
+        String TAG;
+        ValueMarker marker;
+
+        public CategorizedValueMarker() {
+            TAG = "";
+            marker = null;
+        }
+
+        public CategorizedValueMarker(String TAG, ValueMarker marker) {
+            this.TAG = TAG;
+            this.marker = marker;
+        }
+
+        public String getTAG() {
+            return TAG;
+        }
+
+        public void setTAG(String TAG) {
+            this.TAG = TAG;
+        }
+
+        public ValueMarker getMarker() {
+            return marker;
+        }
+
+        public void setMarker(ValueMarker marker) {
+            this.marker = marker;
+        }
+
+        @Override
+        public String hashTag() {
+            return TAG;
+        }
+    }
 }
