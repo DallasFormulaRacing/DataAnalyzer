@@ -107,11 +107,8 @@ public class CategoricalHashMap {
             //if its null next index
             if(table[i] == null)
                 continue;
-            //for each object in the linked list at this index
-            for(LogObject lo : table[i]) {
-                //add the value to the new table
-                put(lo, newTable);
-            }
+            //use put list to put the whole list in the new table
+            put(table[i], newTable);
         }
         
         //current table = new table
