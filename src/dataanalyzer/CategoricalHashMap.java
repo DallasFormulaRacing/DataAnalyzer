@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -13,6 +14,7 @@ import java.util.LinkedList;
  */
 public class CategoricalHashMap {
     
+    ArrayList<String> tags;
     //Actual table
     LinkedList<LogObject>[] table;
     
@@ -22,11 +24,13 @@ public class CategoricalHashMap {
     //constructor with base size of 20
     public CategoricalHashMap() {
         table = new LinkedList[20];
+        tags = new ArrayList<>();
     }
     
     //constructor that allows user to define size as long as > 20
     public CategoricalHashMap(int size) {
         table = new LinkedList[Math.max(size, 20)];
+        tags = new ArrayList<>();
     }
     
     //put a new value into the HashMap
@@ -37,6 +41,9 @@ public class CategoricalHashMap {
     private void put(LogObject lo, LinkedList<LogObject>[] table) {
         //calculate the index from the tag
         int index = Math.abs(lo.getTAG().hashCode()) % table.length;
+        if(!tags.contains(lo.getTAG())) {
+            tags.add(lo.getTAG());
+        }
 
         //find next null, empty, or matching tag position
         while(table[index] != null && !table[index].isEmpty() && !table[index].getFirst().getTAG().equals(lo.getTAG())) {
