@@ -14,7 +14,9 @@ import java.util.LinkedList;
  */
 public class CategoricalHashMap {
     
+    private ArrayList<HashMapTagSizeListener> listeners;
     ArrayList<String> tags;
+    
     //Actual table
     LinkedList<LogObject>[] table;
     
@@ -25,12 +27,14 @@ public class CategoricalHashMap {
     public CategoricalHashMap() {
         table = new LinkedList[20];
         tags = new ArrayList<>();
+        listeners = new ArrayList<>();
     }
     
     //constructor that allows user to define size as long as > 20
     public CategoricalHashMap(int size) {
         table = new LinkedList[Math.max(size, 20)];
         tags = new ArrayList<>();
+        listeners = new ArrayList<>();
     }
     
     //put a new value into the HashMap
@@ -43,6 +47,7 @@ public class CategoricalHashMap {
         int index = Math.abs(lo.getTAG().hashCode()) % table.length;
         if(!tags.contains(lo.getTAG())) {
             tags.add(lo.getTAG());
+            broadcastSizeChange();
         }
 
         //find next null, empty, or matching tag position
@@ -120,6 +125,16 @@ public class CategoricalHashMap {
         
         //current table = new table
         table = newTable;
+    }
+    
+    private void broadcastSizeChange() {
+        for(HashMapTagSizeListener listener : listeners) {
+            listener.sizeUpdate();
+        }
+    }
+    
+    public void addTagSizeChangeListener(HashMapTagSizeListener e) {
+        listeners.add(e);
     }
     
     //get function

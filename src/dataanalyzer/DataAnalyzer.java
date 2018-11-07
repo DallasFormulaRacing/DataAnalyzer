@@ -62,7 +62,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // Create a new hash map
         dataMap = new CategoricalHashMap();
-        
+
+        //on new element entry of dataMap, update the view
+        dataMap.addTagSizeChangeListener(new HashMapTagSizeListener() {
+            @Override
+            public void sizeUpdate() {
+                fillDataList(dataMap.tags);
+            }
+        });
+
         //init the arraylist of static markers
         staticMarkers = new CategoricalHashTable<>();
 
@@ -580,7 +588,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     // Passes the data type index, all the laps currently selected, and the data type name
-                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                    if(dataList.getSelectedIndex() != -1)
+                        setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
                 }
             }
         });
