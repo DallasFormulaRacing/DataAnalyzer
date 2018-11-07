@@ -56,6 +56,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     //Stores all the static markers the user has created
     CategoricalHashTable<CategorizedValueMarker> staticMarkers;
+    
+    //Stores the array of String in the listview of tags
+    String[] titles;
 
     public DataAnalyzer() {
         initComponents();
@@ -82,6 +85,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         this.xCrosshair.setLabelVisible(true);
         this.yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.yCrosshair.setLabelVisible(true);
+        
+        //init the array
+        titles = new String[10];
     }
 
     private void showEmptyGraph() {
@@ -304,6 +310,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane1.setViewportView(dataList);
 
         searchField.setToolTipText("Search");
+        searchField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                searchFieldKeyReleased(evt);
+            }
+        });
 
         chartFrame.setPreferredSize(new java.awt.Dimension(500, 650));
         chartFrame.setVisible(true);
@@ -343,7 +354,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         editMenu.setText("Edit");
 
-        addMathChannelButton.setActionCommand("");
         addMathChannelButton.setLabel("Add Math Channel");
         addMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -448,6 +458,19 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
         new MathChannelDialog(dataMap).setVisible(true);
     }//GEN-LAST:event_addMathChannel
+
+    private void searchFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyReleased
+        if(titles != null) {
+            ArrayList<String> newTitles = new ArrayList<>();
+            for(String s : titles) {
+                if(s.contains(searchField.getText())) {
+                    newTitles.add(s);
+                }
+            }
+
+            dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
+        }
+    }//GEN-LAST:event_searchFieldKeyReleased
 
     /**
      * @param args the command line arguments
@@ -564,7 +587,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     private void fillDataList(ArrayList<String> tags){
         // Use the tags list to get the title for each tag
-        String[] titles = new String[tags.size()];
+        titles = new String[tags.size()];
 
         // Make a list of titles
         // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"

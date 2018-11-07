@@ -28,7 +28,6 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="addMathChannelButton">
               <Properties>
-                <Property name="actionCommand" type="java.lang.String" value=""/>
                 <Property name="label" type="java.lang.String" value="Add Math Channel"/>
               </Properties>
               <Events>
@@ -142,6 +141,9 @@
       <Properties>
         <Property name="toolTipText" type="java.lang.String" value="Search"/>
       </Properties>
+      <Events>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="searchFieldKeyReleased"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JInternalFrame" name="chartFrame">
       <Properties>
