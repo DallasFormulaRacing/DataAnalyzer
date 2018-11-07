@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -88,6 +89,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //init the array
         titles = new String[10];
+        
+        //chart panel right click options
     }
 
     private void showEmptyGraph() {
@@ -164,6 +167,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // The form has a subframe inside the mainframe
         // Set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
+        
+        //update statistics
+        updateStatistics(tag);
     }
 
     private XYSeriesCollection getDataCollection(String tag, int[] laps) {
@@ -240,7 +246,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //calculate the tag
         String[] arr = chart.getTitle().getText().split(" ");
-        //get the linked list
+        //get the linked list from tag
         LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(arr[0] + "," + arr[2]);
         //if the linked list is not null
         if(markers != null) {
@@ -253,6 +259,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // String object that holds values for all the series on the plot.
         String yCordss = "";
+        
+        //String var that hold text to be shown at bottom of chart
+        String staticMarkerTextData = "";
         // Repeat the loop for each series in the plot
         for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
             // Get the collection from the plots data set
@@ -267,11 +276,22 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             // Get the y value for the current series.
             double val = DatasetUtilities.findYValue(col2, 0, xCor);
             // Add the value to the string
-            yCordss += val + "\n";
+            yCordss += String.format("%.2f", val) + "\n";
+            //for each static marker
+            if(markers != null) {
+                for(CategorizedValueMarker v : markers) {
+                    staticMarkerTextData += "(" + String.format("%.2f", v.getMarker().getValue()) + ", " + 
+                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,v.getMarker().getValue())) + ")";
+                }
+            }
+
         }
+        
+        //update label
+        staticMarkersText.setText(staticMarkerTextData);
 
         // Set the textviews at the bottom of the file.
-        xCordLabel.setText(xCor + "");
+        xCordLabel.setText(String.format("%.2f", xCor));
         yCordLabel.setText(yCordss);
 
         // Set this objects crosshair data to the value we have
@@ -299,6 +319,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         yCordLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lapList = new javax.swing.JList<>();
+        jLabel3 = new javax.swing.JLabel();
+        averageText = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        maxText = new javax.swing.JLabel();
+        minText = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        staticMarkersText = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         importCSVBtn = new javax.swing.JMenuItem();
@@ -306,6 +334,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         addMathChannelButton = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(1100, 700));
 
         jScrollPane1.setViewportView(dataList);
 
@@ -339,6 +368,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         yCordLabel.setText("jLabel2");
 
         jScrollPane2.setViewportView(lapList);
+
+        jLabel3.setText("Average:");
+
+        jLabel5.setText("Max: ");
+
+        jLabel6.setText("Min: ");
+
+        jLabel7.setText("StaticMarkers: ");
 
         fileMenu.setText("File");
 
@@ -380,13 +417,33 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chartFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 899, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(xCordLabel))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(yCordLabel)))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(xCordLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(yCordLabel))))
+                        .addComponent(averageText)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(maxText)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(staticMarkersText))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(minText))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -398,11 +455,19 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
-                            .addComponent(xCordLabel))
+                            .addComponent(xCordLabel)
+                            .addComponent(jLabel3)
+                            .addComponent(averageText)
+                            .addComponent(jLabel5)
+                            .addComponent(maxText)
+                            .addComponent(jLabel7)
+                            .addComponent(staticMarkersText))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(yCordLabel)))
+                            .addComponent(yCordLabel)
+                            .addComponent(jLabel6)
+                            .addComponent(minText)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -625,10 +690,32 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
     }
+    
+    private void updateStatistics(String tag) {
+        List<LogObject> data = dataMap.getList(tag);
+        double avg = 0;
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+        for(LogObject lo : data) {
+            if(lo instanceof SimpleLogObject) {
+                avg += ((SimpleLogObject) lo).getValue();
+                if(((SimpleLogObject) lo).getValue() < min)
+                    min = ((SimpleLogObject) lo).getValue();
+                if(((SimpleLogObject) lo).getValue() > max)
+                    max = ((SimpleLogObject) lo).getValue();
+            }
+        }
+        avg /= data.size();
+        
+        averageText.setText(String.format("%.2f", avg));
+        maxText.setText(String.format("%.2f", max));
+        minText.setText(String.format("%.2f", min));
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addMathChannelButton;
+    private javax.swing.JLabel averageText;
     private javax.swing.JInternalFrame chartFrame;
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
@@ -637,11 +724,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JMenuItem importCSVBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList<String> lapList;
+    private javax.swing.JLabel maxText;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JLabel minText;
     private javax.swing.JTextField searchField;
+    private javax.swing.JLabel staticMarkersText;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
     // End of variables declaration//GEN-END:variables
