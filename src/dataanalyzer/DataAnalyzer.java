@@ -485,9 +485,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
 
     public void importCSV(String filepath) {
-        // System.out.println("Filepath: " + filepath);
-        // Store all the tags in the csv file
-        ArrayList<String> tags = new ArrayList<>();
+        
+        String tag = "";
         try {
             // Create a new file from the filepath
             File file = new File(filepath);
@@ -505,7 +504,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 } else if (Character.isLetter(line.charAt(0))) {
                     // If the first character is a letter
                     // Then add the line to the tags list
-                    tags.add(line);
+                    tag = line;
                 } else if (Character.isDigit(line.charAt(0))) {
                     // If the first character is a digit
                     // Then divide the list in 2 values by ,
@@ -513,16 +512,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     String[] values = line.split(DELIMITER);
                     // And add the values to the hashmap with their correct tag
                     // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                    dataMap.put(new SimpleLogObject((tags.get(tags.size() - 1)), Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                
+                    dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
                 }
             }
         } catch (FileNotFoundException x) {
 
         }
-        
-        // Fill the data list with titles
-        fillDataList(tags);
         
     }
     
@@ -565,9 +560,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         } catch (IOException x) {
             
         }
-    }  
- 
-    
+    }
     
     private void fillDataList(ArrayList<String> tags){
         // Use the tags list to get the title for each tag
@@ -592,7 +585,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     // Passes the data type index, all the laps currently selected, and the data type name
-                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                    if(dataList.getSelectedIndex() != -1)
+                        setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
                 }
             }
         });
@@ -603,8 +597,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     // Passes the data type index, all the laps currently selected, and the data type name
-                    if(dataList.getSelectedIndex() != -1)
-                        setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
                 }
             }
         });
