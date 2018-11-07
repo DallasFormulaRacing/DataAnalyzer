@@ -297,6 +297,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         fileMenu = new javax.swing.JMenu();
         importCSVBtn = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
+        addMathChannelButton = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -311,11 +312,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.getContentPane().setLayout(chartFrameLayout);
         chartFrameLayout.setHorizontalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 883, Short.MAX_VALUE)
+            .addGap(0, 897, Short.MAX_VALUE)
         );
         chartFrameLayout.setVerticalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 559, Short.MAX_VALUE)
+            .addGap(0, 566, Short.MAX_VALUE)
         );
 
         jLabel1.setText("X Cord:");
@@ -341,6 +342,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         menuBar.add(fileMenu);
 
         editMenu.setText("Edit");
+
+        addMathChannelButton.setActionCommand("");
+        addMathChannelButton.setLabel("Add Math Channel");
+        addMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addMathChannel(evt);
+            }
+        });
+        editMenu.add(addMathChannelButton);
+
         menuBar.add(editMenu);
 
         setJMenuBar(menuBar);
@@ -433,6 +444,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             importCSV(chosenFilePath);
         }
     }//GEN-LAST:event_importCSVBtnClicked
+
+    private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
+        new MathChannelDialog(dataMap).setVisible(true);
+    }//GEN-LAST:event_addMathChannel
 
     /**
      * @param args the command line arguments
@@ -597,6 +612,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JInternalFrame chartFrame;
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
