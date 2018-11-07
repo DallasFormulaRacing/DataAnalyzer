@@ -67,7 +67,7 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
      */
     private void put(Value v, LinkedList<Value>[] table) {
         //get the hashcode of the category
-        int index = v.hashTag().hashCode() % table.length;
+        int index = Math.abs(v.hashTag().hashCode()) % table.length;
         //if the table at current index is null create a new linked list here
         while(true) {
             //if the current index doesn't even have a created link list its empty and we can put this category here
