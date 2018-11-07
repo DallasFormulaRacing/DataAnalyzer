@@ -30,6 +30,9 @@ import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import javax.swing.JList;
 
 /**
  *
@@ -51,9 +54,26 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
     CategoricalHashMap dataMap;
 
+    //Will Hold the names for the tags
+    String [] titles;
+    
     public DataAnalyzer() {
         initComponents();
-
+    titles = new String[];
+    
+        searchField.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String text = searchField.getText();
+               ArrayList<String> searchedText = new ArrayList<String>();
+                for(int i = 0; i < titles.length; i++) {
+                    if(titles[i].contains(text)){ 
+                        searchedText.add(titles[i]);  
+                    }
+                }
+              dataList.setListData(searchedText.toArray(new String[searchedText.size()]));
+            }
+        });
+        
         // Create a new hash map
         dataMap = new CategoricalHashMap();
 
@@ -266,6 +286,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane1.setViewportView(dataList);
 
         searchField.setToolTipText("Search");
+        searchField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchFieldActionPerformed(evt);
+            }
+        });
+        searchField.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                searchFieldPropertyChange(evt);
+            }
+        });
 
         chartFrame.setPreferredSize(new java.awt.Dimension(500, 650));
         chartFrame.setVisible(true);
@@ -274,11 +304,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.getContentPane().setLayout(chartFrameLayout);
         chartFrameLayout.setHorizontalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 883, Short.MAX_VALUE)
+            .addGap(0, 875, Short.MAX_VALUE)
         );
         chartFrameLayout.setVerticalGroup(
             chartFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 559, Short.MAX_VALUE)
+            .addGap(0, 543, Short.MAX_VALUE)
         );
 
         jLabel1.setText("X Cord:");
@@ -397,6 +427,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }//GEN-LAST:event_importCSVBtnClicked
 
+    private void searchFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchFieldActionPerformed
+
+    private void searchFieldPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_searchFieldPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchFieldPropertyChange
+
     /**
      * @param args the command line arguments
      */
@@ -435,7 +473,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public void importCSV(String filepath) {
         // System.out.println("Filepath: " + filepath);
         // Store all the tags in the csv file
-        ArrayList<String> tags = new ArrayList<>();
+    	 ArrayList<String> tags = new ArrayList<String>();
         try {
             // Create a new file from the filepath
             File file = new File(filepath);
@@ -475,20 +513,20 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     private void fillDataList(ArrayList<String> tags){
         // Use the tags list to get the title for each tag
-        String[] titles = new String[tags.size()];
+    	// String [] titles = new String[tags.size()]; //make global
 
         // Make a list of titles
         // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"
         String str = "";
         for (int i = 0; i < titles.length; i++) {
             str = "";
-            str += tags.get(i).split(",")[1];
+           str += tags.get(i).split(",")[1];
             str += " vs ";
             str += tags.get(i).split(",")[0];
             titles[i] = str;
         }
         // Add the list of titles to the data List View 
-        dataList.setListData(titles);
+        dataList.setListData(titles); //Copy the array with items with the keyword
 
         // If another item is selected in the data combo box, change the chart
         dataList.addListSelectionListener(new ListSelectionListener() {
