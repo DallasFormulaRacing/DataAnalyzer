@@ -52,6 +52,36 @@ public class CategoricalHashMap {
         checkLoad();
     }
     
+    public void put(LinkedList<LogObject> los) {
+        put(los, table);
+    }
+    
+    private void put(LinkedList<LogObject> los, LinkedList<LogObject>[] table) {
+        //get the index based on the first element of the list. Assume all other elements are the same
+        int index = Math.abs(los.get(0).getTAG().hashCode()) % table.length;
+        
+        //if the tag of the first element does not exist add it to the list of tags
+        if(!tags.contains(los.get(0).getTAG())) {
+            tags.add(los.get(0).getTAG());
+            broadcastSizeChange();
+        }
+        
+        //find next null, empty, or matching tag position
+        while(table[index] != null && !table[index].isEmpty() && !table[index].getFirst().getTAG().equals(los.get(0).getTAG())) {
+            index++;
+            index %= table.length;
+        }
+        
+        //put the list here
+        table[index] = los;
+        
+        //check the load
+        checkLoad();
+        
+    }
+    
+    
+    
     //check the load and run and rehash if neccesary
     private void checkLoad() {
         //find how many places have a linked list with at least one element
