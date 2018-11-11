@@ -215,7 +215,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         String tag = cme.getChart().getTitle().getText();
         String[] arr = tag.split(" ");
         //add to the list of static markers
-        staticMarkers.put(new CategorizedValueMarker(arr[0] + "," + arr[2], marker));
+        staticMarkers.put(new CategorizedValueMarker(arr[2] + "," + arr[0], marker));
     }
 
     //when the mouse moves over the chart
@@ -247,7 +247,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //calculate the tag
         String[] arr = chart.getTitle().getText().split(" ");
         //get the linked list from tag
-        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(arr[0] + "," + arr[2]);
+        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(arr[2] + "," + arr[0]);
         //if the linked list is not null
         if(markers != null) {
             //draw every domain marker saved for this chart
