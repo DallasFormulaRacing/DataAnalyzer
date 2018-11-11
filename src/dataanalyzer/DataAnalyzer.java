@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -89,8 +90,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //init the array
         titles = new String[10];
-        
-        //chart panel right click options
     }
 
     private void showEmptyGraph() {
@@ -259,9 +258,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // String object that holds values for all the series on the plot.
         String yCordss = "";
-        
-        //String var that hold text to be shown at bottom of chart
-        String staticMarkerTextData = "";
         // Repeat the loop for each series in the plot
         for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
             // Get the collection from the plots data set
@@ -279,16 +275,19 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             yCordss += String.format("%.2f", val) + "\n";
             //for each static marker
             if(markers != null) {
-                for(CategorizedValueMarker v : markers) {
-                    staticMarkerTextData += "(" + String.format("%.2f", v.getMarker().getValue()) + ", " + 
-                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,v.getMarker().getValue())) + ")";
+                //create string array of data
+                String[] staticMarkerData = new String[markers.size()];
+                //for each static marker in array list
+                for(int k = 0; k < staticMarkerData.length; k++) {
+                    //create formatted string and insert into current index
+                    staticMarkerData[k] = "(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " + 
+                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ")";
                 }
+                //set the data to the list
+                staticMarkersList.setListData(staticMarkerData);
             }
 
         }
-        
-        //update label
-        staticMarkersText.setText(staticMarkerTextData);
 
         // Set the textviews at the bottom of the file.
         xCordLabel.setText(String.format("%.2f", xCor));
@@ -325,11 +324,13 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jLabel6 = new javax.swing.JLabel();
         maxText = new javax.swing.JLabel();
         minText = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        staticMarkersText = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        staticMarkersList = new javax.swing.JList<>();
+        jLabel4 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         importCSVBtn = new javax.swing.JMenuItem();
+        saveMenuButton = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
 
@@ -375,7 +376,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         jLabel6.setText("Min: ");
 
-        jLabel7.setText("StaticMarkers: ");
+        jScrollPane3.setViewportView(staticMarkersList);
+
+        jLabel4.setText("Static Markers:");
 
         fileMenu.setText("File");
 
@@ -386,6 +389,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         fileMenu.add(importCSVBtn);
+
+        saveMenuButton.setText("Save");
+        saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuButtonClicked(evt);
+            }
+        });
+        fileMenu.add(saveMenuButton);
 
         menuBar.add(fileMenu);
 
@@ -412,7 +423,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)
                     .addComponent(searchField)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(chartFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 899, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -435,11 +450,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel5)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(maxText)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(staticMarkersText))
+                                .addComponent(maxText))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -459,22 +470,25 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             .addComponent(jLabel3)
                             .addComponent(averageText)
                             .addComponent(jLabel5)
-                            .addComponent(maxText)
-                            .addComponent(jLabel7)
-                            .addComponent(staticMarkersText))
+                            .addComponent(maxText))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
                             .addComponent(yCordLabel)
                             .addComponent(jLabel6)
-                            .addComponent(minText)))
+                            .addComponent(minText))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(16, 16, 16))))
         );
 
         pack();
@@ -537,6 +551,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }//GEN-LAST:event_searchFieldKeyReleased
 
+    private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
+        // TODO add your handling code here:
+        saveFile("");
+    }//GEN-LAST:event_saveMenuButtonClicked
+
     /**
      * @param args the command line arguments
      */
@@ -581,26 +600,35 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             // Scan the file
             Scanner sc = new Scanner(file);
             
+            boolean isMarker = false;
             // While there is a next line
             while (sc.hasNextLine()) {
                 // Store the line
                 String line = sc.nextLine();
                 // If the line represents an END of the current tag
                 if (line.equals("END")) {
-                    // Do nothing
+                    isMarker = false;
                     // Necessary so that END statements don't get added to 'tags' ArrayList
+                } else if(line.equals("MARKERS")) {
+                    isMarker = true;
                 } else if (Character.isLetter(line.charAt(0))) {
                     // If the first character is a letter
                     // Then add the line to the tags list
                     tag = line;
                 } else if (Character.isDigit(line.charAt(0))) {
-                    // If the first character is a digit
-                    // Then divide the list in 2 values by ,
-                    final String DELIMITER = ",";
-                    String[] values = line.split(DELIMITER);
-                    // And add the values to the hashmap with their correct tag
-                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                    dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                    if(!isMarker) {
+                        // If the first character is a digit
+                        // Then divide the list in 2 values by ,
+                        final String DELIMITER = ",";
+                        String[] values = line.split(DELIMITER);
+                        // And add the values to the hashmap with their correct tag
+                        // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                        dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                    } else {
+                        ValueMarker v = new ValueMarker(Double.parseDouble(line));
+                        v.setPaint(Color.BLUE);
+                        staticMarkers.put(new CategorizedValueMarker(tag, v));
+                    }
                 }
             }
         } catch (FileNotFoundException x) {
@@ -648,6 +676,68 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         } catch (IOException x) {
             
         }
+    }
+    
+    private void saveFile(String filename) {
+        String sb = getStringOfData();
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File(filename));
+        int retrival = chooser.showSaveDialog(null);
+        if (retrival == JFileChooser.APPROVE_OPTION) {
+            if(!chooser.getSelectedFile().toString().contains(".csv")){
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".csv")) {
+                    fw.write(sb);
+                    fw.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            } else {
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
+
+                    fw.write(sb);
+                    fw.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            
+        }
+        
+    }
+    
+    private String getStringOfData() {
+        String toReturn = "";
+        
+        //for each tag of data
+        for(String tag : dataMap.tags) {
+            //output the tag
+            toReturn += tag + "\n";
+            //get the list of data for the current tag
+            List<LogObject> data = dataMap.getList(tag);
+            //for each data element
+            for(LogObject lo : data) {
+                //output the data
+                toReturn += lo.toString() + "\n";
+            }
+            //output MARKERS
+            toReturn += "MARKERS\n";
+            //get the markers for the current tag
+            List<CategorizedValueMarker> markers = staticMarkers.getList(tag);
+            //if the markers exist
+            if(markers != null) {
+                //for each marker we have output it
+                for(CategorizedValueMarker marker : markers) {
+                    toReturn += marker.getMarker().getValue() + "\n";
+                }
+            }
+            
+            //output END to signify end of data for this tag.
+            toReturn += "END\n";
+        }
+        
+        //return calculated value
+        return toReturn;
+        
     }
     
     private void fillDataList(ArrayList<String> tags){
@@ -725,17 +815,19 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JList<String> lapList;
     private javax.swing.JLabel maxText;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JLabel minText;
+    private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JTextField searchField;
-    private javax.swing.JLabel staticMarkersText;
+    private javax.swing.JList<String> staticMarkersList;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
     // End of variables declaration//GEN-END:variables
