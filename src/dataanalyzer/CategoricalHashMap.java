@@ -92,6 +92,24 @@ public class CategoricalHashMap {
         
     }
     
+    //remove a tag from the table and return its linked list, if tag doesn't exist returns null
+    public LinkedList<LogObject> remove(String tag) {
+        //for each element of the table
+        for(int i = 0; i < table.length; i++) {
+            //if its not null, not empty, and its first elements tag matches, remove and return. update tags list as well
+            if(table[i] != null && !table[i].isEmpty() && table[i].getFirst().getTAG().equals(tag)) {
+                LinkedList<LogObject> temp = table[i];
+                table[i] = null;
+                tags.remove(tag);
+                broadcastSizeChange();
+                return temp;
+            }
+        }
+        
+        //if we get through the whole loop we did not find it and return null
+        return null;
+    }
+    
     
     
     //check the load and run and rehash if neccesary
