@@ -7,6 +7,8 @@ package dataanalyzer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -17,19 +19,31 @@ import javax.swing.event.ListSelectionListener;
 public class MathChannelDialog extends javax.swing.JFrame {
 
    
+    int lastIndex;
     CategoricalHashMap dataMap;
     /**
      * Creates new form MathChannelDialog
      */
     public MathChannelDialog() {
         initComponents();
+        lastIndex = 0;
         dataMap = null;
+        //listen to when the caret is updated
+        equationField.addCaretListener((CaretEvent e) -> {
+            lastIndex = e.getDot();
+        });
     }
     
     public MathChannelDialog(CategoricalHashMap dataMap) {
         initComponents();
+        lastIndex = 0;
         this.dataMap = dataMap;
+        //add the variables into the list
         configureVariablesList();
+        //listen to when the caret is updated
+        equationField.addCaretListener((CaretEvent e) -> {
+            lastIndex = e.getDot();
+        });
     }
 
     /**
@@ -140,8 +154,18 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private void configureVariablesList() {
         availableVariablesList.setListData(dataMap.tags.toArray(new String[dataMap.tags.size()]));
         availableVariablesList.addListSelectionListener((ListSelectionEvent e) -> {
-            if(!e.getValueIsAdjusting()) {
-                equationField.append("$(" + availableVariablesList.getSelectedValue() + ")");
+            //if the value is not adjusting elsewhere, and the selected value is not null
+            if(!e.getValueIsAdjusting() && availableVariablesList.getSelectedValue() != null) {
+                //get the string of the equation field
+                String str = equationField.getText();
+                //insert the variable string into the string
+                str = str.substring(0, lastIndex) + "$(" + availableVariablesList.getSelectedValue() + ")" + str.substring(lastIndex);
+                //set the text value of the field
+                equationField.setText(str);
+                //clear the list selection
+                availableVariablesList.clearSelection();
+                //request focus back to the equation field
+                equationField.requestFocus();
             }
         });
     }
