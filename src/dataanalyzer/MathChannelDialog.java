@@ -64,6 +64,12 @@ public class MathChannelDialog extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         equationField = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        fileMathChannelMenu = new javax.swing.JMenu();
+        editMathChannelMenu = new javax.swing.JMenu();
+        insertMathChannelMenu = new javax.swing.JMenu();
+        cToFMathChannelMenuItem = new javax.swing.JMenuItem();
+        fToCMathChannelMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -95,6 +101,34 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
         jLabel2.setText("Channel Title:");
 
+        fileMathChannelMenu.setText("File");
+        jMenuBar1.add(fileMathChannelMenu);
+
+        editMathChannelMenu.setText("Edit");
+        jMenuBar1.add(editMathChannelMenu);
+
+        insertMathChannelMenu.setText("Insert");
+
+        cToFMathChannelMenuItem.setText("CelciusToFarenheit");
+        cToFMathChannelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cToFMathChannelMenuItemActionPerformed(evt);
+            }
+        });
+        insertMathChannelMenu.add(cToFMathChannelMenuItem);
+
+        fToCMathChannelMenuItem.setText("FarenheitToCelcius");
+        fToCMathChannelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fToCMathChannelMenuItemActionPerformed(evt);
+            }
+        });
+        insertMathChannelMenu.add(fToCMathChannelMenuItem);
+
+        jMenuBar1.add(insertMathChannelMenu);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -123,7 +157,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1)
@@ -149,10 +183,22 @@ public class MathChannelDialog extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
-    
+    private void cToFMathChannelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cToFMathChannelMenuItemActionPerformed
+        //insert the celsius to farenheit equation here
+        equationField.setText(equationField.getText() + "((VAR_HERE)*(9/5))+32");
+    }//GEN-LAST:event_cToFMathChannelMenuItemActionPerformed
+
+    private void fToCMathChannelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fToCMathChannelMenuItemActionPerformed
+        //insert the farenheit to celsius equation here
+        equationField.setText(equationField.getText() + "((VAR_HERE)−32)*5/9");
+    }//GEN-LAST:event_fToCMathChannelMenuItemActionPerformed
+
     //Update variables list, handle list onclicks
     private void configureVariablesList() {
+        //set the variables list to all the tags from the datamap
         availableVariablesList.setListData(dataMap.tags.toArray(new String[dataMap.tags.size()]));
+        
+        //on click of an item of the variables list
         availableVariablesList.addListSelectionListener((ListSelectionEvent e) -> {
             //if the value is not adjusting elsewhere, and the selected value is not null
             if(!e.getValueIsAdjusting() && availableVariablesList.getSelectedValue() != null) {
@@ -206,11 +252,17 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> availableVariablesList;
+    private javax.swing.JMenuItem cToFMathChannelMenuItem;
     private javax.swing.JTextPane channelTitleText;
     private javax.swing.JButton createChannelButton;
+    private javax.swing.JMenu editMathChannelMenu;
     private javax.swing.JTextArea equationField;
+    private javax.swing.JMenuItem fToCMathChannelMenuItem;
+    private javax.swing.JMenu fileMathChannelMenu;
+    private javax.swing.JMenu insertMathChannelMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
