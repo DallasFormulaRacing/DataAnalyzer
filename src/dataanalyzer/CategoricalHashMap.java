@@ -155,6 +155,18 @@ public class CategoricalHashMap {
         listeners.add(e);
     }
     
+    public boolean isEmpty() {
+        //for each table entry
+        for (LinkedList<LogObject> table1 : table) {
+            //if it contains something, the whole dataset is not empty return false
+            if (table1 != null && !table1.isEmpty()) {
+                return false;
+            }
+        }
+        //else return true
+        return true;
+    }
+    
     //get function
     public LinkedList<LogObject> getList(String TAG) {
         //for each linkedlist in the hash table

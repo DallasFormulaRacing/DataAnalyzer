@@ -145,6 +145,24 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     }
     
     /**
+     * Lets the user know if the table is empty
+     * empty is defined as the table containing 0 Value objects
+     * So a table with all its indices instantiated with linked lists, but the linked lists being empty, is empty.
+     * @return 
+     */
+    public boolean isEmpty() {
+        //for each table entry
+        for (LinkedList<Value> table1 : table) {
+            //if it contains something, the whole dataset is not empty return false
+            if (table1 != null && !table1.isEmpty()) {
+                return false;
+            }
+        }
+        //else return true
+        return true;
+    }
+    
+    /**
      * gets all the elements from the HashTable that match the category given
      * @param TAG Category value. Defines which category of elements the user wants
      * @return LinkedList of objects that match the category provided by user
