@@ -175,6 +175,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //update statistics
         updateStatistics(tag);
+        
+        //draw markers
+        drawMarkers(tag, chart.getXYPlot());
     }
 
     private XYSeriesCollection getDataCollection(String tag, int[] laps) {
@@ -251,16 +254,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //calculate the tag
         String tag = titleToTag(chart.getTitle().getText());
-        //get the linked list from tag
-        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
-        //if the linked list is not null
-        if(markers != null) {
-            //draw every domain marker saved for this chart
-            for(CategorizedValueMarker v : markers) {
-                plot.addDomainMarker(v.getMarker());
-            }
-        }
-        // All the statics that need to be shows should be added to plot
+        
+        //call the method to draw the markers
+        drawMarkers(tag, plot);
+        
 
         // String object that holds values for all the series on the plot.
         String yCordss = "";
@@ -279,19 +276,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             double val = DatasetUtilities.findYValue(col2, 0, xCor);
             // Add the value to the string
             yCordss += String.format("%.2f", val) + "\n";
-            //for each static marker
-            if(markers != null) {
-                //create string array of data
-                String[] staticMarkerData = new String[markers.size()];
-                //for each static marker in array list
-                for(int k = 0; k < staticMarkerData.length; k++) {
-                    //create formatted string and insert into current index
-                    staticMarkerData[k] = "(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " + 
-                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ")";
-                }
-                //set the data to the list
-                staticMarkersList.setListData(staticMarkerData);
-            }
 
         }
 
@@ -302,6 +286,44 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Set this objects crosshair data to the value we have
         this.xCrosshair.setValue(xCor);
         this.yCrosshair.setValue(yCor);
+    }
+    
+    private void drawMarkers(String tag, XYPlot plot) {
+        //get the linked list from tag
+        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
+        //position var
+        int k = 0;
+        //if the linked list is not null
+        if(markers != null) {
+            //create string array of data
+            String[] staticMarkerData = new String[markers.size()];
+            //draw every domain marker saved for this chart and add it to an array
+            for(CategorizedValueMarker v : markers) {
+                plot.addDomainMarker(v.getMarker());
+                //create formatted string and insert into current index
+                // Repeat the loop for each series in the plot
+                for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
+                    // Get the collection from the plots data set
+                    XYSeriesCollection col = (XYSeriesCollection) plot.getDataset();
+                    // Get the plots name from the series's object
+                    String plotName = plot.getDataset().getSeriesKey(i).toString();
+                    // Create a new collection 
+                    XYSeriesCollection col2 = new XYSeriesCollection();
+                    // Add the series with the name we found to the other collection
+                    // We do this because the findYValue() method takes a collection
+                    col2.addSeries(col.getSeries(plotName));
+                    //insert the marker data into current index
+                    staticMarkerData[k] = "(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
+                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ")";
+
+                }
+                k++;
+            }
+            //set the data to the list
+            staticMarkersList.setListData(staticMarkerData);
+        }
+        
+        
     }
 
     /**
