@@ -19,6 +19,10 @@ public class EquationEvaluater {
 
     public static void evaluate(String eq, CategoricalHashMap dataMap, String channelTag) {
         String equationsStr = fixBuffers(eq);
+        if(equationsStr.contains("asFunctionOf")) {
+            createFunctionOf(equationsStr, dataMap, channelTag);
+            return;
+        }
         int varCount = validateEquation(equationsStr, dataMap);
         int index = 0;
         LinkedList<LogObject> dataList = new LinkedList<>();
@@ -75,6 +79,89 @@ public class EquationEvaluater {
         dataMap.put(dataList);
         
     }
+    
+    private static void createFunctionOf(String eq, CategoricalHashMap dataMap, String channelTag) {
+        //get the new equation and tag of the data set we are creating a function opf
+        String[] equationAndVar = getFunctionOfTag(eq);
+        //store those locally
+        String equationsStr = equationAndVar[0];
+        String functionOfTag = equationAndVar[1];
+        //if the equation is replaced with error, something went wrong, do not continue;
+        if(equationsStr.equals("ERROR"))
+            return;
+        //get the dataset we are getting the function of
+        LinkedList<LogObject> functionOfList = dataMap.getList(functionOfTag);
+        //if the data set is empty, do not continue
+        if(functionOfList == null) {
+            return;
+        }
+        int varCount = validateEquation(equationsStr, dataMap);
+        int index = 0;
+        LinkedList<LogObject> dataList = new LinkedList<>();
+        while(index < varCount) {
+            long time = 0;
+            Stack<Double> values = new Stack<>();
+            Stack<String> operators = new Stack<>();
+            String[] equation = equationsStr.split(" ");
+            for(String element : equation) {
+                if(isANumber(element.charAt(0)) || element.charAt(0) == '.') {
+                    values.push(Double.parseDouble(element));
+                }
+                //if the element is a variable
+                else if(element.charAt(0) == '$') {
+                    String tag = element.substring(2, element.length() - 1);
+                    LogObject lo = dataMap.getList(tag).get(index); //oh no get index of linked list, maybe make use of an iterator here to keep position to save some time.
+                    time = lo.time;
+                    if(lo instanceof SimpleLogObject)
+                        values.push(((SimpleLogObject) lo).value);
+                    else
+                        break;
+                }
+                //if its open parentheses
+                else if(element.charAt(0) == '(')
+                    operators.push(element);
+                //if closing
+                else if(element.charAt(0) == ')') {
+                    //do operations until we find open
+                    while(!operators.peek().equals("(")) {
+                        values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+                    }
+                    //discard open
+                    operators.pop();
+                }
+                //if its an operator
+                else if(isAOperator(element.charAt(0))) {
+                    //where operators is not empty and the next operator is greater than or the same operator
+                    while(!operators.isEmpty() && precendenceCheck(element.charAt(0), operators.peek().charAt(0)) >= 0) {
+                        //calc value
+                        values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+                    }
+                    //add current operator to stack
+                    operators.push(element);
+                }
+            }
+            //while operators are left
+            while(!operators.isEmpty()) {
+                //do operations
+                values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+            }
+            index++;
+            
+            double functionOfValue = -1;
+            for(LogObject lo : functionOfList) {
+                if(lo.getTime() == time) {
+                    if(lo instanceof SimpleLogObject) {
+                        functionOfValue = ((SimpleLogObject) lo).getValue();
+                    }
+                    break;
+                }
+            }
+            
+            if(functionOfValue != -1)
+                dataList.add(new FunctionOfLogObject(functionOfTag.substring(functionOfTag.indexOf(",") + 1, functionOfTag.length()) + "," + channelTag, values.pop(), functionOfValue));
+        }
+        dataMap.put(dataList);
+    }
 
     
     //Validate Equation String
@@ -85,8 +172,16 @@ public class EquationEvaluater {
         
         return doVariablesExist;
         
-        
-        
+    }
+    
+    private static String[] getFunctionOfTag(String equation) {
+        String[] str = equation.split("asFunctionOf");
+        if(str.length > 2) {
+            return new String[] {"ERROR", "ERROR"};
+        }
+        String var = str[1];
+        var = var.substring(5, var.indexOf(')'));
+        return new String[] {equation.substring(0, equation.indexOf("asFunctionOf")), var};   
     }
     
     private static String fixBuffers(String equation) {
@@ -116,6 +211,15 @@ public class EquationEvaluater {
             //if its a operator, output and add a space;
             else if(isAOperator(eq.charAt(i))) {
                 addedBuffer += eq.charAt(i) + " ";
+            }
+            //if current is a character
+            else if(isACharacter(eq.charAt(i))) {
+                //if next is a character
+                if(i != eq.length() - 1 && isACharacter(eq.charAt(i+1)))
+                    //add without space
+                    addedBuffer += eq.charAt(i);
+                else
+                    addedBuffer += eq.charAt(i) + " ";
             }
         }
         return addedBuffer;
@@ -160,12 +264,16 @@ public class EquationEvaluater {
         
     }
     
-    private static boolean isANumber(char c) {        
+    private static boolean isANumber(char c) {
         return (c >= 48 && c <= 57);
     }
     
     private static boolean isAOperator(char c) {
         return (c == '/' || c == '*' || c == '+' || c == '-' || c == '(' || c == ')');
+    }
+    
+    private static boolean isACharacter(char c) {
+        return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
     }
     
     private static double doOperation(char operator, double val1, double val2) {
