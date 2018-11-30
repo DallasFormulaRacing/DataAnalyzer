@@ -315,16 +315,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         fileChooser = new javax.swing.JFileChooser();
         chartFrame = new javax.swing.JInternalFrame();
-        jLabel1 = new javax.swing.JLabel();
-        xCordLabel = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        yCordLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        averageText = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        maxText = new javax.swing.JLabel();
-        minText = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -334,6 +324,17 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane4 = new javax.swing.JScrollPane();
         staticMarkersList = new javax.swing.JList<>();
         searchField = new javax.swing.JTextField();
+        statisticsPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        xCordLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        yCordLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        maxText = new javax.swing.JLabel();
+        averageText = new javax.swing.JLabel();
+        minText = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         importCSVBtn = new javax.swing.JMenuItem();
@@ -361,19 +362,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             .addGap(0, 566, Short.MAX_VALUE)
         );
 
-        jLabel1.setText("X Cord:");
-
-        xCordLabel.setText("jLabel2");
-
-        jLabel2.setText("Y Cord:");
-
-        yCordLabel.setText("jLabel2");
-
-        jLabel3.setText("Average:");
-
-        jLabel5.setText("Max: ");
-
-        jLabel6.setText("Min: ");
+        getContentPane().add(chartFrame, new org.netbeans.lib.awtextra.AbsoluteConstraints(201, 6, -1, -1));
 
         jPanel1.setMaximumSize(new java.awt.Dimension(177, 32767));
         jPanel1.setPreferredSize(new java.awt.Dimension(177, 608));
@@ -446,6 +435,83 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     .addContainerGap()))
         );
 
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 6, 189, 640));
+
+        jLabel1.setText("X Cord:");
+
+        xCordLabel.setText("jLabel2");
+
+        jLabel2.setText("Y Cord:");
+
+        yCordLabel.setText("jLabel2");
+
+        jLabel3.setText("Average:");
+
+        jLabel5.setText("Max: ");
+
+        jLabel6.setText("Min: ");
+
+        maxText.setText("max");
+
+        averageText.setText("acg");
+
+        minText.setText("min");
+
+        javax.swing.GroupLayout statisticsPanelLayout = new javax.swing.GroupLayout(statisticsPanel);
+        statisticsPanel.setLayout(statisticsPanelLayout);
+        statisticsPanelLayout.setHorizontalGroup(
+            statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(statisticsPanelLayout.createSequentialGroup()
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(6, 6, 6)
+                        .addComponent(xCordLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(averageText))
+                    .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(6, 6, 6)
+                        .addComponent(yCordLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(maxText))
+                    .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(minText)))
+                .addGap(0, 46, Short.MAX_VALUE))
+        );
+        statisticsPanelLayout.setVerticalGroup(
+            statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(statisticsPanelLayout.createSequentialGroup()
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(xCordLabel)
+                    .addComponent(jLabel3)
+                    .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel5)
+                        .addComponent(averageText)
+                        .addComponent(maxText)))
+                .addGap(6, 6, 6)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(yCordLabel)
+                    .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel6)
+                        .addComponent(minText)))
+                .addGap(0, 12, Short.MAX_VALUE))
+        );
+
+        averageText.getAccessibleContext().setAccessibleName("");
+
+        getContentPane().add(statisticsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 600, -1, 50));
+
         fileMenu.setText("File");
 
         importCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
@@ -494,65 +560,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         menuBar.add(viewMenu);
 
         setJMenuBar(menuBar);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chartFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 899, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(xCordLabel))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(yCordLabel)))
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(averageText)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(maxText))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel6)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(minText))))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(chartFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 589, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(xCordLabel)
-                            .addComponent(jLabel3)
-                            .addComponent(averageText)
-                            .addComponent(jLabel5)
-                            .addComponent(maxText))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(yCordLabel)
-                            .addComponent(jLabel6)
-                            .addComponent(minText)))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 640, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -897,8 +904,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
     }
     
+    //updates the statistics panel
     private void updateStatistics(String tag) {
+        //get the data list thats showing
         List<LogObject> data = dataMap.getList(tag);
+        //variables that hold average, min, and max
         double avg = 0;
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
@@ -913,6 +923,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         avg /= data.size();
         
+        //set the text values, format to two decimal places
         averageText.setText(String.format("%.2f", avg));
         maxText.setText(String.format("%.2f", max));
         minText.setText(String.format("%.2f", min));
