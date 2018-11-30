@@ -188,15 +188,28 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         LinkedList<LogObject> data = dataMap.getList(tag);
         // Declare the series to add the data elements to
         final XYSeries series = new XYSeries("");
-
-        // We could make a XYSeries Array if we wanted to show different lap data
-        // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-        // Iterate through each data element in the received dataMap LinkedList
-        for (LogObject d : data) {
-            //Get the x and y values by seprating them by the comma
-            String[] values = d.toString().split(",");
-            //Add the x and y value to the series
-            series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
+        
+        //if tag contains time then its not a function of another dataset
+        if(tag.contains("Time")) {
+            // We could make a XYSeries Array if we wanted to show different lap data
+            // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+            // Iterate through each data element in the received dataMap LinkedList
+            for (LogObject d : data) {
+                //Get the x and y values by seprating them by the comma
+                String[] values = d.toString().split(",");
+                //Add the x and y value to the series
+                series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
+            }
+        } else {
+            // We could make a XYSeries Array if we wanted to show different lap data
+            // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+            // Iterate through each data element in the received dataMap LinkedList
+            for (LogObject d : data) {
+                //Get the x and y values by seprating them by the comma
+                String[] values = d.toString().split(",");
+                //Add the x and y value to the series
+                series.add(Double.parseDouble(values[0]), Double.parseDouble(values[1]));
+            }
         }
 
 //      Each series in the series array would have the lap data from laps ary
@@ -768,7 +781,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         String[] values = line.split(DELIMITER);
                         // And add the values to the hashmap with their correct tag
                         // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                        dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                        if(tag.contains("Time"))
+                            dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                        else
+                            dataMap.put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
                     } else {
                         ValueMarker v = new ValueMarker(Double.parseDouble(line));
                         v.setPaint(Color.BLUE);
