@@ -68,6 +68,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public DataAnalyzer() {
         initComponents();
 
+        //disable the layout manager which essentially makes the frame an absolute positioning frame
+        this.setLayout(null);
+        
         // Create a new hash map
         dataMap = new CategoricalHashMap();
 
@@ -126,7 +129,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
         // Set the size of the panel
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+        chartPanel.setSize(new java.awt.Dimension(800, 600));
 
         // Mouse listener
         chartPanel.addChartMouseListener(this);
@@ -161,7 +164,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
         // Set the size of the panel
-        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+        chartPanel.setSize(new java.awt.Dimension(800, 600));
 
         // Mouse listener
         chartPanel.addChartMouseListener(this);
@@ -622,13 +625,33 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_saveMenuButtonClicked
 
     private void fullscreenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fullscreenMenuItemActionPerformed
+        //get the dimensions of the screen size
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int origWidth = staticMarkersList.getWidth();
-        this.setSize(screenSize.width, screenSize.height);
-        dataList.setSize(origWidth, dataList.getHeight());
-        lapList.setSize(origWidth, lapList.getHeight());
-        staticMarkersList.setSize(origWidth, staticMarkersList.getHeight());
-        System.out.println(dataList.getWidth());
+        
+        //if fullscreen
+        if(this.getSize().width == screenSize.width && this.getSize().height == screenSize.height) {
+            //set these sizes
+            this.setSize(1100, 700);
+            fullscreenMenuItem.setText("Fullscreen");
+            chartFrame.setSize(new Dimension(899, 589));
+            chartPanel.setSize(new java.awt.Dimension(899, 589));
+            int x = chartFrame.getX();
+            int y = chartFrame.getY() + chartFrame.getHeight();
+            statisticsPanel.setLocation(x, y);
+        }
+        //if we are not already full screen
+        else {
+            //set these sizes
+            this.setSize(screenSize.width, screenSize.height);
+            fullscreenMenuItem.setText("Minimize");
+            chartPanel.setSize(new Dimension(screenSize.width - chartPanel.getX(), (screenSize.width - chartPanel.getX()) / 16 * 9));
+            chartFrame.setSize(new Dimension(screenSize.width - chartFrame.getX(), (screenSize.width - chartFrame.getX()) / 16 * 9));
+
+            int x = chartFrame.getX();
+            int y = chartFrame.getY() + chartFrame.getHeight();
+            statisticsPanel.setLocation(x, y);
+            chartFrame.setContentPane(chartPanel);
+        }
     }//GEN-LAST:event_fullscreenMenuItemActionPerformed
 
     private void dataListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataListKeyReleased
