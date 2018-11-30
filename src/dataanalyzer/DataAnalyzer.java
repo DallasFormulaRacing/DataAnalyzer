@@ -381,10 +381,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         fullscreenMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setMinimumSize(new java.awt.Dimension(1100, 700));
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setResizable(false);
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        chartFrame.setPreferredSize(new java.awt.Dimension(500, 650));
+        chartFrame.setPreferredSize(new java.awt.Dimension(899, 589));
         chartFrame.setVisible(true);
 
         javax.swing.GroupLayout chartFrameLayout = new javax.swing.GroupLayout(chartFrame.getContentPane());
@@ -402,7 +404,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         jPanel1.setMaximumSize(new java.awt.Dimension(177, 32767));
         jPanel1.setPreferredSize(new java.awt.Dimension(177, 608));
-        jPanel1.setSize(new java.awt.Dimension(177, 100));
 
         jLabel4.setText("Static Markers:");
 
@@ -653,19 +654,27 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_addMathChannel
 
     private void searchFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyReleased
+        //if the key is alphabetic
         if(Character.isAlphabetic(evt.getKeyChar())) {
+            //if the titles array is not null 
             if(titles != null) {
+                //create array list of new titles that will hold all matches
                 ArrayList<String> newTitles = new ArrayList<>();
+                //for each array element of titles array
                 for(String s : titles) {
+                    //if the element contains the search box text
                     if(s.contains(searchField.getText())) {
+                        //add it to the array list
                         newTitles.add(s);
                     }
                 }
 
+                //set the data list view to all the elements of the array list
                 dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
             }
         }
         
+        //if the search field becomes empty, set the data list to the original list
         if(searchField.getText().isEmpty()) {
             dataList.setListData(titles);
         }
@@ -706,9 +715,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_fullscreenMenuItemActionPerformed
 
     private void dataListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_dataListKeyReleased
+        //if the dataList has focus and a key is pressed
+        //get the key code
         int code = evt.getKeyCode();
+        //if the data list has an index that is selected
         if(dataList.getSelectedIndex() > -1) {
+            //depending on the code
             switch(code) {
+                //if its backspace, remove the item from the datamap
                 case KeyEvent.VK_BACKSPACE : dataMap.remove(titleToTag(dataList.getSelectedValue())); break;
             }
         }
@@ -867,24 +881,39 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }
     
+    //saves the file to the disk
     private void saveFile(String filename) {
+        //get the string of the data
         String sb = getStringOfData();
+        //open the file choser
         JFileChooser chooser = new JFileChooser();
+        //set the directory
         chooser.setCurrentDirectory(new File(filename));
+        //variable that holds result
         int retrival = chooser.showSaveDialog(null);
+        //if its approved
         if (retrival == JFileChooser.APPROVE_OPTION) {
+            //if the selected file is a .csv file
             if(!chooser.getSelectedFile().toString().contains(".csv")){
+                //try to open a file writer
                 try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".csv")) {
+                    //write the data
                     fw.write(sb);
+                    //close the file writer
                     fw.close();
+                //exception handling
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
+             //if its not a csv file
             } else {
+                //try to write a file without an extension, it will not be openable unless converted later
                 try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
-
+                    //write the data
                     fw.write(sb);
+                    //close the writer
                     fw.close();
+                //exception handling
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -978,15 +1007,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         double avg = 0;
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
+        //for each logobject in the list we got
         for(LogObject lo : data) {
+            //if the LogObject is an instance of a SimpleLogObject
             if(lo instanceof SimpleLogObject) {
+                //add all the values to average
                 avg += ((SimpleLogObject) lo).getValue();
+                //if the current object is less than the current min, update min
                 if(((SimpleLogObject) lo).getValue() < min)
                     min = ((SimpleLogObject) lo).getValue();
+                //if the current object is greater than the current max, update max
                 if(((SimpleLogObject) lo).getValue() > max)
                     max = ((SimpleLogObject) lo).getValue();
             }
         }
+        //divide average by number of objects we added
         avg /= data.size();
         
         //set the text values, format to two decimal places
@@ -1005,7 +1040,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
-    private javax.swing.JMenuItem importCSVBtn;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1020,9 +1054,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel maxText;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JLabel minText;
+    private javax.swing.JMenuItem newImportMenuItem;
+    private javax.swing.JMenuItem openCSVBtn;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JTextField searchField;
     private javax.swing.JList<String> staticMarkersList;
+    private javax.swing.JPanel statisticsPanel;
     private javax.swing.JMenu viewMenu;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
