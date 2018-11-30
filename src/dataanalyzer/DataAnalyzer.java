@@ -372,7 +372,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         minText = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        importCSVBtn = new javax.swing.JMenuItem();
+        openCSVBtn = new javax.swing.JMenuItem();
+        newImportMenuItem = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
@@ -549,14 +550,22 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         fileMenu.setText("File");
 
-        importCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        importCSVBtn.setText("Import CSV");
-        importCSVBtn.addActionListener(new java.awt.event.ActionListener() {
+        openCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openCSVBtn.setText("Open CSV");
+        openCSVBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importCSVBtnClicked(evt);
+                openCSVBtnClicked(evt);
             }
         });
-        fileMenu.add(importCSVBtn);
+        fileMenu.add(openCSVBtn);
+
+        newImportMenuItem.setText("New Import");
+        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newImportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newImportMenuItem);
 
         saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
@@ -599,7 +608,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void importCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importCSVBtnClicked
+    private void openCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCSVBtnClicked
         // TODO add your handling code here:
 
         // Open a separate dialog to select a .csv file
@@ -637,7 +646,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
             importCSV(chosenFilePath);
         }
-    }//GEN-LAST:event_importCSVBtnClicked
+    }//GEN-LAST:event_openCSVBtnClicked
 
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
         new MathChannelDialog(dataMap).setVisible(true);
@@ -704,6 +713,25 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         }
     }//GEN-LAST:event_dataListKeyReleased
+
+    private void newImportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newImportMenuItemActionPerformed
+        //use the open CSV method to load up the CSV
+        openCSVBtnClicked(evt);
+        //if nothing was loaded do not try to do math channels
+        if(dataMap.isEmpty())
+            return;
+        //Perform Operations
+        //TODO: FILTERING
+        EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataMap, "CoolantCelcius");
+        
+        //Create Distance Channels for all datasets that do not contain "Time"
+        for(int i = 0; i < dataMap.table.length; i++) {
+            if(dataMap.table[i] != null && !dataMap.table[i].isEmpty() && dataMap.table[i].getFirst().getTAG().contains("Time")) {
+                if(!dataMap.table[i].getFirst().getTAG().equals("Time,Distance"))
+                    EquationEvaluater.evaluate("$(" + dataMap.table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", dataMap, dataMap.table[i].getFirst().getTAG().substring(dataMap.table[i].getFirst().getTAG().indexOf(",") + 1, dataMap.table[i].getFirst().getTAG().length()));
+            }
+        }
+    }//GEN-LAST:event_newImportMenuItemActionPerformed
 
     /**
      * @param args the command line arguments
