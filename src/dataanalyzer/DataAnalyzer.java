@@ -21,6 +21,8 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -62,6 +64,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //Stores all the static markers the user has created
     CategoricalHashTable<CategorizedValueMarker> staticMarkers;
     
+    //Stores the vehicle data
+    VehicleData vehicleData;
+    
     //Stores the array of String in the listview of tags
     String[] titles;
 
@@ -73,6 +78,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Create a new hash map
         dataMap = new CategoricalHashMap();
+        
+        //create a new instance of the vehicle data
+        vehicleData = new VehicleData();
 
         //on new element entry of dataMap, update the view
         dataMap.addTagSizeChangeListener(new HashMapTagSizeListener() {
@@ -372,17 +380,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         minText = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        openCSVBtn = new javax.swing.JMenuItem();
         newImportMenuItem = new javax.swing.JMenuItem();
+        openCSVBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
+        vehicleMenu = new javax.swing.JMenu();
+        newVehicleMenuItem = new javax.swing.JMenuItem();
+        saveVehicleMenuItem = new javax.swing.JMenuItem();
+        importVehicleMenuItem = new javax.swing.JMenuItem();
+        editVehicleMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
-        setPreferredSize(new java.awt.Dimension(1100, 700));
         setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -551,6 +563,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         fileMenu.setText("File");
 
+        newImportMenuItem.setText("New Import");
+        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newImportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newImportMenuItem);
+
         openCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openCSVBtn.setText("Open CSV");
         openCSVBtn.addActionListener(new java.awt.event.ActionListener() {
@@ -559,14 +579,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         fileMenu.add(openCSVBtn);
-
-        newImportMenuItem.setText("New Import");
-        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newImportMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(newImportMenuItem);
 
         saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
@@ -604,14 +616,48 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         menuBar.add(viewMenu);
 
+        vehicleMenu.setText("Vehicle");
+
+        newVehicleMenuItem.setText("New Vehicle");
+        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newVehicleMenuItemActionPerformed(evt);
+            }
+        });
+        vehicleMenu.add(newVehicleMenuItem);
+
+        saveVehicleMenuItem.setText("Save Vehicle");
+        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveVehicleMenuItemActionPerformed(evt);
+            }
+        });
+        vehicleMenu.add(saveVehicleMenuItem);
+
+        importVehicleMenuItem.setText("Import Vehicle");
+        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importVehicleMenuItemActionPerformed(evt);
+            }
+        });
+        vehicleMenu.add(importVehicleMenuItem);
+
+        editVehicleMenuItem.setText("Edit Vehicle");
+        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editVehicleMenuItemActionPerformed(evt);
+            }
+        });
+        vehicleMenu.add(editVehicleMenuItem);
+
+        menuBar.add(vehicleMenu);
+
         setJMenuBar(menuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void openCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCSVBtnClicked
-        // TODO add your handling code here:
-
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
 
@@ -650,7 +696,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_openCSVBtnClicked
 
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
-        new MathChannelDialog(dataMap).setVisible(true);
+        new MathChannelDialog(dataMap, vehicleData).setVisible(true);
     }//GEN-LAST:event_addMathChannel
 
     private void searchFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyReleased
@@ -747,6 +793,128 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }//GEN-LAST:event_newImportMenuItemActionPerformed
 
+    private void newVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleMenuItemActionPerformed
+        //open vehicle data dialog
+        new VehicleDataDialog(vehicleData, "Create").setVisible(true);
+    }//GEN-LAST:event_newVehicleMenuItemActionPerformed
+
+    private void importVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importVehicleMenuItemActionPerformed
+        //open file for vehicleData
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File chosenFile = getSelectedFile();
+
+                // Make sure that the chosen file exists
+                if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
+                    String filePath = chosenFile.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    String fileExtension = filePath.substring(lastIndex,
+                            filePath.length());
+
+                    // approve selection if it is a .csv file
+                    if (fileExtension.equals(".vd")) {
+                        super.approveSelection();
+                    } else {
+                        // do nothing - that selection should not be approved
+                    }
+
+                }
+            }
+        };
+
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+            importVehicleData(chosenFilePath);
+        }
+    }//GEN-LAST:event_importVehicleMenuItemActionPerformed
+
+    private void editVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editVehicleMenuItemActionPerformed
+        //open VehicleDataDialog
+        new VehicleDataDialog(vehicleData, "Apply").setVisible(true);
+    }//GEN-LAST:event_editVehicleMenuItemActionPerformed
+
+    private void saveVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveVehicleMenuItemActionPerformed
+        //save vehicle dynamic data
+        saveVehicleData("");
+    }//GEN-LAST:event_saveVehicleMenuItemActionPerformed
+
+    private void importVehicleData(String filepath) {
+        
+        //create scanner to read file
+        Scanner scanner = null;
+        try {
+            //try to initiate with given filepath
+            scanner = new Scanner(new File(filepath));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            //TODO:Message Box
+        }
+        
+        //if failed to load, leave method
+        if(scanner == null)
+            return;
+        
+        //string builder for creating string of data
+        StringBuilder sb = new StringBuilder("");
+        while(scanner.hasNextLine()) {
+            //append the next line followed by a new line char
+            sb.append(scanner.nextLine());
+            sb.append("\n");
+        }
+        
+        //give the data to the vehicleData class to create
+        vehicleData.applyVehicleData(sb.toString());
+        
+    }
+    
+    private void saveVehicleData(String filename) {
+        //get the string of the data
+        String sb = vehicleData.getStringOfData();
+        //open the file choser
+        JFileChooser chooser = new JFileChooser();
+        //set the directory
+        chooser.setCurrentDirectory(new File(filename));
+        //variable that holds result
+        int retrival = chooser.showSaveDialog(null);
+        //if its approved
+        if (retrival == JFileChooser.APPROVE_OPTION) {
+            //if the selected file is a .csv file
+            if(!chooser.getSelectedFile().toString().contains(".vd")){
+                //try to open a file writer
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".vd")) {
+                    //write the data
+                    fw.write(sb);
+                    //close the file writer
+                    fw.close();
+                //exception handling
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+             //if its not a csv file
+            } else {
+                //try to write a file without an extension, it will not be openable unless converted later
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
+                    //write the data
+                    fw.write(sb);
+                    //close the writer
+                    fw.close();
+                //exception handling
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            
+        }
+    }
     /**
      * @param args the command line arguments
      */
@@ -1037,9 +1205,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JInternalFrame chartFrame;
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JMenuItem editVehicleMenuItem;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
+    private javax.swing.JMenuItem importVehicleMenuItem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1055,11 +1225,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JLabel minText;
     private javax.swing.JMenuItem newImportMenuItem;
+    private javax.swing.JMenuItem newVehicleMenuItem;
     private javax.swing.JMenuItem openCSVBtn;
     private javax.swing.JMenuItem saveMenuButton;
+    private javax.swing.JMenuItem saveVehicleMenuItem;
     private javax.swing.JTextField searchField;
     private javax.swing.JList<String> staticMarkersList;
     private javax.swing.JPanel statisticsPanel;
+    private javax.swing.JMenu vehicleMenu;
     private javax.swing.JMenu viewMenu;
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;

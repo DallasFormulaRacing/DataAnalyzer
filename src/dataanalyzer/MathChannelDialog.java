@@ -21,6 +21,8 @@ public class MathChannelDialog extends javax.swing.JFrame {
    
     int lastIndex;
     CategoricalHashMap dataMap;
+    VehicleData vehicleData;
+    
     /**
      * Creates new form MathChannelDialog
      */
@@ -38,6 +40,21 @@ public class MathChannelDialog extends javax.swing.JFrame {
         initComponents();
         lastIndex = 0;
         this.dataMap = dataMap;
+        vehicleData = new VehicleData();
+        //add the variables into the list
+        configureVariablesList();
+        //listen to when the caret is updated
+        equationField.addCaretListener((CaretEvent e) -> {
+            lastIndex = e.getDot();
+        });
+    }
+    
+    
+    public MathChannelDialog(CategoricalHashMap dataMap, VehicleData vehicleData) {
+        initComponents();
+        lastIndex = 0;
+        this.dataMap = dataMap;
+        this.vehicleData = vehicleData;
         //add the variables into the list
         configureVariablesList();
         //listen to when the caret is updated
@@ -179,7 +196,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
         //remove all spaces from string.
         String eq = equationField.getText();
         //Check the validity of the string
-        EquationEvaluater.evaluate(eq, dataMap, channelTitleText.getText());
+        EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText());
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
@@ -196,7 +213,10 @@ public class MathChannelDialog extends javax.swing.JFrame {
     //Update variables list, handle list onclicks
     private void configureVariablesList() {
         //set the variables list to all the tags from the datamap
-        availableVariablesList.setListData(dataMap.tags.toArray(new String[dataMap.tags.size()]));
+        ArrayList<String> variablesList = new ArrayList<>();
+        variablesList.addAll(dataMap.tags);
+        variablesList.addAll(vehicleData.getKeySet());
+        availableVariablesList.setListData(variablesList.toArray(new String[dataMap.tags.size() + vehicleData.getKeySet().size()]));
         
         //on click of an item of the variables list
         availableVariablesList.addListSelectionListener((ListSelectionEvent e) -> {
@@ -204,8 +224,11 @@ public class MathChannelDialog extends javax.swing.JFrame {
             if(!e.getValueIsAdjusting() && availableVariablesList.getSelectedValue() != null) {
                 //get the string of the equation field
                 String str = equationField.getText();
-                //insert the variable string into the string
-                str = str.substring(0, lastIndex) + "$(" + availableVariablesList.getSelectedValue() + ")" + str.substring(lastIndex);
+                if(availableVariablesList.getSelectedValue().contains(","))
+                    //insert the variable string into the string
+                    str = str.substring(0, lastIndex) + "$(" + availableVariablesList.getSelectedValue() + ")" + str.substring(lastIndex);
+                else
+                    str = str.substring(0, lastIndex) + "&(" + availableVariablesList.getSelectedValue() + ")" + str.substring(lastIndex);
                 //set the text value of the field
                 equationField.setText(str);
                 //clear the list selection

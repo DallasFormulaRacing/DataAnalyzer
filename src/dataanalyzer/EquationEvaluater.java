@@ -17,13 +17,18 @@ import java.util.Stack;
  */
 public class EquationEvaluater {
 
+    //if vehicleData is not provided, provide an empty copy
     public static void evaluate(String eq, CategoricalHashMap dataMap, String channelTag) {
+        evaluate(eq, dataMap, new VehicleData(), channelTag);
+    }
+    
+    public static void evaluate(String eq, CategoricalHashMap dataMap, VehicleData vehicleData, String channelTag) {
         String equationsStr = fixBuffers(eq);
         if(equationsStr.contains("asFunctionOf")) {
-            createFunctionOf(equationsStr, dataMap, channelTag);
+            createFunctionOf(equationsStr, dataMap, vehicleData, channelTag);
             return;
         }
-        int varCount = validateEquation(equationsStr, dataMap);
+        int varCount = validateEquation(equationsStr, dataMap, vehicleData);
         int index = 0;
         LinkedList<LogObject> dataList = new LinkedList<>();
         while(index < varCount) {
@@ -44,6 +49,15 @@ public class EquationEvaluater {
                         values.push(((SimpleLogObject) lo).value);
                     else
                         break;
+                }
+                //if the element is a vehicle variables
+                else if(element.charAt(0) == '&') {
+                    //get the key
+                    String key = element.substring(2, element.length() - 1);
+                    //ask vehicle data for associating value
+                    double value = vehicleData.get(key);
+                    //push that value to the stack
+                    values.push(value);
                 }
                 //if its open parentheses
                 else if(element.charAt(0) == '(')
@@ -80,7 +94,7 @@ public class EquationEvaluater {
         
     }
     
-    private static void createFunctionOf(String eq, CategoricalHashMap dataMap, String channelTag) {
+    private static void createFunctionOf(String eq, CategoricalHashMap dataMap, VehicleData vehicleData, String channelTag) {
         //get the new equation and tag of the data set we are creating a function opf
         String[] equationAndVar = getFunctionOfTag(eq);
         //store those locally
@@ -95,7 +109,7 @@ public class EquationEvaluater {
         if(functionOfList == null) {
             return;
         }
-        int varCount = validateEquation(equationsStr, dataMap);
+        int varCount = validateEquation(equationsStr, dataMap, vehicleData);
         int index = 0;
         LinkedList<LogObject> dataList = new LinkedList<>();
         while(index < varCount) {
@@ -165,8 +179,8 @@ public class EquationEvaluater {
 
     
     //Validate Equation String
-    private static int validateEquation(String equation, CategoricalHashMap dataMap) {
-        int doVariablesExist = validateVars(equation, dataMap);
+    private static int validateEquation(String equation, CategoricalHashMap dataMap, VehicleData vehicleData) {
+        int doVariablesExist = validateVars(equation, dataMap, vehicleData);
         if(doVariablesExist < 0)
             return doVariablesExist;
         
@@ -194,8 +208,8 @@ public class EquationEvaluater {
         
         String addedBuffer = "";
         for(int i = 0; i < eq.length(); i++) {
-            //if its a $ keep it and add a space
-            if(eq.charAt(i) == '$') {
+            //if its a $ or & keep it and add a space
+            if(eq.charAt(i) == '$' || eq.charAt(i) == '&') {
                 int jumpTo = eq.indexOf(")", i);
                 addedBuffer += eq.substring(i, jumpTo+1) + " ";
                 i = jumpTo;
@@ -232,20 +246,35 @@ public class EquationEvaluater {
      * @param dataMap log data to get variables from.
      * @return -1 if log data is empty, -2 if the variable does not exist, -3 if the variables are of different sizes
      */
-    private static int validateVars(String equation, CategoricalHashMap dataMap) {
+    private static int validateVars(String equation, CategoricalHashMap dataMap, VehicleData vehicleData) {
         //get all string variables from equation string
         ArrayList<String> vars = new ArrayList<>();
+        ArrayList<String> vehicleVars = new ArrayList<>();
         for(int i = 0; i < equation.length(); i++) {
             if(equation.charAt(i) == '$')
                 vars.add(equation.substring(i+2, equation.indexOf(")", i)));
+            if(equation.charAt(i) == '&')
+                vehicleVars.add(equation.substring(i+2, equation.indexOf(")", i)));
         }
         
         //see if all variables exist, we can make assumption tags list is valid if not empty
         if(dataMap.tags.isEmpty())
-            return -1;
+            if(vars.size() > 0)
+                return -1;
         else {
             for(String s : vars) {
                 if(!dataMap.tags.contains(s))
+                    return -2;
+            }
+        }
+        
+        //see if all vehicle data variables exist
+        if(vehicleData.getKeySet().isEmpty()) {
+            if(vehicleVars.size() > 0)
+                return -1;
+        } else {
+            for(String s : vehicleVars) {
+                if(!vehicleData.getKeySet().contains(s))
                     return -2;
             }
         }
