@@ -69,6 +69,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     //Stores the array of String in the listview of tags
     String[] titles;
+    
+    AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
+        new AnalysisCategory("Brakes"), new AnalysisCategory("Coolant"), 
+        new AnalysisCategory("Acceleration"), new AnalysisCategory("Endurance"), 
+        new AnalysisCategory("Skidpad")};
 
     public DataAnalyzer() {
         initComponents();
@@ -104,6 +109,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //init the array
         titles = new String[10];
+        
+        //populate category list 
+        //TODO: add tags to each list element.
+        String[] categoryListData = new String[analysisCategories.length];
+        for(int i = 0; i < analysisCategories.length; i++) {
+            categoryListData[i] = analysisCategories[i].getTitle();
+        }
+        categoryList.setListData(categoryListData);
     }
 
     private void showEmptyGraph() {
@@ -367,6 +380,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane4 = new javax.swing.JScrollPane();
         staticMarkersList = new javax.swing.JList<>();
         searchField = new javax.swing.JTextField();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        categoryList = new javax.swing.JList<>();
         statisticsPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         xCordLabel = new javax.swing.JLabel();
@@ -446,6 +461,17 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
 
+        jScrollPane3.setMaximumSize(new java.awt.Dimension(0, 0));
+        jScrollPane3.setMinimumSize(new java.awt.Dimension(0, 0));
+
+        categoryList.setSize(new java.awt.Dimension(177, 298));
+        categoryList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                categoryListKeyReleased(evt);
+            }
+        });
+        jScrollPane3.setViewportView(categoryList);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -454,14 +480,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(searchField)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel4)
-                        .addContainerGap(90, Short.MAX_VALUE))))
+                        .addContainerGap(90, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                         .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))))
         );
@@ -470,14 +497,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 455, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
                 .addComponent(jLabel4)
                 .addGap(139, 139, 139))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                    .addContainerGap(36, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addContainerGap(348, Short.MAX_VALUE)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(26, 26, 26)
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1202,6 +1231,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JLabel averageText;
+    private javax.swing.JList<String> categoryList;
     private javax.swing.JInternalFrame chartFrame;
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
@@ -1219,6 +1249,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JList<String> lapList;
     private javax.swing.JLabel maxText;
@@ -1275,6 +1306,46 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         @Override
         public String hashTag() {
             return TAG;
+        }
+    }
+    
+    private class AnalysisCategory {
+        String title;
+        ArrayList<String> TAG;
+        
+        public AnalysisCategory() {
+            title = "";
+            TAG = new ArrayList<>();
+        }
+        
+        public AnalysisCategory(String title) {
+            this.title = title;
+            TAG = new ArrayList<String>();
+        }
+        
+        public AnalysisCategory(String title, ArrayList<String> TAG) {
+            this.title = title;
+            this.TAG = TAG;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public ArrayList<String> getTAG() {
+            return TAG;
+        }
+
+        public void setTAG(ArrayList<String> TAG) {
+            this.TAG = TAG;
+        }
+        
+        public void addTag(String elem) {
+            TAG.add(elem);
         }
     }
 }
