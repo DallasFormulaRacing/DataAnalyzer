@@ -159,6 +159,43 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Set the subframe's content to be the chartpanel
         chartFrame.setContentPane(chartPanel);
     }
+    
+    private void showHistogram() {
+        String title = chartPanel.getChart().getTitle().getText();
+        String tag = titleToTag(title);
+        //update laps
+        XYSeriesCollection data = getHistogramDataCollection(tag, lapList.getSelectedIndices());
+        
+        // Gets the independent variable from the title of the data
+        String yAxis = "Instances";
+        // Gets the dependent variable from the title of the data
+        String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
+        
+        //create histogram
+        JFreeChart chart = ChartFactory.createHistogram(
+                title,
+                xAxis,
+                yAxis,
+                data,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
+        );
+        
+        //apply histogram to chart panel
+        chartPanel = new ChartPanel(chart);
+        
+        //set size
+        chartPanel.setSize(new java.awt.Dimension(800, 600));
+        
+        //set frame content
+        chartFrame.setContentPane(chartPanel);
+        
+        //update statistics panel
+        updateStatistics(tag);
+        
+    }
 
     private void setChart(String tag, int[] laps, String title) {
 
@@ -244,6 +281,63 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         graphData.addSeries(series);
         // Return the XYCollection
         return graphData;
+    }
+    
+    private XYSeriesCollection getHistogramDataCollection(String tag, int[] laps) {
+        //collection to return
+        final XYSeriesCollection graphData = new XYSeriesCollection();
+        
+        //get data from dataset
+        LinkedList<LogObject> data = dataMap.getList(tag);
+        
+        //series that will hold the data
+        final XYSeries series = new XYSeries("");
+        
+        //calculate min and max value of the data 
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
+        for(LogObject lo : data) {
+            if(lo instanceof SimpleLogObject) {
+                if(((SimpleLogObject) lo).getValue() > max)
+                    max = ((SimpleLogObject) lo).getValue();
+                if(((SimpleLogObject) lo).getValue() < min)
+                    min = ((SimpleLogObject) lo).getValue();
+            }
+        }
+        
+        //get the intervals to work with
+        double interval = max - min;
+        interval /= 50;
+        
+        //holds how many instances occured within this interval
+        int counter;
+        
+        //for each of the 50 intervals
+        for(int i = 1; i < 51; i++) {
+            //start with 0 count
+            counter = 0;
+            
+            //for each data element
+            for(LogObject lo : data) {
+                //if its a simple log object its value can be obtained
+                if(lo instanceof SimpleLogObject) {
+                    //if the value of the current object is between the interval we are searching for
+                    if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                        //increment the counter
+                        counter++;
+                    }
+                }
+            }
+            //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
+            if(counter != 0)
+                series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
+        }
+
+        
+        
+        graphData.addSeries(series);
+        return graphData;
+        
     }
 
     // When the chart is clicked
@@ -401,6 +495,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
+        histogramMenuItem = new javax.swing.JMenuItem();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
@@ -633,6 +728,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         menuBar.add(editMenu);
 
         viewMenu.setText("View");
+
+        histogramMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        histogramMenuItem.setText("Histogram");
+        histogramMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                histogramMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(histogramMenuItem);
 
         fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         fullscreenMenuItem.setText("Fullscreen");
@@ -875,6 +979,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //save vehicle dynamic data
         saveVehicleData("");
     }//GEN-LAST:event_saveVehicleMenuItemActionPerformed
+
+    private void categoryListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_categoryListKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_categoryListKeyReleased
+
+    private void histogramMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramMenuItemActionPerformed
+        showHistogram();
+    }//GEN-LAST:event_histogramMenuItemActionPerformed
 
     private void importVehicleData(String filepath) {
         
@@ -1239,6 +1351,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
+    private javax.swing.JMenuItem histogramMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
