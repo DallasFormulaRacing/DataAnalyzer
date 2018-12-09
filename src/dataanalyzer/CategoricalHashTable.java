@@ -24,14 +24,17 @@ import java.util.LinkedList;
  */
 public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     
+    //ArrayList of listeners
+    private ArrayList<HashTableTagSizeChangedListener> listeners;
+    
     //Actual table
-    LinkedList<Value>[] table;
+    private LinkedList<Value>[] table;
     
     //constant load factor. Do not exceed
     private final float loadFactor = .75f;
     
     //holds list of tags that have been entered into the CategoricalHashTable
-    ArrayList<String> tags;
+    private ArrayList<String> tags;
     
     /**
      * Constructor that defaults the HashTable size to 20 and initiates the list of tags
@@ -39,6 +42,7 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     public CategoricalHashTable() {
         table = new LinkedList[20];
         tags = new ArrayList<>();
+        listeners = new ArrayList<>();
     }
     
     /**
@@ -49,6 +53,7 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
         //sets the table to the user defined size unless its less than 20
         table = new LinkedList[Math.max(size, 20)];
         tags = new ArrayList<>();
+        listeners = new ArrayList<>();
     }
     
     /**
@@ -74,11 +79,13 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
             if(table[index] == null) {
                 table[index] = new LinkedList<>();
                 tags.add(v.hashTag());
+                broadcastSizeChange();
                 break;
             }
             //if the linked list here is empty we can put the category here
             if(table[index].isEmpty()) {
                 tags.add(v.hashTag());
+                broadcastSizeChange();
                 break;
             }
             //if the linked list here has elements of the same category as curr element, the element belongs here
@@ -123,41 +130,117 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     /**
      * Removes a given value from the table. 
      * Iterates through the table to find the tag
-     * Iterates through the list to find the element: may require Value's equals() to be overriden
+     * Iterates through the list to find the element: requires Value's equals() to be overriden
      * removes and return the element
      * @param v given a value from the user
      * @return Value removed, null if not found
      */
     public Value remove(Value v) {
+        //get orignal hash code for the value's tag
         int origIndex = Math.abs(v.hashTag().hashCode()) % table.length;
+        //if this is correct position
         if(table[origIndex] != null && !table[origIndex].isEmpty() && table[origIndex].getFirst().hashTag().equals(v.hashTag())) {
-            for(Value val : table[origIndex]) {
-                if(val.equals(v)) {
-                    table[origIndex].remove(val);
-                    return val;
+            //ask linked list to remove element
+            //linked list should iterate through and call .equals() to match v with the correct element and remove
+            boolean removed = table[origIndex].remove(v);
+            //if an element was removed
+            if(removed) {
+                //if the table list is now empty
+                if(table[origIndex].isEmpty()) {
+                    //remove the tag
+                    tags.remove(v.hashTag());
+                    //broadcast tag size changed
+                    broadcastSizeChange();
                 }
-                
+                //return element
+                return v;
             }
-            return null;
         } else {
             //linear prob
+            //move to next index
             int index = (origIndex + 1) % table.length;
             while(true) {
+                //if this is correct position
                 if(table[index] != null && !table[index].isEmpty() && table[index].getFirst().hashTag().equals(v.hashTag())) {
-                    for(Value val : table[origIndex]) {
-                        if(val.equals(v)) {
-                            table[origIndex].remove(val);
-                            return val;
+                    //ask linked list to check and remove element
+                    boolean removed = table[index].remove(v);
+                    //if we removed an element
+                    if(removed) {
+                        //if linked list is now empty
+                        if(table[index].isEmpty()) {
+                            //remove the tag
+                            tags.remove(v.hashTag());
+                            //broadcast tag size changed
+                            broadcastSizeChange();
                         }
+                        //return element
+                        return v;
                     }
+                    //if not removed return null
                     return null;
                 }
+                //if we end up at same index position as original break, tag doesnt exist
                 else if(index == origIndex)
                     break;
+                //else move to next table position
                 else
                     index = (index + 1) % table.length;
 
             }
+        }
+        //tag not found return null
+        return null;
+    }
+    
+    /**
+     * Removes a given value from the table. 
+     * Iterates through the table to find the tag
+     * clears list and return a clone
+     * @param tag tag to remove
+     * @return list of values removed, null if not found
+     */
+    public LinkedList<Value> remove(String tag) {
+        //get original index from tags hash code
+        int origIndex = Math.abs(tag.hashCode()) % table.length;
+        //if this is the correct index
+        if(table[origIndex] != null && !table[origIndex].isEmpty() && table[origIndex].getFirst().hashTag().equals(tag)) {
+            //get a clone of the list
+            LinkedList<Value> toReturn = (LinkedList<Value>) table[origIndex].clone();
+            //clear the table
+            table[origIndex].clear();
+            //remove the tag
+            tags.remove(tag);
+            //broadcast the tag size was changed
+            broadcastSizeChange();
+            //return the list
+            return toReturn;
+        } else {
+            //linear prob
+            //move to next index
+            int index = (origIndex + 1) % table.length;
+            while(true) {
+                //if this is correct position
+                if(table[index] != null && !table[index].isEmpty() && table[index].getFirst().hashTag().equals(tag)) {
+                    //get a clone of the list
+                    LinkedList<Value> toReturn = (LinkedList<Value>) table[origIndex].clone();
+                    //clear the table
+                    table[origIndex].clear();
+                    //remove the tag
+                    tags.remove(tag);
+                    //broadcast the tag size was changed
+                    broadcastSizeChange();
+                    //return the list
+                    return toReturn;
+                }
+                //else if we ended up back at original position, tag doesn't exist
+                else if(index == origIndex)
+                    break;
+                //else move to next index
+                else
+                    index = (index + 1) % table.length;
+
+            }
+            //return null, tag didn't exist
             return null;
         }
     }
@@ -242,6 +325,14 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     }
     
     /**
+     * Get all tags. Similar use as getKeySet()
+     * @return tags ArrayList
+     */
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+    
+    /**
      * gets all the elements from the HashTable that match the category given
      * @param TAG Category value. Defines which category of elements the user wants
      * @return LinkedList of objects that match the category provided by user
@@ -263,6 +354,25 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     }
     
     /**
+     * Iterates through the list of listeners and calls the sizeUpdate() method
+     */
+    private void broadcastSizeChange() {
+        //for each listener
+        for(HashTableTagSizeChangedListener listener : listeners) {
+            //call implemented method
+            listener.sizeUpdate();
+        }
+    }
+    
+    /**
+     * Adds a listener to the class
+     * @param e listener to add
+     */
+    public void addTagSizeChangeListener(HashTableTagSizeChangedListener e) {
+        listeners.add(e);
+    }
+    
+    /**
      * toString method
      * @return return a string that has the tag followed by all its elements for all the tags
      */
@@ -279,5 +389,8 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
         return returnable;
     }
     
+    public interface HashTableTagSizeChangedListener {
+        void sizeUpdate();
+    }
     
 }
