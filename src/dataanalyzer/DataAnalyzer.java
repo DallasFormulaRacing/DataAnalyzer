@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartFactory;
@@ -70,6 +72,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //Stores the array of String in the listview of tags
     String[] titles;
     
+    //Stores the current filepath
+    private String openedFilePath;
+    
+    //String array that populates the categories list
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
         new AnalysisCategory("Brakes"), new AnalysisCategory("Coolant"), 
         new AnalysisCategory("Acceleration"), new AnalysisCategory("Endurance"), 
@@ -109,6 +115,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //init the array
         titles = new String[10];
+        
+        //set the opened file path to empty string to prevent null pointer exceptions
+        openedFilePath = "";
         
         //populate category list 
         //TODO: add tags to each list element.
@@ -492,6 +501,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         newImportMenuItem = new javax.swing.JMenuItem();
         openCSVBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
+        saveAsMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
@@ -687,6 +697,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         fileMenu.setText("File");
 
+        newImportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newImportMenuItem.setText("New Import");
         newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -696,7 +707,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         fileMenu.add(newImportMenuItem);
 
         openCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        openCSVBtn.setText("Open CSV");
+        openCSVBtn.setText("Open");
         openCSVBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openCSVBtnClicked(evt);
@@ -712,6 +723,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         fileMenu.add(saveMenuButton);
+
+        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        saveAsMenuItem.setText("Save As");
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAsMenuItem);
 
         menuBar.add(fileMenu);
 
@@ -809,10 +829,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             filePath.length());
 
                     // approve selection if it is a .csv file
-                    if (fileExtension.equals(".csv")) {
+                    if (fileExtension.equals(".dfr")) {
                         super.approveSelection();
                     } else {
                         // do nothing - that selection should not be approved
+                        //TODO: Message Box here
+                        this.cancelSelection();
                     }
 
                 }
@@ -824,7 +846,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         int choice = fileChooser.showOpenDialog(null);
         if (choice == JFileChooser.APPROVE_OPTION) {
             String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
-            importCSV(chosenFilePath);
+            openedFilePath = chosenFilePath;
+            openFile(chosenFilePath);
         }
     }//GEN-LAST:event_openCSVBtnClicked
 
@@ -860,7 +883,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_searchFieldKeyReleased
 
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
-        saveFile("");
+        saveFile(openedFilePath);
     }//GEN-LAST:event_saveMenuButtonClicked
 
     private void fullscreenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fullscreenMenuItemActionPerformed
@@ -908,8 +931,43 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_dataListKeyReleased
 
     private void newImportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newImportMenuItemActionPerformed
-        //use the open CSV method to load up the CSV
-        openCSVBtnClicked(evt);
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File chosenFile = getSelectedFile();
+
+                // Make sure that the chosen file exists
+                if (chosenFile.exists()) {
+                    // Get the file extension to make sure it is .csv
+                    String filePath = chosenFile.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    String fileExtension = filePath.substring(lastIndex,
+                            filePath.length());
+
+                    // approve selection if it is a .csv file
+                    if (fileExtension.equals(".csv")) {
+                        super.approveSelection();
+                    } else {
+                        // do nothing - that selection should not be approved
+                        //TODO: Message Box here
+                        this.cancelSelection();
+                    }
+
+                }
+            }
+        };
+        
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+            openedFilePath = chosenFilePath;
+            importCSV(chosenFilePath);
+        }
+        
         //if nothing was loaded do not try to do math channels
         if(dataMap.isEmpty())
             return;
@@ -988,8 +1046,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         showHistogram();
     }//GEN-LAST:event_histogramMenuItemActionPerformed
 
+    private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
+        //save file with no known file path. Will force method to open file chooser
+        saveFile("");
+    }//GEN-LAST:event_saveAsMenuItemActionPerformed
+
     private void importVehicleData(String filepath) {
-        
         //create scanner to read file
         Scanner scanner = null;
         try {
@@ -1144,7 +1206,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 }
             }
         } catch (FileNotFoundException x) {
-
+            //TODO: Message Box here
         }
         
     }
@@ -1191,7 +1253,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     //saves the file to the disk
-    private void saveFile(String filename) {
+    private void saveCSV(String filename) {
         //get the string of the data
         String sb = getStringOfData();
         //open the file choser
@@ -1338,6 +1400,139 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         maxText.setText(String.format("%.2f", max));
         minText.setText(String.format("%.2f", min));
     }
+    
+    //save file
+    private void saveFile(String filename) {
+        //add normal data
+        StringBuilder sb = new StringBuilder(getStringOfData());
+        //append vehicle dynamic data
+        sb.append("VEHICLEDYNAMICDATA");
+        sb.append("\n");
+        sb.append(vehicleData.getStringOfData());
+        
+        //if a filename was not provided
+        if(filename.isEmpty() || !filename.contains(".dfr")) {
+            //open the filechooser at the default directory
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new File(filename));
+            
+            //result code
+            int result = chooser.showSaveDialog(null);
+            
+            //if approved
+            if(result == JFileChooser.APPROVE_OPTION) {
+                //if the file chosen is missing the .dfr file extension, add then save
+                if(!chooser.getSelectedFile().toString().contains(".dfr")) {
+                    //try to open a file writer
+                    try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".dfr")) {
+                        //write the data
+                        fw.write(sb.toString());
+                        //close the file writer
+                        fw.close();
+                    //exception handling
+                    } catch (IOException e) {
+                        //TODO: Message Box here
+                        System.out.println(e.getMessage());
+                    }
+                }
+                else {
+                    //try to open a file writer
+                    try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
+                        //write the data
+                        fw.write(sb.toString());
+                        //close the file writer
+                        fw.close();
+                    //exception handling
+                    } catch (IOException e) {
+                        //TODO: Message Box here
+                        System.out.println(e.getMessage());
+                    }
+                }
+            } else {
+                //TODO: Message Box here
+            }
+            
+        } else { //if a filename was already provided
+            //try to write the file
+            try(FileWriter fw = new FileWriter(new File(filename))) {
+                fw.write(sb.toString());
+                fw.close();
+            } catch (IOException e) {
+                //TODO: Message Box here
+            }
+        }
+    }
+    
+    //open file
+    private void openFile(String filepath) {
+        //Scanner to handle the file
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File(filepath));
+        } catch(FileNotFoundException e) {
+            //TODO: Message Box here
+        }
+        
+        //if we failed to open the file exit
+        if(scanner == null) {
+            return;
+        }
+        
+        //is the current item a marker
+        boolean isMarker = false;
+        //current tag
+        String tag = "";
+        // While there is a next line
+        //handles csv data and markers
+        while (scanner.hasNextLine()) {
+            // Store the line
+            String line = scanner.nextLine();
+            // If the line represents an END of the current tag
+            if (line.equals("END")) {
+                isMarker = false;
+                // Necessary so that END statements don't get added to 'tags' ArrayList
+            } else if(line.isEmpty()) {
+                continue;
+            }
+            else if(line.equals("MARKERS")) {
+                isMarker = true;
+            } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                break;
+            } else if (Character.isLetter(line.charAt(0))) {
+                // If the first character is a letter
+                // Then add the line to the tags list
+                tag = line;
+            } else if (Character.isDigit(line.charAt(0))) {
+                if(!isMarker) {
+                    // If the first character is a digit
+                    // Then divide the list in 2 values by ,
+                    final String DELIMITER = ",";
+                    String[] values = line.split(DELIMITER);
+                    // And add the values to the hashmap with their correct tag
+                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                    if(tag.contains("Time"))
+                        dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                    else
+                        dataMap.put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                } else {
+                    ValueMarker v = new ValueMarker(Double.parseDouble(line));
+                    v.setPaint(Color.BLUE);
+                    staticMarkers.put(new CategorizedValueMarker(tag, v));
+                }
+            }
+        }
+        
+        //string builder for creating string of data
+        StringBuilder vd = new StringBuilder("");
+        while(scanner.hasNextLine()) {
+            //append the next line followed by a new line char
+            vd.append(scanner.nextLine());
+            vd.append("\n");
+        }
+        
+        //give the data to the vehicleData class to create
+        vehicleData.applyVehicleData(vd.toString());
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1371,6 +1566,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JMenuItem newImportMenuItem;
     private javax.swing.JMenuItem newVehicleMenuItem;
     private javax.swing.JMenuItem openCSVBtn;
+    private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
     private javax.swing.JTextField searchField;
