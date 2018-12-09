@@ -121,6 +121,85 @@ public class CategoricalHashTable<Value extends CategoricalHashTableInterface> {
     }
     
     /**
+     * Removes a given value from the table. 
+     * Iterates through the table to find the tag
+     * Iterates through the list to find the element: may require Value's equals() to be overriden
+     * removes and return the element
+     * @param v given a value from the user
+     * @return Value removed, null if not found
+     */
+    public Value remove(Value v) {
+        int origIndex = Math.abs(v.hashTag().hashCode()) % table.length;
+        if(table[origIndex] != null && !table[origIndex].isEmpty() && table[origIndex].getFirst().hashTag().equals(v.hashTag())) {
+            for(Value val : table[origIndex]) {
+                if(val.equals(v)) {
+                    table[origIndex].remove(val);
+                    return val;
+                }
+                
+            }
+            return null;
+        } else {
+            //linear prob
+            int index = (origIndex + 1) % table.length;
+            while(true) {
+                if(table[index] != null && !table[index].isEmpty() && table[index].getFirst().hashTag().equals(v.hashTag())) {
+                    for(Value val : table[origIndex]) {
+                        if(val.equals(v)) {
+                            table[origIndex].remove(val);
+                            return val;
+                        }
+                    }
+                    return null;
+                }
+                else if(index == origIndex)
+                    break;
+                else
+                    index = (index + 1) % table.length;
+
+            }
+            return null;
+        }
+    }
+    
+    /**
+     * Gets a value from the table given a similar value. Requires Value's equals() to be override
+     * Iterates through the table to find the tag
+     * Iterates through the list to find the element: may require Value's equals() to be overriden
+     * @param v given a value object
+     * @return Value object from the table, null if not found
+     */
+    public Value get(Value v) {
+        int origIndex = Math.abs(v.hashTag().hashCode()) % table.length;
+        if(table[origIndex] != null && !table[origIndex].isEmpty() && table[origIndex].getFirst().hashTag().equals(v.hashTag())) {
+            for(Value val : table[origIndex]) {
+                if(val.equals(v))
+                    return val;
+            }
+            return null;
+        } else {
+            //linear prob
+            int index = (origIndex + 1) % table.length;
+            while(true) {
+                if(table[index] != null && !table[index].isEmpty() && table[index].getFirst().hashTag().equals(v.hashTag())) {
+                    for(Value val : table[origIndex]) {
+                        if(val.equals(v))
+                            return val;
+                    }
+                    return null;
+                }
+                else if(index == origIndex)
+                    break;
+                else
+                    index = (index + 1) % table.length;
+
+            }
+            return null;
+        }
+        
+    }
+    
+    /**
      * Creates new table twice the size and inserts elements into that table.
      * Now there are more open spots for the put to find, load factor is lowered again
      */
