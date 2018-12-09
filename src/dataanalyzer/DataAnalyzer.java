@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartFactory;
@@ -451,7 +452,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     col2.addSeries(col.getSeries(plotName));
                     //insert the marker data into current index
                     staticMarkerData[k] = "(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
-                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ")";
+                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ") " + v.getNotes();
 
                 }
                 k++;
@@ -465,7 +466,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         
     }
-
+ 
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -560,6 +561,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane4.setSize(new java.awt.Dimension(43, 128));
 
         staticMarkersList.setSize(new java.awt.Dimension(177, 128));
+        staticMarkersList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                staticMarkersListMouseClicked(evt);
+            }
+        });
+        staticMarkersList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                staticMarkersListKeyReleased(evt);
+            }
+        });
         jScrollPane4.setViewportView(staticMarkersList);
 
         searchField.setToolTipText("Search");
@@ -1054,6 +1065,50 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         saveFile("");
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
+    private void staticMarkersListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_staticMarkersListMouseClicked
+        //Determine how many clicks, and if double click: open notes dialog
+        //get list
+        JList list = (JList)evt.getSource();
+        //if two clicks
+        if (evt.getClickCount() == 2) {
+            //get indices of items selected
+            int[] selected = list.getSelectedIndices();
+            //create same length array of CategorizedValueMarkers
+            CategorizedValueMarker[] markers = new CategorizedValueMarker[selected.length];
+            //get the list model to get element at index
+            ListModel model = list.getModel();
+            //for each seleced index
+            for(int i = 0; i < selected.length; i++) {
+                //get the corresponding CategorizedValueMarker
+                markers[i] = getMarkerFromString(titleToTag(), "" + model.getElementAt(selected[i]));
+            }
+            
+            //launch notes dialog
+            new MarkerNotesDialog(markers).setVisible(true);
+        }
+        
+    }//GEN-LAST:event_staticMarkersListMouseClicked
+
+    private void staticMarkersListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_staticMarkersListKeyReleased
+        //if the dataList has focus and a key is pressed
+        //get the key code
+        int code = evt.getKeyCode();
+        //if the data list has an index that is selected
+        if(staticMarkersList.getSelectedIndex() > -1) {
+            //get list and model
+            JList list = (JList) evt.getSource();
+            ListModel model = list.getModel();
+            //depending on the code
+            switch(code) {
+                //if its backspace, remove the item from the datamap
+                case KeyEvent.VK_BACKSPACE : 
+                    staticMarkers.remove(getMarkerFromString(titleToTag(), "" +
+                            model.getElementAt(staticMarkersList.getSelectedIndex()))); 
+                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot()); break;
+            }
+        }
+    }//GEN-LAST:event_staticMarkersListKeyReleased
+
     private void importVehicleData(String filepath) {
         //create scanner to read file
         Scanner scanner = null;
@@ -1156,8 +1211,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
     }
     
+    //dafault parameters for titleToTag
+    private String titleToTag() {
+        return titleToTag("");
+    }
+    
     //given a chart title or dataList title we can create the tag
     private String titleToTag(String title) {
+        //if empty get from chart
+        if(title.isEmpty()) {
+            title = chartPanel.getChart().getTitle().getText();
+        }
+        
         String[] split = title.split(" ");
         if(split.length == 3) {
             return split[2] + "," + split[0];
@@ -1319,7 +1384,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             if(markers != null) {
                 //for each marker we have output it
                 for(CategorizedValueMarker marker : markers) {
-                    toReturn += marker.getMarker().getValue() + "\n";
+                    toReturn += marker.getMarker().getValue() + "," + marker.getNotes() + "\n";
                 }
             }
             
@@ -1518,9 +1583,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     else
                         dataMap.put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
                 } else {
-                    ValueMarker v = new ValueMarker(Double.parseDouble(line));
-                    v.setPaint(Color.BLUE);
-                    staticMarkers.put(new CategorizedValueMarker(tag, v));
+                    String[] split = line.split(",");
+                    if(split.length == 2) {
+                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                        v.setPaint(Color.BLUE);
+                        staticMarkers.put(new CategorizedValueMarker(tag, v, split[1]));
+                    } else if(split.length == 1) {
+                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                        v.setPaint(Color.BLUE);
+                        staticMarkers.put(new CategorizedValueMarker(tag, v));
+                    }
                 }
             }
         }
@@ -1535,6 +1607,20 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //give the data to the vehicleData class to create
         vehicleData.applyVehicleData(vd.toString());
+    }
+    
+    /**
+     * 
+     * @param TAG TAG of the dataset
+     * @param s String collected from list
+     * @return CategorizedValueMarker object that has the same domain marker as the string
+     */
+    private CategorizedValueMarker getMarkerFromString(String TAG, String s) {
+        for(CategorizedValueMarker marker : staticMarkers.getList(TAG)) {
+            if(String.format("%.2f", marker.getMarker().getValue()).equals(s.substring(1, s.indexOf(','))))
+                return marker;
+        }
+        return null;
     }
 
 
@@ -1580,46 +1666,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel xCordLabel;
     private javax.swing.JLabel yCordLabel;
     // End of variables declaration//GEN-END:variables
-    
-    /**
-     * Class that holds CategorizedValueMarkers
-     * Essentially just ValueMarkers and a String that defines which category they belong to
-     */
-    private class CategorizedValueMarker implements CategoricalHashTableInterface {
-        String TAG;
-        ValueMarker marker;
-
-        public CategorizedValueMarker() {
-            TAG = "";
-            marker = null;
-        }
-
-        public CategorizedValueMarker(String TAG, ValueMarker marker) {
-            this.TAG = TAG;
-            this.marker = marker;
-        }
-
-        public String getTAG() {
-            return TAG;
-        }
-
-        public void setTAG(String TAG) {
-            this.TAG = TAG;
-        }
-
-        public ValueMarker getMarker() {
-            return marker;
-        }
-
-        public void setMarker(ValueMarker marker) {
-            this.marker = marker;
-        }
-
-        @Override
-        public String hashTag() {
-            return TAG;
-        }
-    }
     
     private class AnalysisCategory {
         String title;
