@@ -458,6 +458,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
             //set the data to the list
             staticMarkersList.setListData(staticMarkerData);
+
+        } else {
+            staticMarkersList.setListData(new String[0]);
         }
         
         
