@@ -897,8 +897,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     if (fileExtension.equals(".dfr")) {
                         super.approveSelection();
                     } else {
-                        // do nothing - that selection should not be approved
-                        //TODO: Message Box here
+                        // display error message - that selection should not be approve
+                        MessageBox error = new MessageBox("Error: Selection could not be approved");
                         this.cancelSelection();
                     }
 
@@ -1017,8 +1017,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     if (fileExtension.equals(".csv")) {
                         super.approveSelection();
                     } else {
-                        // do nothing - that selection should not be approved
-                        //TODO: Message Box here
+                        // display error message - that selection should not be approved
+                        MessageBox error = new MessageBox("Error: Wrong File Type");
                         this.cancelSelection();
                     }
 
@@ -1168,7 +1168,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             scanner = new Scanner(new File(filepath));
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
-            //TODO:Message Box
+            // error message displayed
+            MessageBox error = new MessageBox("Error: File not found");
         }
         
         //if failed to load, leave method
@@ -1325,7 +1326,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 }
             }
         } catch (FileNotFoundException x) {
-            //TODO: Message Box here
+            // Error message displayed
+            MessageBox error = new MessageBox("Error: File not found");
         }
         
     }
@@ -1562,7 +1564,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.close();
                     //exception handling
                     } catch (IOException e) {
-                        //TODO: Message Box here
+                        //error message displayed
+                        MessageBox error = new MessageBox("Error: FileWriter could not be opened");
                         System.out.println(e.getMessage());
                     }
                 }
@@ -1575,12 +1578,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.close();
                     //exception handling
                     } catch (IOException e) {
-                        //TODO: Message Box here
+                        //error message displayed
+                        MessageBox error = new MessageBox("Error: FileWriter could not be opened ");
                         System.out.println(e.getMessage());
                     }
                 }
             } else {
-                //TODO: Message Box here
+                //error message displayed
+                MessageBox error = new MessageBox("Error: File could not be approved");
             }
             
         } else { //if a filename was already provided
@@ -1589,7 +1594,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 fw.write(sb.toString());
                 fw.close();
             } catch (IOException e) {
-                //TODO: Message Box here
+                //error message displayed
+                MessageBox error = new MessageBox("Error: File could not be written to");
             }
         }
     }
@@ -1601,7 +1607,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         try {
             scanner = new Scanner(new File(filepath));
         } catch(FileNotFoundException e) {
-            //TODO: Message Box here
+            //error message displayed
+            MessageBox error = new MessageBox("Error: File could not be opened");
         }
         
         //if we failed to open the file exit

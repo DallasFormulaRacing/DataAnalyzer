@@ -194,7 +194,8 @@ public class MathChannelDialog extends javax.swing.JFrame {
         //variable that handles if equation was parsed properly so far
         
         if(channelTitleText.getText().isEmpty()) {
-            //TODO: Message Box Here
+            // error message displayed
+            MessageBox error = new MessageBox("Error: Equation not parsed properly");
             return;
         }
         //remove all spaces from string.
