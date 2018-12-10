@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -34,11 +35,13 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -207,27 +210,38 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
     }
 
-    private void setChart(String tag, int[] laps, String title) {
+    // Displays the data for all selected data types
+    private void setChart(String[] tags, int[] laps) {
 
         // Gets the specific data based on what kind of data we want to show for which 
-        final XYSeriesCollection data = getDataCollection(tag, laps);
+        XYSeriesCollection[] seriesCollection = new XYSeriesCollection[tags.length];
+        String title = "";
+        
+        // Store data for each data type in different XYSeriesCollection
+        // New title for all the Y-Axis labels added together
+        for(int i = 0; i < tags.length; i++){
+            seriesCollection[i] = getDataCollection(tags[i], laps);
+            title += tags[i].split(",")[1] + ", ";
+        }
+        
+        // Use XYPlot in JFreeChart to draw the data
+        XYPlot plot = new XYPlot();
+        for(int i = 0; i < tags.length; i++){
+            // Assign each dataset at some index
+            plot.setDataset(i, seriesCollection[i]);
+            // Label the Y-Axis for specific data set
+            plot.setRangeAxis(i, new NumberAxis(tags[i].split(",")[1]));
+            // Give the line a different color
+            plot.setRenderer(i, getNewRenderer(i));
+            // Makes sure that the Y-values for each dataset are proportional to the data inside it
+            plot.mapDatasetToRangeAxis(i, i);
+        }
+        // Just show the X-Axis data type (Time, Distance, etc)
+        plot.setDomainAxis(new NumberAxis(tags[0].split(",")[0]));
 
-        // Gets the independent variable from the title of the data
-        String xAxis = title.split(" vs ")[1];  //split title by vs, we get ["RPM", "Time"] or something like that
-        // Gets the dependent variable from the title of the data
-        String yAxis = title.split(" vs ")[0];
-
-        // Create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                title,
-                xAxis,
-                yAxis,
-                data,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false
-        );
+        // Create a new JFreeChart with the XYPlot
+        JFreeChart chart = new JFreeChart(title, getFont(), plot, true);
+        chart.setBackgroundPaint(Color.WHITE);
 
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
@@ -242,20 +256,47 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics
-        updateStatistics(tag);
+        updateStatistics(tags[0]);
         
         //draw markers
-        drawMarkers(tag, chart.getXYPlot());
+        drawMarkers(tags[0], chart.getXYPlot());
     }
 
+    // Creates a new render for a new series or data type. Gives a new color
+    private XYSplineRenderer getNewRenderer(int index){
+        Random r = new Random();
+        int rand = r.nextInt(5);
+        XYSplineRenderer sx = new XYSplineRenderer();
+        
+        switch (rand){
+            case 0:
+                sx.setSeriesFillPaint(index, Color.BLUE);
+                break;
+            case 1:
+                sx.setSeriesFillPaint(index, Color.GREEN);
+                break;
+            case 2:
+                sx.setSeriesFillPaint(index, Color.YELLOW);
+                break;
+            case 3:
+                sx.setSeriesFillPaint(index, Color.BLACK);
+                break;
+            case 4:
+                sx.setSeriesFillPaint(index, Color.ORANGE);
+                break;
+        }        
+        return sx;
+    }
+    
     private XYSeriesCollection getDataCollection(String tag, int[] laps) {
 
         // XY Series Collection allows there to be multiple data lines on the graph
-        final XYSeriesCollection graphData = new XYSeriesCollection();
+        XYSeriesCollection graphData = new XYSeriesCollection();
         // Get the list of data elements based on the tag
         LinkedList<LogObject> data = dataMap.getList(tag);
+        
         // Declare the series to add the data elements to
-        final XYSeries series = new XYSeries("");
+        final XYSeries series = new XYSeries(tag.split(",")[1]);
         
         //if tag contains time then its not a function of another dataset
         if(tag.contains("Time")) {
@@ -1397,18 +1438,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
     }
     
-    private void fillDataList(ArrayList<String> tags){
+    private void fillDataList(ArrayList<String> allTags){
         // Use the tags list to get the title for each tag
-        titles = new String[tags.size()];
+        titles = new String[allTags.size()];
 
         // Make a list of titles
         // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"
         String str = "";
         for (int i = 0; i < titles.length; i++) {
             str = "";
-            str += tags.get(i).split(",")[1];
+            str += allTags.get(i).split(",")[1];
             str += " vs ";
-            str += tags.get(i).split(",")[0];
+            str += allTags.get(i).split(",")[0];
             titles[i] = str;
         }
         // Add the list of titles to the data List View 
@@ -1420,8 +1461,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     // Passes the data type index, all the laps currently selected, and the data type name
-                    if(dataList.getSelectedIndex() != -1)
-                        setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                    if(dataList.getSelectedIndex() != -1){
+                        int[] selected = dataList.getSelectedIndices();
+                        String[] tags = new String[selected.length];
+                        for(int i = 0; i < tags.length; i++){
+                            tags[i] = allTags.get(selected[i]);
+                        }
+                        setChart(tags, lapList.getSelectedIndices());
+                    }
                 }
             }
         });
@@ -1432,7 +1479,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     // Passes the data type index, all the laps currently selected, and the data type name
-                    setChart(tags.get(dataList.getSelectedIndex()), lapList.getSelectedIndices(), dataList.getSelectedValue());
+                    int[] selected = dataList.getSelectedIndices();
+                    String[] tags = new String[selected.length];
+                    for(int i = 0; i < tags.length; i++){
+                        tags[i] = allTags.get(selected[i]);
+                    }
+                    setChart(tags, lapList.getSelectedIndices());
                 }
             }
         });
