@@ -43,6 +43,7 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
@@ -175,9 +176,13 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     private void showHistogram() {
         String title = chartPanel.getChart().getTitle().getText();
-        String tag = titleToTag(title);
+        String[] titleSplit = title.split(" vs ");
+        String[] tags = new String[titleSplit.length - 1];
+        for (int i = 0; i < titleSplit.length - 1; i++) {
+            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+        }
         //update laps
-        XYSeriesCollection data = getHistogramDataCollection(tag, lapList.getSelectedIndices());
+        XYSeriesCollection data = getHistogramDataCollection(tags, lapList.getSelectedIndices());
         
         // Gets the independent variable from the title of the data
         String yAxis = "Instances";
@@ -196,6 +201,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 false
         );
         
+        
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
         
@@ -206,7 +212,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics panel
-        updateStatistics(tag);
+        updateStatistics(tags);
         
     }
 
@@ -221,8 +227,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // New title for all the Y-Axis labels added together
         for(int i = 0; i < tags.length; i++){
             seriesCollection[i] = getDataCollection(tags[i], laps);
-            title += tags[i].split(",")[1] + ", ";
+            title += tags[i].split(",")[1] + " vs ";
         }
+        
+        //add domain
+        title += tags[0].split(",")[0];
         
         // Use XYPlot in JFreeChart to draw the data
         XYPlot plot = new XYPlot();
@@ -256,7 +265,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics
-        updateStatistics(tags[0]);
+        updateStatistics(tags);
         
         //draw markers
         drawMarkers(tags[0], chart.getXYPlot());
@@ -334,59 +343,60 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         return graphData;
     }
     
-    private XYSeriesCollection getHistogramDataCollection(String tag, int[] laps) {
+    private XYSeriesCollection getHistogramDataCollection(String[] tags, int[] laps) {
         //collection to return
         final XYSeriesCollection graphData = new XYSeriesCollection();
         
+        for(String tag : tags) {
         //get data from dataset
-        LinkedList<LogObject> data = dataMap.getList(tag);
-        
-        //series that will hold the data
-        final XYSeries series = new XYSeries("");
-        
-        //calculate min and max value of the data 
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
-        for(LogObject lo : data) {
-            if(lo instanceof SimpleLogObject) {
-                if(((SimpleLogObject) lo).getValue() > max)
-                    max = ((SimpleLogObject) lo).getValue();
-                if(((SimpleLogObject) lo).getValue() < min)
-                    min = ((SimpleLogObject) lo).getValue();
-            }
-        }
-        
-        //get the intervals to work with
-        double interval = max - min;
-        interval /= 50;
-        
-        //holds how many instances occured within this interval
-        int counter;
-        
-        //for each of the 50 intervals
-        for(int i = 1; i < 51; i++) {
-            //start with 0 count
-            counter = 0;
-            
-            //for each data element
+            LinkedList<LogObject> data = dataMap.getList(tag);
+            //series that will hold the data
+            XYSeries series = new XYSeries(tag.split(",")[1]);
+
+            //calculate min and max value of the data 
+            double min = Double.MAX_VALUE;
+            double max = Double.MIN_VALUE;
             for(LogObject lo : data) {
-                //if its a simple log object its value can be obtained
                 if(lo instanceof SimpleLogObject) {
-                    //if the value of the current object is between the interval we are searching for
-                    if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                        //increment the counter
-                        counter++;
-                    }
+                    if(((SimpleLogObject) lo).getValue() > max)
+                        max = ((SimpleLogObject) lo).getValue();
+                    if(((SimpleLogObject) lo).getValue() < min)
+                        min = ((SimpleLogObject) lo).getValue();
                 }
             }
-            //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-            if(counter != 0)
-                series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
-        }
 
-        
-        
-        graphData.addSeries(series);
+            //get the intervals to work with
+            double interval = max - min;
+            interval /= 50;
+
+            //holds how many instances occured within this interval
+            int counter;
+
+            //for each of the 50 intervals
+            for(int i = 1; i < 51; i++) {
+                //start with 0 count
+                counter = 0;
+
+                //for each data element
+                for(LogObject lo : data) {
+                    //if its a simple log object its value can be obtained
+                    if(lo instanceof SimpleLogObject) {
+                        //if the value of the current object is between the interval we are searching for
+                        if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                            //increment the counter
+                            counter++;
+                        }
+                    }
+                }
+                //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
+                if(counter != 0)
+                    series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
+            }
+
+
+
+            graphData.addSeries(series);
+        }
         return graphData;
         
     }
@@ -1491,9 +1501,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     //updates the statistics panel
-    private void updateStatistics(String tag) {
+    private void updateStatistics(String[] tags) {
+        //TODO: Find Better implementation
         //get the data list thats showing
-        List<LogObject> data = dataMap.getList(tag);
+        List<LogObject> data = dataMap.getList(tags[0]);
         //variables that hold average, min, and max
         double avg = 0;
         double min = Double.MAX_VALUE;

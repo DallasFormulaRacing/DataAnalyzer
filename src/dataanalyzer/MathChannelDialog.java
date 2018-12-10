@@ -193,6 +193,10 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private void createChannelButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createChannelButtonPressed
         //variable that handles if equation was parsed properly so far
         
+        if(channelTitleText.getText().isEmpty()) {
+            //TODO: Message Box Here
+            return;
+        }
         //remove all spaces from string.
         String eq = equationField.getText();
         //Check the validity of the string
@@ -207,7 +211,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
     private void fToCMathChannelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fToCMathChannelMenuItemActionPerformed
         //insert the farenheit to celsius equation here
-        equationField.setText(equationField.getText() + "((VAR_HERE)−32)*5/9");
+        equationField.setText(equationField.getText() + "($(Time,Coolant)-32)*(5/9)");
     }//GEN-LAST:event_fToCMathChannelMenuItemActionPerformed
 
     //Update variables list, handle list onclicks
