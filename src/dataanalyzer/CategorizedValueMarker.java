@@ -64,4 +64,13 @@ public class CategorizedValueMarker implements CategoricalHashTableInterface {
     public String hashTag() {
         return TAG;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof CategorizedValueMarker) {
+            if(this.TAG.equals(((CategorizedValueMarker) o).TAG) && this.marker.getValue() == ((CategorizedValueMarker) o).getMarker().getValue())
+                return true;
+        }
+        return false;
+    }
 }

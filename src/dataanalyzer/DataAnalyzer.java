@@ -407,8 +407,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public void chartMouseClicked(ChartMouseEvent cme) {
         // Create a static cursor that isnt cleared every time
         ValueMarker marker = new ValueMarker(xCor);
-        //static markers are blue
-        marker.setPaint(Color.BLUE);
         //calculate the tag
         String title = cme.getChart().getTitle().getText();
         //create array of tags
@@ -420,8 +418,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         for(String tag : tags) {
             //add to the list of static markers
-            staticMarkers.put(new CategorizedValueMarker(tag, marker));
+            if(staticMarkers.get(new CategorizedValueMarker(tag, marker)) == null)
+                staticMarkers.put(new CategorizedValueMarker(tag, marker));
         }
+        
+        //draw markers
+        drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
     }
 
     //when the mouse moves over the chart
