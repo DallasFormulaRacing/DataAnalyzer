@@ -28,6 +28,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jfree.chart.ChartFactory;
@@ -251,7 +252,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Create a new JFreeChart with the XYPlot
         JFreeChart chart = new JFreeChart(title, getFont(), plot, true);
         chart.setBackgroundPaint(Color.WHITE);
-
+        
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
         // Set the size of the panel
@@ -268,7 +269,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         updateStatistics(tags);
         
         //draw markers
-        drawMarkers(tags[0], chart.getXYPlot());
+        drawMarkers(tags, chart.getXYPlot());
     }
 
     // Creates a new render for a new series or data type. Gives a new color
@@ -409,10 +410,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //static markers are blue
         marker.setPaint(Color.BLUE);
         //calculate the tag
-        String tag = cme.getChart().getTitle().getText();
-        String[] arr = tag.split(" ");
-        //add to the list of static markers
-        staticMarkers.put(new CategorizedValueMarker(titleToTag(tag), marker));
+        String title = cme.getChart().getTitle().getText();
+        //create array of tags
+        String[] titleSplit = title.split(" vs ");
+        String[] tags = new String[titleSplit.length - 1];
+        for (int i = 0; i < titleSplit.length - 1; i++) {
+            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+        }
+        
+        for(String tag : tags) {
+            //add to the list of static markers
+            staticMarkers.put(new CategorizedValueMarker(tag, marker));
+        }
     }
 
     //when the mouse moves over the chart
@@ -440,12 +449,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         marker.setPaint(Color.BLACK);
         // Add a marker on the x axis given a marker. This essentially makes the marker verticle
         plot.addDomainMarker(marker);
-        
-        //calculate the tag
-        String tag = titleToTag(chart.getTitle().getText());
+       
         
         //call the method to draw the markers
-        drawMarkers(tag, plot);
+        drawMarkers(titleToTag(), plot);
         
 
         // String object that holds values for all the series on the plot.
@@ -477,42 +484,38 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         this.yCrosshair.setValue(yCor);
     }
     
-    private void drawMarkers(String tag, XYPlot plot) {
-        //get the linked list from tag
-        LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
-        //position var
-        int k = 0;
-        //if the linked list is not null
-        if(markers != null) {
-            //create string array of data
-            String[] staticMarkerData = new String[markers.size()];
-            //draw every domain marker saved for this chart and add it to an array
-            for(CategorizedValueMarker v : markers) {
-                plot.addDomainMarker(v.getMarker());
-                //create formatted string and insert into current index
-                // Repeat the loop for each series in the plot
-                for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
-                    // Get the collection from the plots data set
-                    XYSeriesCollection col = (XYSeriesCollection) plot.getDataset();
-                    // Get the plots name from the series's object
-                    String plotName = plot.getDataset().getSeriesKey(i).toString();
-                    // Create a new collection 
-                    XYSeriesCollection col2 = new XYSeriesCollection();
-                    // Add the series with the name we found to the other collection
-                    // We do this because the findYValue() method takes a collection
-                    col2.addSeries(col.getSeries(plotName));
+    private void drawMarkers(String[] tags, XYPlot plot) {
+        ArrayList<String> markerList = new ArrayList<>();
+        //which dataset we are on
+        int count = 0;
+        for(String tag : tags) {
+            //get the linked list from tag
+            LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
+            //position var
+            int k = 0;
+            //if the linked list is not null
+            if(markers != null) {
+                //draw every domain marker saved for this chart and add it to an array
+                for(CategorizedValueMarker v : markers) {
+                    v.getMarker().setPaint(getColorFromIndex(count));
+                    plot.addDomainMarker(v.getMarker());
+                    XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(count);
                     //insert the marker data into current index
-                    staticMarkerData[k] = "(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
-                            String.format("%.2f", DatasetUtilities.findYValue(col2,0,markers.get(k).getMarker().getValue())) + ") " + v.getNotes();
-
+                    markerList.add("(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
+                            String.format("%.2f", DatasetUtilities.findYValue(col,0,markers.get(k).getMarker().getValue())) + 
+                            ") " + v.getNotes());
+                    k++;
                 }
-                k++;
-            }
-            //set the data to the list
-            staticMarkersList.setListData(staticMarkerData);
 
-        } else {
+            }
+            //move to next dataset
+            count++;
+        }
+        
+        if(markerList.isEmpty()) {
             staticMarkersList.setListData(new String[0]);
+        } else {
+            staticMarkersList.setListData(markerList.toArray(new String[markerList.size()]));
         }
         
         
@@ -990,7 +993,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             //depending on the code
             switch(code) {
                 //if its backspace, remove the item from the datamap
-                case KeyEvent.VK_BACKSPACE : dataMap.remove(titleToTag(dataList.getSelectedValue())); break;
+                case KeyEvent.VK_DELETE :
+                case KeyEvent.VK_BACKSPACE : dataMap.remove(titleToTag(dataList.getSelectedValue())[0]); break;
             }
         }
     }//GEN-LAST:event_dataListKeyReleased
@@ -1121,21 +1125,73 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //get list
         JList list = (JList)evt.getSource();
         //if two clicks
-        if (evt.getClickCount() == 2) {
-            //get indices of items selected
-            int[] selected = list.getSelectedIndices();
-            //create same length array of CategorizedValueMarkers
-            CategorizedValueMarker[] markers = new CategorizedValueMarker[selected.length];
+        if (SwingUtilities.isRightMouseButton(evt)) {
             //get the list model to get element at index
             ListModel model = list.getModel();
-            //for each seleced index
+            //get indices of items selected
+            int[] selected = list.getSelectedIndices();
+            //holds how many different domains are in selected
+            int domainCount = 0;
+            //check each element, if its a duplicate
             for(int i = 0; i < selected.length; i++) {
+                boolean wasBefore = false;
+                //check every element before
+                for(int j = i - 1; j > 0; j--) {
+                    //if prev element and curr element match: fail
+                    String prev = ("" + model.getElementAt(selected[j])).substring(1, ("" + model.getElementAt(selected[j])).indexOf(','));
+                    String curr = ("" + model.getElementAt(selected[i])).substring(1, ("" + model.getElementAt(selected[i])).indexOf(','));
+                    if(prev.equals(curr)) {
+                        wasBefore = true;
+                        break;
+                    }
+                }
+                
+                //if we didnt find the same element before, 
+                if(!wasBefore)
+                    domainCount++;
+            }
+            
+            //
+            int[] selectedDomains = new int[domainCount];
+            int k = 0;
+            //get only 
+            for(int i = 0; i < selected.length; i++) {
+                boolean wasBefore = false;
+                //check every element before
+                for(int j = i - 1; j > 0; j--) {
+                    //if prev element and curr element match: fail
+                    //if prev element and curr element match: fail
+                    String prev = ("" + model.getElementAt(selected[j])).substring(1, ("" + model.getElementAt(selected[j])).indexOf(','));
+                    String curr = ("" + model.getElementAt(selected[i])).substring(1, ("" + model.getElementAt(selected[i])).indexOf(','));
+                    if(prev.equals(curr)) {
+                        wasBefore = true;
+                        break;
+                    }
+                }
+                
+                //if we didnt find the same element before, 
+                if(!wasBefore) {
+                    selectedDomains[k] = selected[i];
+                    k++;
+                }
+            }
+            //get tags currently visible
+            String[] tags = titleToTag();
+            //create same length array of CategorizedValueMarkers
+            ArrayList<CategorizedValueMarker> markers = new ArrayList<>();
+            //for each domain selected
+            for(int i = 0; i < selectedDomains.length; i++) {
                 //get the corresponding CategorizedValueMarker
-                markers[i] = getMarkerFromString(titleToTag(), "" + model.getElementAt(selected[i]));
+                for(String tag : tags) {
+                    CategorizedValueMarker currMarker = getMarkerFromString(tag, "" + model.getElementAt(selectedDomains[i]));
+                    if(currMarker != null) {
+                        markers.add(currMarker);
+                    }
+                }
             }
             
             //launch notes dialog
-            new MarkerNotesDialog(markers).setVisible(true);
+            new MarkerNotesDialog(markers.toArray(new CategorizedValueMarker[markers.size()])).setVisible(true);
         }
         
     }//GEN-LAST:event_staticMarkersListMouseClicked
@@ -1151,11 +1207,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             ListModel model = list.getModel();
             //depending on the code
             switch(code) {
-                //if its backspace, remove the item from the datamap
+                //if its backspace or delete, remove the item from the datamap
+                case KeyEvent.VK_DELETE :
                 case KeyEvent.VK_BACKSPACE : 
-                    staticMarkers.remove(getMarkerFromString(titleToTag(), "" +
-                            model.getElementAt(staticMarkersList.getSelectedIndex()))); 
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot()); break;
+                    String[] tags = titleToTag();
+                    for(String tag : tags) {
+                        staticMarkers.remove(getMarkerFromString(tag, "" +
+                                model.getElementAt(staticMarkersList.getSelectedIndex())));
+                    }
+                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot()); 
+                    break;
             }
         }
     }//GEN-LAST:event_staticMarkersListKeyReleased
@@ -1264,22 +1325,25 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     //dafault parameters for titleToTag
-    private String titleToTag() {
+    private String[] titleToTag() {
         return titleToTag("");
     }
     
     //given a chart title or dataList title we can create the tag
-    private String titleToTag(String title) {
+    private String[] titleToTag(String title) {
         //if empty get from chart
         if(title.isEmpty()) {
             title = chartPanel.getChart().getTitle().getText();
         }
         
-        String[] split = title.split(" ");
-        if(split.length == 3) {
-            return split[2] + "," + split[0];
+        //create array of tags
+        String[] titleSplit = title.split(" vs ");
+        String[] tags = new String[titleSplit.length - 1];
+        for (int i = 0; i < titleSplit.length - 1; i++) {
+            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
         }
-        return "";
+        
+        return tags;
     }
 
     public void importCSV(String filepath) {
@@ -1691,6 +1755,24 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 return marker;
         }
         return null;
+    }
+    
+    /**
+     * Gets a color from an index. Given an index, returns the corresponding color
+     * that is shown on an XYPlot
+     * @param index Dataset index
+     * @return Color of that dataset's line
+     */
+    private Color getColorFromIndex(int index) {
+        switch(index) {
+            case 0 : return Color.RED;
+            case 1 : return Color.BLUE;
+            case 2 : return Color.GREEN;
+            case 3 : return Color.YELLOW;
+            case 4 : return Color.CYAN;
+            case 5 : return Color.PINK;
+            default : return Color.BLACK;
+        }
     }
 
 
