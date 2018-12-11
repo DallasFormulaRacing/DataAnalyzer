@@ -113,6 +113,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // Init the graph with some dummy data until there is data given to read
         showEmptyGraph();
         
+        //extend the statistics panel to the edge
+        //get the screen size
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        //get xCordinate of the statisticsPanel
+        statisticsPanel.setSize(screenSize.width - statisticsPanel.getX(), statisticsPanel.getHeight());
+        
         // Create the global object crosshairs
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
@@ -266,7 +272,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics
-        updateStatistics(tags);
+        updateStatistics(titleToTag());
         
         //draw markers
         drawMarkers(tags, chart.getXYPlot());
@@ -460,22 +466,17 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         // String object that holds values for all the series on the plot.
         String yCordss = "";
         // Repeat the loop for each series in the plot
-        for (int i = 0; i < plot.getDataset().getSeriesCount(); i++) {
-            // Get the collection from the plots data set
-            XYSeriesCollection col = (XYSeriesCollection) plot.getDataset();
-            // Get the plots name from the series's object
-            String plotName = plot.getDataset().getSeriesKey(i).toString();
-            // Create a new collection 
-            XYSeriesCollection col2 = new XYSeriesCollection();
-            // Add the series with the name we found to the other collection
-            // We do this because the findYValue() method takes a collection
-            col2.addSeries(col.getSeries(plotName));
+        for (int i = 0; i < plot.getDatasetCount(); i++) {
+            //get current data set
+            XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
             // Get the y value for the current series.
-            double val = DatasetUtilities.findYValue(col2, 0, xCor);
+            double val = DatasetUtilities.findYValue(col, 0, xCor);
             // Add the value to the string
-            yCordss += String.format("%.2f", val) + "\n";
+            yCordss += String.format("%.2f", val) + ", ";
 
         }
+        
+        yCordss = yCordss.substring(0, yCordss.length() - 2);
 
         // Set the textviews at the bottom of the file.
         xCordLabel.setText(String.format("%.2f", xCor));
@@ -690,18 +691,23 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 6, 189, 640));
 
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel1.setText("X Cord:");
 
         xCordLabel.setText("jLabel2");
 
+        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel2.setText("Y Cord:");
 
         yCordLabel.setText("jLabel2");
 
+        jLabel3.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel3.setText("Average:");
 
+        jLabel5.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel5.setText("Max: ");
 
+        jLabel6.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel6.setText("Min: ");
 
         maxText.setText("max");
@@ -715,55 +721,53 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         statisticsPanelLayout.setHorizontalGroup(
             statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(statisticsPanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(statisticsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(6, 6, 6)
                         .addComponent(xCordLabel)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(averageText))
-                    .addGroup(statisticsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(6, 6, 6)
-                        .addComponent(yCordLabel)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(yCordLabel))
                     .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(averageText)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(maxText))
-                    .addGroup(statisticsPanelLayout.createSequentialGroup()
+                        .addComponent(maxText)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(minText)))
-                .addGap(0, 46, Short.MAX_VALUE))
+                .addGap(0, 544, Short.MAX_VALUE))
         );
         statisticsPanelLayout.setVerticalGroup(
             statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(statisticsPanelLayout.createSequentialGroup()
                 .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(xCordLabel)
                     .addComponent(jLabel3)
                     .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel5)
                         .addComponent(averageText)
-                        .addComponent(maxText)))
+                        .addComponent(maxText)
+                        .addComponent(jLabel6)
+                        .addComponent(minText)))
                 .addGap(6, 6, 6)
                 .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2)
                     .addComponent(yCordLabel)
-                    .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel6)
-                        .addComponent(minText)))
+                    .addComponent(jLabel1)
+                    .addComponent(xCordLabel))
                 .addGap(0, 12, Short.MAX_VALUE))
         );
 
         averageText.getAccessibleContext().setAccessibleName("");
 
-        getContentPane().add(statisticsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 600, -1, 50));
+        getContentPane().add(statisticsPanel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 600, 780, 50));
 
         fileMenu.setText("File");
 
@@ -967,6 +971,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             fullscreenMenuItem.setText("Fullscreen");
             chartFrame.setSize(new Dimension(899, 589));
             chartPanel.setSize(new java.awt.Dimension(899, 589));
+            statisticsPanel.setSize(this.getWidth() - statisticsPanel.getX(), statisticsPanel.getHeight());
             int x = chartFrame.getX();
             int y = chartFrame.getY() + chartFrame.getHeight();
             statisticsPanel.setLocation(x, y);
@@ -978,7 +983,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             fullscreenMenuItem.setText("Minimize");
             chartPanel.setSize(new Dimension(screenSize.width - chartPanel.getX(), (screenSize.width - chartPanel.getX()) / 16 * 9));
             chartFrame.setSize(new Dimension(screenSize.width - chartFrame.getX(), (screenSize.width - chartFrame.getX()) / 16 * 9));
-
+            statisticsPanel.setSize(screenSize.width - statisticsPanel.getX(), statisticsPanel.getHeight());
             int x = chartFrame.getX();
             int y = chartFrame.getY() + chartFrame.getHeight();
             statisticsPanel.setLocation(x, y);
@@ -1570,34 +1575,49 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     //updates the statistics panel
     private void updateStatistics(String[] tags) {
-        //TODO: Find Better implementation
-        //get the data list thats showing
-        List<LogObject> data = dataMap.getList(tags[0]);
-        //variables that hold average, min, and max
-        double avg = 0;
-        double min = Double.MAX_VALUE;
-        double max = Double.MIN_VALUE;
-        //for each logobject in the list we got
-        for(LogObject lo : data) {
-            //if the LogObject is an instance of a SimpleLogObject
-            if(lo instanceof SimpleLogObject) {
-                //add all the values to average
-                avg += ((SimpleLogObject) lo).getValue();
-                //if the current object is less than the current min, update min
-                if(((SimpleLogObject) lo).getValue() < min)
-                    min = ((SimpleLogObject) lo).getValue();
-                //if the current object is greater than the current max, update max
-                if(((SimpleLogObject) lo).getValue() > max)
-                    max = ((SimpleLogObject) lo).getValue();
+        //holds the final strings
+        String avgStr = "";
+        String minStr = "";
+        String maxStr = "";
+        //for each tag
+        for(String tag : tags) {
+            //get the data list thats showing
+            List<LogObject> data = dataMap.getList(tag);
+            //variables that hold average, min, and max
+            double avg = 0;
+            double min = Double.MAX_VALUE;
+            double max = Double.MIN_VALUE;
+            //for each logobject in the list we got
+            for(LogObject lo : data) {
+                //if the LogObject is an instance of a SimpleLogObject
+                if(lo instanceof SimpleLogObject) {
+                    //add all the values to average
+                    avg += ((SimpleLogObject) lo).getValue();
+                    //if the current object is less than the current min, update min
+                    if(((SimpleLogObject) lo).getValue() < min)
+                        min = ((SimpleLogObject) lo).getValue();
+                    //if the current object is greater than the current max, update max
+                    if(((SimpleLogObject) lo).getValue() > max)
+                        max = ((SimpleLogObject) lo).getValue();
+                }
             }
+            //divide average by number of objects we added
+            avg /= data.size();
+            //append the string
+            avgStr += String.format("%.2f", avg) + ", ";
+            minStr += String.format("%.2f", min) + ", ";
+            maxStr += String.format("%.2f", max) + ", ";
         }
-        //divide average by number of objects we added
-        avg /= data.size();
+        
+        //remove the last ", "
+        avgStr = avgStr.substring(0, avgStr.length() - 2);
+        minStr = minStr.substring(0, minStr.length() - 2);
+        maxStr = maxStr.substring(0, maxStr.length() - 2);
         
         //set the text values, format to two decimal places
-        averageText.setText(String.format("%.2f", avg));
-        maxText.setText(String.format("%.2f", max));
-        minText.setText(String.format("%.2f", min));
+        averageText.setText(avgStr);
+        maxText.setText(maxStr);
+        minText.setText(minStr);
     }
     
     //save file
