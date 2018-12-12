@@ -90,7 +90,10 @@ public class EquationEvaluater {
             index++;
             dataList.add(new SimpleLogObject("Time," + channelTag, values.pop(), time));
         }
-        dataMap.put(dataList);
+        if(!dataList.isEmpty())
+            dataMap.put(dataList);
+        else
+            new MessageBox("No data elements created!").setVisible(true);
         
     }
     

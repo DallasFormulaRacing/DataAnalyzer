@@ -907,7 +907,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         super.approveSelection();
                     } else {
                         // display error message - that selection should not be approve
-                        MessageBox error = new MessageBox("Error: Selection could not be approved");
+                        new MessageBox("Error: Selection could not be approved").setVisible(true);
                         this.cancelSelection();
                     }
 
@@ -1029,7 +1029,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         super.approveSelection();
                     } else {
                         // display error message - that selection should not be approved
-                        MessageBox error = new MessageBox("Error: Wrong File Type");
+                        new MessageBox("Error: Wrong File Type").setVisible(true);
                         this.cancelSelection();
                     }
 
@@ -1237,7 +1237,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
             // error message displayed
-            MessageBox error = new MessageBox("Error: File not found");
+            new MessageBox("Error: File not found").setVisible(true);
         }
         
         //if failed to load, leave method
@@ -1398,7 +1398,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         } catch (FileNotFoundException x) {
             // Error message displayed
-            MessageBox error = new MessageBox("Error: File not found");
+            new MessageBox("Error: File not found").setVisible(true);
         }
         
     }
@@ -1651,7 +1651,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
-                        MessageBox error = new MessageBox("Error: FileWriter could not be opened");
+                        new MessageBox("Error: FileWriter could not be opened").setVisible(true);
                         System.out.println(e.getMessage());
                     }
                 }
@@ -1665,13 +1665,13 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
-                        MessageBox error = new MessageBox("Error: FileWriter could not be opened ");
+                        new MessageBox("Error: FileWriter could not be opened ").setVisible(true);
                         System.out.println(e.getMessage());
                     }
                 }
             } else {
                 //error message displayed
-                MessageBox error = new MessageBox("Error: File could not be approved");
+                new MessageBox("Error: File could not be approved").setVisible(true);
             }
             
         } else { //if a filename was already provided
@@ -1681,7 +1681,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 fw.close();
             } catch (IOException e) {
                 //error message displayed
-                MessageBox error = new MessageBox("Error: File could not be written to");
+                new MessageBox("Error: File could not be written to").setVisible(true);
             }
         }
     }
@@ -1694,7 +1694,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             scanner = new Scanner(new File(filepath));
         } catch(FileNotFoundException e) {
             //error message displayed
-            MessageBox error = new MessageBox("Error: File could not be opened");
+            new MessageBox("Error: File could not be opened").setVisible(true);
         }
         
         //if we failed to open the file exit

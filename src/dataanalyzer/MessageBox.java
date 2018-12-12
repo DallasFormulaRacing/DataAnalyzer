@@ -16,6 +16,7 @@ public class MessageBox extends javax.swing.JFrame {
     
     //Mostly used to display specific error message
     public MessageBox(String text){
+        initComponents();
         //Sets textArea to string
         messageArea.setText(text);
     }
