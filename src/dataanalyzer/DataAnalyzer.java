@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import com.arib.categoricalhashtable.*;
 import com.sun.glass.events.KeyEvent;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.ListModel;

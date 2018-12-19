@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import com.arib.categoricalhashtable.CategoricalHashTableInterface;
 import org.jfree.chart.plot.ValueMarker;
 
 /**
