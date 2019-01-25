@@ -563,6 +563,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         openCSVBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
+        exportMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
@@ -807,6 +808,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
         fileMenu.add(saveAsMenuItem);
 
+        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        exportMenuItem.setText("Export");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportMenuItem);
+
         menuBar.add(fileMenu);
 
         editMenu.setText("Edit");
@@ -1047,6 +1057,25 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //if nothing was loaded do not try to do math channels
         if(dataMap.isEmpty())
             return;
+        
+        //load wheelspeed averages
+        
+        //calculate front wheel speed averages
+        if(dataMap.tags.contains("Time,WheelspeedFR") && dataMap.tags.contains("Time,WheelspeedFL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFR)) * ($(Time,WheelspeedFL)) / 2", dataMap, "Time,WheelspeedFront");
+        
+        //calculate rear wheel speed averages
+        if(dataMap.tags.contains("Time,WheelspeedRR") && dataMap.tags.contains("Time,WheelspeedRL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRR)) * ($(Time,WheelspeedRL)) / 2", dataMap, "Time,WheelspeedRear");
+        
+        //calculate full average
+        if(dataMap.tags.contains("Time,WheelspeedRear") && dataMap.tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRear)) * ($(Time,WheelspeedFront)) / 2", dataMap, "Time,WheelspeedAvg");
+        
+        //Create time vs distance
+        if(dataMap.tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFront) * (2 * 3.14159 * 10.2)", dataMap, "Time,Distance");
+
         //Perform Operations
         //TODO: FILTERING
         EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataMap, "CoolantCelcius");
@@ -1228,6 +1257,46 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }//GEN-LAST:event_staticMarkersListKeyReleased
 
+    //Export the data into a CSV file to use with other programs.
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
+        String data = hashMapToCSV(dataMap.tags);
+        //open the file choser
+        JFileChooser chooser = new JFileChooser();
+        //set the directory
+        chooser.setCurrentDirectory(new File(""));
+        //variable that holds result
+        int retrival = chooser.showSaveDialog(null);
+        //if its approved
+        if (retrival == JFileChooser.APPROVE_OPTION) {
+            //if the selected file is a .csv file
+            if(!chooser.getSelectedFile().toString().contains(".csv")){
+                //try to open a file writer
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".csv")) {
+                    //write the data
+                    fw.write(data);
+                    //close the file writer
+                    fw.close();
+                //exception handling
+                } catch (IOException e) {
+                    new MessageBox(e.toString()).setVisible(true);
+                }
+             //if its not a csv file
+            } else {
+                //try to write a file without an extension, it will not be openable unless converted later
+                try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
+                    //write the data
+                    fw.write(data);
+                    //close the writer
+                    fw.close();
+                //exception handling
+                } catch (IOException e) {
+                    new MessageBox(e.toString()).setVisible(true);
+                }
+            }
+            
+        }
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
     private void importVehicleData(String filepath) {
         //create scanner to read file
         Scanner scanner = null;
@@ -1403,45 +1472,28 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
     }
     
-    public void hashMapToCSV(ArrayList<String> tags)
+    public String hashMapToCSV(ArrayList<String> tags)
     {
-        try {
-            // Creates a new csv file to put data into. File is located within 'DataAnalyzer' git folder
-            FileOutputStream csv = new FileOutputStream(new File("sample.csv"), true);
-            // Allows program to print/write data into file
-            PrintWriter pw = new PrintWriter(csv);
-            // Allows to change dataset within LinkedList 'dataMap' 
-            int count = 0;
-            
-            // Loop continues based on total number of tags in array 'tags' from importCSV
-            for (int i = 0; i < tags.size(); i++){
-                // Gets tag for dataset from array 'tags' in importCSV
-                String tag = tags.get(count);
-                // Creates array of SimpleLogObject that only includes data from 'dataMap' under 'tag'
-                ArrayList<SimpleLogObject> data = new ArrayList(dataMap.getList(tag));
-                // Prints 'tag' before data is printed
-                pw.println(tag);
-                
-                // Loop that prints data under 'tag' on separate lines
-                for (int x = 0; x < data.size(); x++){
-                    // Allows for data to be split by comma for placement in csv 
-                    final String DELIMITER = ",";
-                    // Splits data by commas to be printed into csv file
-                    String[] obj = ((data.get(x)).toString()).split(DELIMITER);
-                    // Prints each piece of data to a unique cell on one line
-                    pw.println(obj[0] + "," + obj[1]);
-                    // Sends single data line to print in file
-                    pw.flush();
-                }
-                // Allows for next dataset under the next tag to be extracted and printer
-                count++;
+        //output String
+        StringBuilder out = new StringBuilder();
+        //for each tag
+        for(String tag : tags) {
+            //get the tags data
+            LinkedList<LogObject> los = dataMap.getList(tag);
+            //append the tag and a new line
+            out.append(tag);
+            out.append("\n");
+            //append all of the data objects
+            for(LogObject lo : los) {
+                out.append(lo.toString());
+                out.append("\n");
             }
-            
-            System.out.println ("File sample.csv has been created" );
-            
-        } catch (IOException x) {
-            
+            //append END with new line
+            out.append("END");
+            out.append("\n");
         }
+        
+        return out.toString();
     }
     
     //saves the file to the disk
@@ -1806,6 +1858,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
+    private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
