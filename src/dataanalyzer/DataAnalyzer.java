@@ -83,8 +83,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     //String array that populates the categories list
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
-        new AnalysisCategory("Brakes"), new AnalysisCategory("Coolant"), 
-        new AnalysisCategory("Acceleration"), new AnalysisCategory("Endurance"), 
+        new AnalysisCategory("Brakes").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ"),
+        new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear"),
+        new AnalysisCategory("Coolant").addTag("Time,Coolant").addTag("Time,RadiatorInlet"), 
+        new AnalysisCategory("Acceleration").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ").addTag("Time,RPM").addTag("Time,WheelspeedFront").addTag("Time,WheelspeedRear"),
+        new AnalysisCategory("Endurance"), 
         new AnalysisCategory("Skidpad")};
 
     public DataAnalyzer() {
@@ -560,7 +563,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newImportMenuItem = new javax.swing.JMenuItem();
-        openCSVBtn = new javax.swing.JMenuItem();
+        openBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         exportMenuItem = new javax.swing.JMenuItem();
@@ -781,14 +784,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
         fileMenu.add(newImportMenuItem);
 
-        openCSVBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        openCSVBtn.setText("Open");
-        openCSVBtn.addActionListener(new java.awt.event.ActionListener() {
+        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openBtn.setText("Open");
+        openBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openCSVBtnClicked(evt);
+                openBtnClicked(evt);
             }
         });
-        fileMenu.add(openCSVBtn);
+        fileMenu.add(openBtn);
 
         saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
@@ -894,7 +897,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void openCSVBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openCSVBtnClicked
+    private void openBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBtnClicked
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
 
@@ -933,7 +936,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             openedFilePath = chosenFilePath;
             openFile(chosenFilePath);
         }
-    }//GEN-LAST:event_openCSVBtnClicked
+    }//GEN-LAST:event_openBtnClicked
 
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
         new MathChannelDialog(dataMap, vehicleData).setVisible(true);
@@ -1454,7 +1457,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         String[] values = line.split(DELIMITER);
                         // And add the values to the hashmap with their correct tag
                         // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                        if(tag.contains("Time"))
+                        if(tag.contains("Time,"))
                             dataMap.put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
                         else
                             dataMap.put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
@@ -1566,6 +1569,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             
             //output END to signify end of data for this tag.
             toReturn += "END\n";
+            System.out.println("we running");
         }
         
         //return calculated value
@@ -1881,7 +1885,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel minText;
     private javax.swing.JMenuItem newImportMenuItem;
     private javax.swing.JMenuItem newVehicleMenuItem;
-    private javax.swing.JMenuItem openCSVBtn;
+    private javax.swing.JMenuItem openBtn;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
@@ -1929,8 +1933,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             this.TAG = TAG;
         }
         
-        public void addTag(String elem) {
+        public AnalysisCategory addTag(String elem) {
             TAG.add(elem);
+            return this;
         }
     }
 }
