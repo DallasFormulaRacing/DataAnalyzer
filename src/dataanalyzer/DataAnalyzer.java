@@ -1542,38 +1542,40 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     private String getStringOfData() {
-        String toReturn = "";
+        StringBuilder toReturn = new StringBuilder();
         
         //for each tag of data
         for(String tag : dataMap.tags) {
             //output the tag
-            toReturn += tag + "\n";
+            toReturn.append(tag);
+            toReturn.append("\n");
             //get the list of data for the current tag
             List<LogObject> data = dataMap.getList(tag);
             //for each data element
             for(LogObject lo : data) {
                 //output the data
-                toReturn += lo.toString() + "\n";
+                toReturn.append(lo.toString());
+                toReturn.append("\n");
             }
             //output MARKERS
-            toReturn += "MARKERS\n";
+            toReturn.append("MARKERS\n");
             //get the markers for the current tag
             List<CategorizedValueMarker> markers = staticMarkers.getList(tag);
             //if the markers exist
             if(markers != null) {
                 //for each marker we have output it
                 for(CategorizedValueMarker marker : markers) {
-                    toReturn += marker.getMarker().getValue() + "," + marker.getNotes() + "\n";
+                    String toAdd = marker.getMarker().getValue() + "," + marker.getNotes() + "\n";
+                    toReturn.append(toAdd);
                 }
             }
             
             //output END to signify end of data for this tag.
-            toReturn += "END\n";
-            System.out.println("we running");
+            toReturn.append("END\n");
         }
         
         //return calculated value
-        return toReturn;
+        return toReturn.toString();
         
     }
     
