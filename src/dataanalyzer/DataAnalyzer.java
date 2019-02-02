@@ -524,10 +524,35 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 newLap.start = getRoundedTime(xCor);
                 //move to next task
                 lapBreakerActive++;
+                
+                ValueMarker startMarker = new ValueMarker(newLap.start);
+                for(String tag : dataMap.tags) {
+                    if(staticMarkers.get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber)) == null)
+                        staticMarkers.put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber));
+                }
+                
+                //draw markers
+                drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
             //if the start has already been defined
             } else if(lapBreakerActive == 1) {
                 //define the next click as a stop
                 newLap.stop = getRoundedTime(xCor);
+                
+                //hold the laps start and stop, so we have the value in case its lost
+                long oldStartTime = newLap.start;
+                long oldStopTime = newLap.stop;
+                
+                ValueMarker stopMarker = new ValueMarker(newLap.stop);
+
+                //apply marker to all datasets.
+                for(String tag : dataMap.tags) {
+                    //add to the list of static markers
+                    if(staticMarkers.get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber)) == null)
+                        staticMarkers.put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber));
+                }
+                
+                //draw markers
+                drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
                 
                 //get the used lap numbers
                 ArrayList<Integer> usedLaps = new ArrayList<>();
@@ -546,31 +571,38 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     }
                 }
                 
-                if(newLap != null) {
+                if(!newLap.lapLabel.equals("!#@$LAPCANCELLED")) {
+                    //remove old start and stop markers and add new ones with values from text box
+                    ValueMarker startMarker = new ValueMarker(newLap.start);
+                    stopMarker = new ValueMarker(newLap.stop);
+
+                    for(String tag : dataMap.tags) {
+                        staticMarkers.remove(getMarkerFromDomainValue(tag, oldStartTime));
+                        staticMarkers.remove(getMarkerFromDomainValue(tag, oldStopTime));
+                        if(staticMarkers.get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber)) == null)
+                            staticMarkers.put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber));
+                        if(staticMarkers.get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber)) == null)
+                            staticMarkers.put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber));
+                    }
                     //add that to the list of laps
                     lapBreaker.add(newLap);
                     //apply the lap data to the datasets
                     Lap.applyToDataset(dataMap, lapBreaker);
                     //reset the lapbreaker
                     lapBreakerActive = -1;
-
-                    // Create a static cursor that isnt cleared every time
-                    ValueMarker startMarker = new ValueMarker(newLap.start);
-                    ValueMarker stopMarker = new ValueMarker(newLap.stop);
-                    //apply marker to all datasets.
-                    for(String tag : dataMap.tags) {
-                        //add to the list of static markers
-                        if(staticMarkers.get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber)) == null)
-                            staticMarkers.put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber));
-                        if(staticMarkers.get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber)) == null)
-                            staticMarkers.put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber));
-                    }
                     
                     //reset the new lap
                     newLap = new Lap();
                     
                     //fill lap list
                     fillDataList(dataMap.tags);
+                } else {
+                    //delete previous markers
+                    for(String tag : dataMap.tags) {
+                        staticMarkers.remove(getMarkerFromDomainValue(tag, oldStartTime));
+                        staticMarkers.remove(getMarkerFromDomainValue(tag, oldStopTime));
+                    }
+                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
                 }
             }
         }
@@ -1460,7 +1492,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //set the lapBreaker to active, this changes the functionality of clicking on the chart
         lapBreakerActive = 0;
         //Display message box with instructions
-        new MessageBox("Use the reticle to find the start of the lap. Click where the lap starts. Click again where the lap stops.").setVisible(true);
+        new MessageBox("Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.").setVisible(true);
     }//GEN-LAST:event_addLapConditionMenuItemActionPerformed
 
     private void lapListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lapListKeyReleased
@@ -2131,6 +2163,30 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         return null;
     }
+    
+    /**
+     * 
+     * @param TAG TAG of the dataset
+     * @param domainValue the domain value where the marker is as a long
+     * @return CategorizedValueMarker object that has the same domain marker as the provided value
+     */
+    private CategorizedValueMarker getMarkerFromDomainValue(String TAG, long domainValue) {
+        return getMarkerFromDomainValue(TAG, (double) domainValue);
+    }
+    
+    /**
+     * 
+     * @param TAG TAG of the dataset
+     * @param domainValue the domain value where the marker is as a double
+     * @return CategorizedValueMarker object that has the same domain marker as the provided value
+     */
+    private CategorizedValueMarker getMarkerFromDomainValue(String TAG, double domainValue) {
+        for(CategorizedValueMarker marker : staticMarkers.getList(TAG)) {
+            if(marker.getMarker().getValue() == domainValue)
+                return marker;
+        }
+        return null;
+    } 
        
     /**
      * Gets a color from an index. Given an index, returns the corresponding color

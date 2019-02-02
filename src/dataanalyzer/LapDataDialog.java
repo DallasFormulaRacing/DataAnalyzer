@@ -237,7 +237,7 @@ public class LapDataDialog extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         //lose the data and finish
-        toEdit = null;
+        toEdit.lapLabel = "!#@$LAPCANCELLED";
         running = false;
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
