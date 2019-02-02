@@ -5,6 +5,8 @@
  */
 package dataanalyzer;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author aribdhuka
@@ -12,10 +14,12 @@ package dataanalyzer;
 public abstract class LogObject implements Comparable {
     protected long time;
     protected String TAG;
+    protected ArrayList<Integer> laps;
     
     public LogObject() {
         time = -1;
         TAG = "";
+        laps = new ArrayList<>();
     }
 
     public long getTime() {
@@ -34,6 +38,13 @@ public abstract class LogObject implements Comparable {
         this.TAG = TAG;
     }
 
+    public ArrayList<Integer> getLaps() {
+        return laps;
+    }
+
+    public void addLap(int lap) {
+        laps.add(lap);
+    }
     
     //if we do ever sort, keep the list in order of TAGS, then time.
     @Override

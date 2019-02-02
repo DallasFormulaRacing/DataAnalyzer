@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.ListModel;
@@ -78,10 +79,24 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //Stores the array of String in the listview of tags
     String[] titles;
     
+    //holds the currently selected laps
+    int[] selectedLaps;
+    
     //Stores the current filepath
     private String openedFilePath;
     
+    //stores the laps breaker
+    private ArrayList<Lap> lapBreaker;
+    //status of lapBreakerTool
+    int lapBreakerActive;
+    //lap that will be created and applied to lapBreaker list
+    Lap newLap;
+    
+    //holds if file operations are currently ongoing
+    private boolean openingAFile;
+    
     //String array that populates the categories list
+    //TODO: add tags to each list element.
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
         new AnalysisCategory("Brakes").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ"),
         new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear"),
@@ -92,7 +107,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     public DataAnalyzer() {
         initComponents();
-
+        
+        //start with not currently opening a file
+        openingAFile = false;
+        
         //disable the layout manager which essentially makes the frame an absolute positioning frame
         this.setLayout(null);
         
@@ -101,18 +119,30 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //create a new instance of the vehicle data
         vehicleData = new VehicleData();
+        
+        //start with empty lap data
+        lapBreaker = new ArrayList<>();
+        //start with the lapBreaker disables
+        lapBreakerActive = -1;
+        //initialize new Lap
+        newLap = new Lap();
+        
+        //start with no laps selected
+        selectedLaps = null;
 
         //on new element entry of dataMap, update the view
         dataMap.addTagSizeChangeListener(new HashMapTagSizeListener() {
             @Override
             public void sizeUpdate() {
                 fillDataList(dataMap.tags);
+                if(!openingAFile)
+                    Lap.applyToDataset(dataMap, lapBreaker);
             }
         });
 
         //init the arraylist of static markers
         staticMarkers = new CategoricalHashTable<>();
-
+        
         // Init the graph with some dummy data until there is data given to read
         showEmptyGraph();
         
@@ -135,7 +165,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         openedFilePath = "";
         
         //populate category list 
-        //TODO: add tags to each list element.
         String[] categoryListData = new String[analysisCategories.length];
         for(int i = 0; i < analysisCategories.length; i++) {
             categoryListData[i] = analysisCategories[i].getTitle();
@@ -230,7 +259,13 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private void setChart(String[] tags, int[] laps) {
 
         // Gets the specific data based on what kind of data we want to show for which 
-        XYSeriesCollection[] seriesCollection = new XYSeriesCollection[tags.length];
+        XYSeriesCollection[] seriesCollection;
+        if(laps == null || laps.length == 0) {
+            seriesCollection = new XYSeriesCollection[tags.length];
+        } else {
+            seriesCollection = new XYSeriesCollection[tags.length * laps.length];
+        }
+        
         String title = "";
         
         // Store data for each data type in different XYSeriesCollection
@@ -311,44 +346,80 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // XY Series Collection allows there to be multiple data lines on the graph
         XYSeriesCollection graphData = new XYSeriesCollection();
-        // Get the list of data elements based on the tag
-        LinkedList<LogObject> data = dataMap.getList(tag);
-        
-        // Declare the series to add the data elements to
-        final XYSeries series = new XYSeries(tag.split(",")[1]);
-        
-        //if tag contains time then its not a function of another dataset
-        if(tag.contains("Time")) {
-            // We could make a XYSeries Array if we wanted to show different lap data
-            // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-            // Iterate through each data element in the received dataMap LinkedList
-            for (LogObject d : data) {
-                //Get the x and y values by seprating them by the comma
-                String[] values = d.toString().split(",");
-                //Add the x and y value to the series
-                series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
+
+        //if laps were not provided show whole dataset
+        if(laps == null || laps.length == 0) {
+            // Get the list of data elements based on the tag
+            LinkedList<LogObject> data = dataMap.getList(tag);
+
+            // Declare the series to add the data elements to
+            final XYSeries series = new XYSeries(tag.split(",")[1]);
+
+            //if tag contains time then its not a function of another dataset
+            if(tag.contains("Time,")) {
+                // We could make a XYSeries Array if we wanted to show different lap data
+                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+                // Iterate through each data element in the received dataMap LinkedList
+                for (LogObject d : data) {
+                    //Get the x and y values by seprating them by the comma
+                    String[] values = d.toString().split(",");
+                    //Add the x and y value to the series
+                    series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
+                }
+            } else {
+                // We could make a XYSeries Array if we wanted to show different lap data
+                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+                // Iterate through each data element in the received dataMap LinkedList
+                for (LogObject d : data) {
+                    //Get the x and y values by seprating them by the comma
+                    String[] values = d.toString().split(",");
+                    //Add the x and y value to the series
+                    series.add(Double.parseDouble(values[0]), Double.parseDouble(values[1]));
+                }
             }
-        } else {
-            // We could make a XYSeries Array if we wanted to show different lap data
-            // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-            // Iterate through each data element in the received dataMap LinkedList
-            for (LogObject d : data) {
-                //Get the x and y values by seprating them by the comma
-                String[] values = d.toString().split(",");
-                //Add the x and y value to the series
-                series.add(Double.parseDouble(values[0]), Double.parseDouble(values[1]));
+            //add series to collection
+            graphData.addSeries(series);
+        } else { //if lap data was provided
+            //for each lap
+            for(int i = 0; i < laps.length; i++) {
+                Lap currLap = new Lap(0, 0);
+                for(Lap lap : lapBreaker) {
+                    if(lap.lapNumber == laps[i]) {
+                        currLap = lap;
+                    }
+                }
+                //create a series with the tag and lap #
+                XYSeries series = new XYSeries(tag.split(",")[1] + "Lap " + laps[i]);
+                //if its a base dataset
+                if(tag.contains("Time,")) {
+                    //for each log object if the log object belongs in this lap add it to the series
+                    for(LogObject lo : dataMap.getList(tag)) {
+                        if(lo.getLaps().contains(laps[i])) {
+                            //Get the x and y values by seprating them by the comma
+                            String[] values = lo.toString().split(",");
+                            //Add the x and y value to the series
+                            series.add(Long.parseLong(values[0]) - currLap.start, Double.parseDouble(values[1]));
+                        }
+                    }
+                //else its function of another dataset
+                } else {
+                    //for each log object if the log object belongs in this lap, add it to the series
+                    for(LogObject lo : dataMap.getList(tag)) {
+                        if(lo.getLaps().contains(laps[i])) {
+                            //Get the x and y values by seprating them by the comma
+                            String[] values = lo.toString().split(",");
+                            //Add the x and y value to the series
+                            series.add(Double.parseDouble(values[0]) - currLap.start, Double.parseDouble(values[1]));
+                        }
+                    }
+                }
+                
+                //add to collection
+                graphData.addSeries(series);
             }
         }
 
-//      Each series in the series array would have the lap data from laps ary
-//      for(int i = 0; i < laps.length; i++){
-//          XYSeries s = series[i];
-//          s.setKey("Lap " + laps[i]);
-//          graphData.addSeries(s);
-//      }
 
-        // Add the series to the XYCollection
-        graphData.addSeries(series);
         // Return the XYCollection
         return graphData;
     }
@@ -360,52 +431,63 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         for(String tag : tags) {
         //get data from dataset
             LinkedList<LogObject> data = dataMap.getList(tag);
-            //series that will hold the data
-            XYSeries series = new XYSeries(tag.split(",")[1]);
-
-            //calculate min and max value of the data 
-            double min = Double.MAX_VALUE;
-            double max = Double.MIN_VALUE;
-            for(LogObject lo : data) {
-                if(lo instanceof SimpleLogObject) {
-                    if(((SimpleLogObject) lo).getValue() > max)
-                        max = ((SimpleLogObject) lo).getValue();
-                    if(((SimpleLogObject) lo).getValue() < min)
-                        min = ((SimpleLogObject) lo).getValue();
-                }
-            }
-
-            //get the intervals to work with
-            double interval = max - min;
-            interval /= 50;
-
-            //holds how many instances occured within this interval
-            int counter;
-
-            //for each of the 50 intervals
-            for(int i = 1; i < 51; i++) {
-                //start with 0 count
-                counter = 0;
-
-                //for each data element
+            
+            for(int l = 0; l < laps.length; l++) {
+                //series that will hold the data
+                XYSeries series = new XYSeries(tag.split(",")[1] + "Laps " + laps[l]);
+                //calculate min and max value of the data 
+                double min = Double.MAX_VALUE;
+                double max = Double.MIN_VALUE;
                 for(LogObject lo : data) {
-                    //if its a simple log object its value can be obtained
-                    if(lo instanceof SimpleLogObject) {
-                        //if the value of the current object is between the interval we are searching for
-                        if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                            //increment the counter
-                            counter++;
+                    if(lo.getLaps().contains(laps[l])) {
+                        if(lo instanceof SimpleLogObject) {
+                            if(((SimpleLogObject) lo).getValue() > max)
+                                max = ((SimpleLogObject) lo).getValue();
+                            if(((SimpleLogObject) lo).getValue() < min)
+                                min = ((SimpleLogObject) lo).getValue();
                         }
                     }
                 }
-                //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-                if(counter != 0)
-                    series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
+
+                //get the intervals to work with
+                double interval = max - min;
+                interval /= 50;
+
+                //holds how many instances occured within this interval
+                int counter;
+
+                //for each of the 50 intervals
+                for(int i = 1; i < 51; i++) {
+                    //start with 0 count
+                    counter = 0;
+
+                    //for each data element
+                    for(LogObject lo : data) {
+                        if(lo.getLaps().contains(laps[l])) {
+                            //if its a simple log object its value can be obtained
+                            if(lo instanceof SimpleLogObject) {
+                                //if the value of the current object is between the interval we are searching for
+                                if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                    //increment the counter
+                                    counter++;
+                                }
+                            } else if(lo instanceof FunctionOfLogObject) {
+                                if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                    //increment the counter
+                                    counter++;
+                                }
+                            }
+                        }
+                    }
+                    //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
+                    if(counter != 0)
+                        series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
+                }
+
+
+
+                graphData.addSeries(series);
             }
-
-
-
-            graphData.addSeries(series);
         }
         return graphData;
         
@@ -414,31 +496,89 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // When the chart is clicked
     @Override
     public void chartMouseClicked(ChartMouseEvent cme) {
-        // Create a static cursor that isnt cleared every time
-        ValueMarker marker = new ValueMarker(xCor);
-        //calculate the tag
-        String title = cme.getChart().getTitle().getText();
-        //create array of tags
-        String[] titleSplit = title.split(" vs ");
-        String[] tags = new String[titleSplit.length - 1];
-        for (int i = 0; i < titleSplit.length - 1; i++) {
-            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+        //if the lap breaker hasn't been activiates
+        if(lapBreakerActive < 0) {
+            // Create a static cursor that isnt cleared every time
+            ValueMarker marker = new ValueMarker(xCor);
+            //calculate the tag
+            String title = cme.getChart().getTitle().getText();
+            //create array of tags
+            String[] titleSplit = title.split(" vs ");
+            String[] tags = new String[titleSplit.length - 1];
+            for (int i = 0; i < titleSplit.length - 1; i++) {
+                tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+            }
+
+            for(String tag : tags) {
+                //add to the list of static markers
+                if(staticMarkers.get(new CategorizedValueMarker(tag, marker)) == null)
+                    staticMarkers.put(new CategorizedValueMarker(tag, marker));
+            }
+
+            //draw markers
+            drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+        } else {
+            //if lapbreaker has just started
+            if(lapBreakerActive == 0) {
+                //get clicked position and set it as start
+                newLap.start = getRoundedTime(xCor);
+                //move to next task
+                lapBreakerActive++;
+            //if the start has already been defined
+            } else if(lapBreakerActive == 1) {
+                //define the next click as a stop
+                newLap.stop = getRoundedTime(xCor);
+                
+                //get the used lap numbers
+                ArrayList<Integer> usedLaps = new ArrayList<>();
+                for(Lap l : lapBreaker) {
+                    usedLaps.add(l.lapNumber);
+                }
+                //create and run the dialog
+                LapDataDialog ldd = new LapDataDialog(this, true, newLap, usedLaps);
+                ldd.setVisible(true);
+                //while the dialog is running
+                while(ldd.isRunning()) {
+                    try {
+                        Thread.currentThread().wait(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
+                if(newLap != null) {
+                    //add that to the list of laps
+                    lapBreaker.add(newLap);
+                    //apply the lap data to the datasets
+                    Lap.applyToDataset(dataMap, lapBreaker);
+                    //reset the lapbreaker
+                    lapBreakerActive = -1;
+
+                    // Create a static cursor that isnt cleared every time
+                    ValueMarker startMarker = new ValueMarker(newLap.start);
+                    ValueMarker stopMarker = new ValueMarker(newLap.stop);
+                    //apply marker to all datasets.
+                    for(String tag : dataMap.tags) {
+                        //add to the list of static markers
+                        if(staticMarkers.get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber)) == null)
+                            staticMarkers.put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + newLap.lapNumber));
+                        if(staticMarkers.get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber)) == null)
+                            staticMarkers.put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + newLap.lapNumber));
+                    }
+                    
+                    //reset the new lap
+                    newLap = new Lap();
+                    
+                    //fill lap list
+                    fillDataList(dataMap.tags);
+                }
+            }
         }
-        
-        for(String tag : tags) {
-            //add to the list of static markers
-            if(staticMarkers.get(new CategorizedValueMarker(tag, marker)) == null)
-                staticMarkers.put(new CategorizedValueMarker(tag, marker));
-        }
-        
-        //draw markers
-        drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
     }
 
     //when the mouse moves over the chart
     @Override
     public void chartMouseMoved(ChartMouseEvent cme) {
-
         // The data area of where the chart is.
         Rectangle2D dataArea = this.chartPanel.getScreenDataArea();
         // Get the chart from the chart mouse event
@@ -472,11 +612,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         for (int i = 0; i < plot.getDatasetCount(); i++) {
             //get current data set
             XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
-            // Get the y value for the current series.
-            double val = DatasetUtilities.findYValue(col, 0, xCor);
-            // Add the value to the string
-            yCordss += String.format("%.2f", val) + ", ";
-
+            for(int j = 0; j < plot.getSeriesCount(); j++) {
+                // Get the y value for the current series.
+                double val = DatasetUtilities.findYValue(col, j, xCor);
+                // Add the value to the string
+                yCordss += String.format("%.2f", val) + ", ";
+            }
         }
         
         yCordss = yCordss.substring(0, yCordss.length() - 2);
@@ -569,6 +710,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         exportMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
+        addLapConditionMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         histogramMenuItem = new javax.swing.JMenuItem();
         fullscreenMenuItem = new javax.swing.JMenuItem();
@@ -616,6 +758,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane1.setViewportView(dataList);
 
         lapList.setSize(new java.awt.Dimension(177, 128));
+        lapList.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                lapListKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(lapList);
 
         jScrollPane4.setPreferredSize(new java.awt.Dimension(43, 128));
@@ -664,13 +811,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addContainerGap(90, Short.MAX_VALUE))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -681,14 +827,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4)
                 .addGap(139, 139, 139))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                    .addContainerGap(348, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(26, 26, 26)
+                    .addContainerGap(506, Short.MAX_VALUE)
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap()))
         );
@@ -831,6 +977,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         editMenu.add(addMathChannelButton);
+
+        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        addLapConditionMenuItem.setText("Add Lap Condition");
+        addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addLapConditionMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(addLapConditionMenuItem);
 
         menuBar.add(editMenu);
 
@@ -1300,6 +1455,30 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
     }//GEN-LAST:event_exportMenuItemActionPerformed
 
+    //begin the lapbreaker
+    private void addLapConditionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLapConditionMenuItemActionPerformed
+        //set the lapBreaker to active, this changes the functionality of clicking on the chart
+        lapBreakerActive = 0;
+        //Display message box with instructions
+        new MessageBox("Use the reticle to find the start of the lap. Click where the lap starts. Click again where the lap stops.").setVisible(true);
+    }//GEN-LAST:event_addLapConditionMenuItemActionPerformed
+
+    private void lapListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lapListKeyReleased
+        //if the lapList has focus and a key is pressed
+        //get the key code
+        int code = evt.getKeyCode();
+        //if the lap list has an index that is selected
+        if(lapList.getSelectedIndex() > -1) {
+            //depending on the code
+            switch(code) {
+                //if its backspace or delete, remove the item from the lapBreaker and update the Lap for the data objects.
+                case KeyEvent.VK_DELETE :
+                case KeyEvent.VK_BACKSPACE : lapBreaker.remove(getLapFromLapNumber(Integer.parseInt(lapList.getSelectedValue().charAt(0) + ""))); fillDataList(dataMap.tags); Lap.applyToDataset(dataMap, lapBreaker); break;
+            }
+        }
+        
+    }//GEN-LAST:event_lapListKeyReleased
+
     private void importVehicleData(String filepath) {
         //create scanner to read file
         Scanner scanner = null;
@@ -1403,12 +1582,20 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
     }
     
-    //dafault parameters for titleToTag
+    /**
+     * Gets the tag from the active chart and formats it into a String array of TAGs
+     * @return String of the TAGs of the active charts
+     */
     private String[] titleToTag() {
         return titleToTag("");
     }
     
     //given a chart title or dataList title we can create the tag
+    /**
+     * Reformats a title into a String array of TAGs
+     * @param title String value of the title of a chart
+     * @return String value of the TAGs from the title given
+     */
     private String[] titleToTag(String title) {
         //if empty get from chart
         if(title.isEmpty()) {
@@ -1425,8 +1612,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         return tags;
     }
 
+    
     public void importCSV(String filepath) {
-        
+        //begin file operations
+        openingAFile = true;
         String tag = "";
         try {
             // Create a new file from the filepath
@@ -1472,6 +1661,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             // Error message displayed
             new MessageBox("Error: File not found").setVisible(true);
         }
+        
+        //finish file operations
+        openingAFile = false;
         
     }
     
@@ -1595,20 +1787,67 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         // Add the list of titles to the data List View 
         dataList.setListData(titles);
+        
+        //fill lap data
+        String[] lapData = new String[lapBreaker.size()];
+        for(int i = 0; i < lapData.length; i++) {
+            lapData[i] = lapBreaker.get(i).toString();
+        }
+        lapList.setListData(lapData);
+        
+        //allow multiple selections and deselect
+        lapList.setSelectionModel(new DefaultListSelectionModel() {
+            private static final long serialVersionUID = 1L;
+
+            boolean gestureStarted = false;
+
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                if(!gestureStarted){
+                    if (isSelectedIndex(index0)) {
+                        super.removeSelectionInterval(index0, index1);
+                    } else {
+                        super.addSelectionInterval(index0, index1);
+                    }
+                }
+                gestureStarted = true;
+            }
+
+            @Override
+            public void setValueIsAdjusting(boolean isAdjusting) {
+                if (isAdjusting == false) {
+                    gestureStarted = false;
+                }
+            }
+        });
 
         // If another item is selected in the data combo box, change the chart
         dataList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                    // Passes the data type index, all the laps currently selected, and the data type name
-                    if(dataList.getSelectedIndex() != -1){
+                    if(dataList.getSelectedIndex() != -1) {
                         int[] selected = dataList.getSelectedIndices();
                         String[] tags = new String[selected.length];
                         for(int i = 0; i < tags.length; i++){
                             tags[i] = allTags.get(selected[i]);
                         }
-                        setChart(tags, lapList.getSelectedIndices());
+                        int[] laps;
+                        if(lapList.getSelectedIndex() != -1) {
+                            selected = lapList.getSelectedIndices();
+                            laps = new int[selected.length];
+                            if(laps.length > 0) {
+                                ArrayList<String> selectedLaps = (ArrayList) lapList.getSelectedValuesList();
+                                for(int i = 0; i < laps.length; i++) {
+                                    laps[i] = Integer.parseInt(selectedLaps.get(i).charAt(0) + "");
+                                }
+                            }
+                        } else {
+                            laps = null;
+                        }
+                        //update global var that holds which laps are selected
+                        selectedLaps = laps;
+                        setChart(tags, laps);
                     }
                 }
             }
@@ -1619,13 +1858,29 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             @Override
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
-                    // Passes the data type index, all the laps currently selected, and the data type name
-                    int[] selected = dataList.getSelectedIndices();
-                    String[] tags = new String[selected.length];
-                    for(int i = 0; i < tags.length; i++){
-                        tags[i] = allTags.get(selected[i]);
+                    if(dataList.getSelectedIndex() != -1) {
+                        int[] selected = dataList.getSelectedIndices();
+                        String[] tags = new String[selected.length];
+                        for(int i = 0; i < tags.length; i++){
+                            tags[i] = allTags.get(selected[i]);
+                        }
+                        int[] laps;
+                        if(lapList.getSelectedIndex() != -1) {
+                            selected = lapList.getSelectedIndices();
+                            laps = new int[selected.length];
+                            if(laps.length > 0) {
+                                ArrayList<String> selectedLaps = (ArrayList) lapList.getSelectedValuesList();
+                                for(int i = 0; i < laps.length; i++) {
+                                    laps[i] = Integer.parseInt(selectedLaps.get(i).charAt(0) + "");
+                                }
+                            }
+                        } else {
+                            laps = null;
+                        }
+                        //update global var that holds which laps are selected
+                        selectedLaps = laps;
+                        setChart(tags, laps);
                     }
-                    setChart(tags, lapList.getSelectedIndices());
                 }
             }
         });
@@ -1686,6 +1941,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         sb.append("VEHICLEDYNAMICDATA");
         sb.append("\n");
         sb.append(vehicleData.getStringOfData());
+        sb.append("LAPDATA");
+        sb.append("\n");
+        sb.append(Lap.getStringOfData(lapBreaker));
         
         //if a filename was not provided
         if(filename.isEmpty() || !filename.contains(".dfr")) {
@@ -1746,6 +2004,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     
     //open file
     private void openFile(String filepath) {
+        //begin file operation
+        openingAFile = true;
         //Scanner to handle the file
         Scanner scanner = null;
         try {
@@ -1814,13 +2074,48 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //string builder for creating string of data
         StringBuilder vd = new StringBuilder("");
         while(scanner.hasNextLine()) {
+            //get next line
+            String line = scanner.nextLine();
+            if(line.equals("LAPDATA"))
+                break;
             //append the next line followed by a new line char
-            vd.append(scanner.nextLine());
+            vd.append(line);
             vd.append("\n");
+        }
+        
+        //for all the lines for lapdata
+        while(scanner.hasNextLine()) {
+            //get the next line
+            String line = scanner.nextLine();
+            if(line.isEmpty())
+                continue;
+            
+            //holds the data
+            long lapStart;
+            long lapStop;
+            int lapNumber;
+            String lapLabel;
+            //parse data from string
+            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+            lapLabel = line.substring(line.indexOf(')')+1);
+            //save data
+            if (lapLabel.trim().length() > 0)
+                lapBreaker.add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+            else
+                lapBreaker.add(new Lap(lapStart, lapStop, lapNumber));
         }
         
         //give the data to the vehicleData class to create
         vehicleData.applyVehicleData(vd.toString());
+        
+        //we are finished with file operation
+        openingAFile = false;
+        
+        //update lap data
+        Lap.applyToDataset(dataMap, lapBreaker);
+        fillDataList(dataMap.tags);
     }
     
     /**
@@ -1836,7 +2131,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         return null;
     }
-    
+       
     /**
      * Gets a color from an index. Given an index, returns the corresponding color
      * that is shown on an XYPlot
@@ -1854,9 +2149,79 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             default : return Color.BLACK;
         }
     }
-
+    
+    private long getRoundedTime(double val) {
+        //time to return if its not already a function of time
+        long time = -1;
+        //get the tag of the first chart
+        String TAG = titleToTag()[0];
+        //if its a function of time, find nearest 50ms point
+        if(TAG.contains("Time,")) {
+            //get mod of value
+            double mod = val % 50;
+            //if value is less than 25 round down
+            if(mod < 25) {
+                return (long) (val - mod);
+            //else round up
+            } else {
+                return (long) (val + (50 - mod));
+            }
+        //find base function
+        } else {
+            //Round to nearest domain value for the tag we are looking at
+            String finding = TAG;
+            //holds the closest value, holds value and object
+            double closestVal = Double.MAX_VALUE;
+            //for each logobject of the current tag
+            for(LogObject lo : dataMap.getList(finding)) {
+                //if its a functionoflogobject which it should be
+                if(lo instanceof FunctionOfLogObject) {
+                    //calculate the difference between this objects domain and the value the user clicked
+                    if(Math.abs(((FunctionOfLogObject) lo).getX() - val) < closestVal) {
+                        //if its closer, save this as closest
+                        closestVal = Math.abs(((FunctionOfLogObject) lo).getX() - val);
+                    }
+                }
+            }
+            //find what its domain is
+            String goTo = finding.substring(0,finding.indexOf(','));
+            //see if there is a Time, with that domain as its range
+            if(dataMap.tags.contains("Time," + goTo)) {
+                //get the tag for the function of time
+                String toSearch = "Time," + goTo;
+                //for each logobject of the base function
+                for(LogObject lo : dataMap.getList(toSearch)) {
+                    if(lo instanceof SimpleLogObject) {
+                        if(((SimpleLogObject) lo).getValue() == closestVal) {
+                            return lo.getTime();
+                        }
+                    }
+                }
+            }
+        }
+        //return what we stored as time
+        //this value is either -1 for no value found or the time realted to the other domain the user clicked
+        return time;
+    }
+    
+    /**
+     * Returns the Lap object from the lapBreaker list given a lapNumber
+     * @param lapNumber the lapNumber we are looking for
+     * @return the Lap with the given lapNumber, null if not found
+     */
+    private Lap getLapFromLapNumber(int lapNumber) {
+        Lap toReturn = null;
+        for(Lap l : lapBreaker) {
+            if(l.lapNumber == lapNumber)
+                toReturn = l;
+            break;
+        }
+        return toReturn;
+        
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JLabel averageText;
     private javax.swing.JList<String> categoryList;

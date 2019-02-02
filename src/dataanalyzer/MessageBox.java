@@ -19,6 +19,7 @@ public class MessageBox extends javax.swing.JFrame {
         initComponents();
         //Sets textArea to string
         messageArea.setText(text);
+        this.setVisible(true);
     }
 
     /**

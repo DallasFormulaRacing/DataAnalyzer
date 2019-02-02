@@ -41,6 +41,8 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
         
         //check if all the given markers have the same note
         boolean allSame = true;
+        if(markers.length == 0)
+            return;
         if(markers[0] != null) {
             String note = markers[0].getNotes();
             for(CategorizedValueMarker marker : markers) {
@@ -74,6 +76,7 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        applyButton.setBackground(new java.awt.Color(0, 122, 255));
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

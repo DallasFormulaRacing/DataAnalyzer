@@ -96,6 +96,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
         channelTitleText.setName(""); // NOI18N
         jScrollPane1.setViewportView(channelTitleText);
 
+        createChannelButton.setBackground(new java.awt.Color(0, 122, 255));
         createChannelButton.setText("Create Channel");
         createChannelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
