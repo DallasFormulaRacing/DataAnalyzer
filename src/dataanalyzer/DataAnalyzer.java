@@ -27,7 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -107,6 +109,24 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     public DataAnalyzer() {
         initComponents();
+        
+        //set window listener
+        DataAnalyzer curr = this;
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                int promptResult = JOptionPane.showConfirmDialog(curr, 
+                    "Would you like to save before closing this window?", "Save Before Close?", 
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+                
+                switch(promptResult) {
+                    case JOptionPane.YES_OPTION : saveFile(openedFilePath); curr.dispose(); break;
+                    case JOptionPane.NO_OPTION : curr.dispose(); break;
+                    case JOptionPane.CANCEL_OPTION : break;
+                }
+            }
+        });
         
         //start with not currently opening a file
         openingAFile = false;
@@ -735,11 +755,13 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         minText = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        newWindowMenuItem = new javax.swing.JMenuItem();
         newImportMenuItem = new javax.swing.JMenuItem();
         openBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         exportMenuItem = new javax.swing.JMenuItem();
+        closeMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
@@ -752,7 +774,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         importVehicleMenuItem = new javax.swing.JMenuItem();
         editVehicleMenuItem = new javax.swing.JMenuItem();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
         setResizable(false);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -953,6 +975,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         fileMenu.setText("File");
 
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setText("New Window");
+        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newWindowMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newWindowMenuItem);
+
         newImportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newImportMenuItem.setText("New Import");
         newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -997,6 +1028,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         fileMenu.add(exportMenuItem);
+
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
+        closeMenuItem.setText("Exit");
+        closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(closeMenuItem);
 
         menuBar.add(fileMenu);
 
@@ -1277,6 +1317,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     EquationEvaluater.evaluate("$(" + dataMap.table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", dataMap, dataMap.table[i].getFirst().getTAG().substring(dataMap.table[i].getFirst().getTAG().indexOf(",") + 1, dataMap.table[i].getFirst().getTAG().length()));
             }
         }
+        
+        //finish file operations
+        openingAFile = false;
     }//GEN-LAST:event_newImportMenuItemActionPerformed
 
     private void newVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleMenuItemActionPerformed
@@ -1511,6 +1554,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
     }//GEN-LAST:event_lapListKeyReleased
 
+    private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newWindowMenuItemActionPerformed
+        DataAnalyzer da = new DataAnalyzer();
+        da.setVisible(true);
+        da.setLocation(100, 100);
+    }//GEN-LAST:event_newWindowMenuItemActionPerformed
+
+    private void closeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeMenuItemActionPerformed
+        if (JOptionPane.showConfirmDialog(this, 
+            "Are you sure you want to close the program? This will close all windows.", "Close Window?", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+    }//GEN-LAST:event_closeMenuItemActionPerformed
+
     private void importVehicleData(String filepath) {
         //create scanner to read file
         Scanner scanner = null;
@@ -1694,8 +1752,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             new MessageBox("Error: File not found").setVisible(true);
         }
         
-        //finish file operations
-        openingAFile = false;
         
     }
     
@@ -2282,6 +2338,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel averageText;
     private javax.swing.JList<String> categoryList;
     private javax.swing.JInternalFrame chartFrame;
+    private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JList<String> dataList;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
@@ -2308,6 +2365,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel minText;
     private javax.swing.JMenuItem newImportMenuItem;
     private javax.swing.JMenuItem newVehicleMenuItem;
+    private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JMenuItem openBtn;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
