@@ -110,6 +110,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public DataAnalyzer() {
         initComponents();
         
+        this.setTitle("DataAnalyzer");
+        
         //set window listener
         DataAnalyzer curr = this;
         this.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1147,6 +1149,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     // approve selection if it is a .csv file
                     if (fileExtension.equals(".dfr")) {
                         super.approveSelection();
+                        setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
                     } else {
                         // display error message - that selection should not be approve
                         new MessageBox("Error: Selection could not be approved").setVisible(true);
@@ -1268,6 +1271,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
                     // approve selection if it is a .csv file
                     if (fileExtension.equals(".csv")) {
+                        setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
                         super.approveSelection();
                     } else {
                         // display error message - that selection should not be approved
