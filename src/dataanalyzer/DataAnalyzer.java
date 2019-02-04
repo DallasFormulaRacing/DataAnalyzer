@@ -656,8 +656,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //call the method to draw the markers
         drawMarkers(titleToTag(), plot);
-        
 
+        String[] titles = titleToTag();
+        int index = 0;
         // String object that holds values for all the series on the plot.
         String yCordss = "";
         // Repeat the loop for each series in the plot
@@ -668,7 +669,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 // Get the y value for the current series.
                 double val = DatasetUtilities.findYValue(col, j, xCor);
                 // Add the value to the string
-                yCordss += String.format("%.2f", val) + ", ";
+                yCordss += (titles[index].substring(titles[index].indexOf(',')+1)) + ":" + String.format("%.2f", val) + ", ";
+                index++;
             }
         }
         
