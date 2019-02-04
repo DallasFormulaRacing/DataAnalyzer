@@ -1307,6 +1307,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //Create time vs distance
         if(dataMap.tags.contains("Time,WheelspeedFront"))
             EquationEvaluater.evaluate("($(Time,WheelspeedFront) * (2 * 3.14159 * 10.2)", dataMap, "Time,Distance");
+        
+        //Create sucky sucky in asain accent
+        if(dataMap.tags.contains("Time,WheelspeedFront") && dataMap.tags.contains("Time,WheelspeedFront")) {
+            EquationEvaluater.evaluate("($(Time,Barometer) - ($(Time,MAP))", dataMap, "Time,SuckySucky");
+        }
 
         //Perform Operations
         //TODO: FILTERING
