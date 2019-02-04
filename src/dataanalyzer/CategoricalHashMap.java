@@ -45,9 +45,13 @@ public class CategoricalHashMap {
     private void put(LogObject lo, LinkedList<LogObject>[] table) {
         //calculate the index from the tag
         int index = Math.abs(lo.getTAG().hashCode()) % table.length;
+                
+        //should we broadcast at the end of adding
+        boolean toBroadcast = false;
+        
         if(!tags.contains(lo.getTAG())) {
             tags.add(lo.getTAG());
-            broadcastSizeChange();
+            toBroadcast = true;
         }
 
         //find next null, empty, or matching tag position
@@ -62,6 +66,10 @@ public class CategoricalHashMap {
         table[index].add(lo);
         //check table load
         checkLoad();
+        
+        //if a tag was added broadcast was changed
+        if(toBroadcast)
+            broadcastSizeChange();
     }
     
     public void put(LinkedList<LogObject> los) {
@@ -72,10 +80,13 @@ public class CategoricalHashMap {
         //get the index based on the first element of the list. Assume all other elements are the same
         int index = Math.abs(los.get(0).getTAG().hashCode()) % table.length;
         
+        //should we broadcast at the end of adding
+        boolean toBroadcast = false;
+        
         //if the tag of the first element does not exist add it to the list of tags
         if(!tags.contains(los.get(0).getTAG())) {
             tags.add(los.get(0).getTAG());
-            broadcastSizeChange();
+            toBroadcast = true;
         }
         
         //find next null, empty, or matching tag position
@@ -89,6 +100,10 @@ public class CategoricalHashMap {
         
         //check the load
         checkLoad();
+        
+        //if a tag was added broadcast was changed
+        if(toBroadcast)
+            broadcastSizeChange();
         
     }
     
