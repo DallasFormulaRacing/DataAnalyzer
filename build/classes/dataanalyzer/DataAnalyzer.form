@@ -80,7 +80,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="closeMenuItem">
               <Properties>
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
-                  <KeyStroke key="Ctrl+X"/>
+                  <KeyStroke key="Ctrl+Q"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Exit"/>
               </Properties>

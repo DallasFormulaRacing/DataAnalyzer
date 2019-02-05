@@ -41,6 +41,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.panel.CrosshairOverlay;
 import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
@@ -64,10 +65,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // X and Y crosshairs
     Crosshair xCrosshair;
     Crosshair yCrosshair;
-
     // X and Y vals
     public double xCor = 0;
     public double yCor = 0;
+    //Crosshair
+    CrosshairOverlay overlay;
 
     // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
     CategoricalHashMap dataMap;
@@ -175,10 +177,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         statisticsPanel.setSize(screenSize.width - statisticsPanel.getX(), statisticsPanel.getHeight());
         
         // Create the global object crosshairs
+        overlay = new CrosshairOverlay();
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
-        this.yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-        this.yCrosshair.setLabelVisible(true);
+        overlay.addDomainCrosshair(xCrosshair);
+        chartPanel.addOverlay(overlay);
         
         //init the array
         titles = new String[10];
@@ -321,6 +324,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
+        chartPanel.addOverlay(overlay);
         // Set the size of the panel
         chartPanel.setSize(new java.awt.Dimension(800, 600));
 
@@ -641,7 +645,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         XYPlot plot = (XYPlot) chart.getPlot();
         // Clear all markers
         // This will be a problem for static markers we want to create
-        plot.clearDomainMarkers();
         // Get the xAxis
         ValueAxis xAxis = plot.getDomainAxis();
         // Get the xCordinate from the xPositon of the mouse
@@ -649,15 +652,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 RectangleEdge.BOTTOM);
         // Find the y cordinate from the plots data set given a x cordinate
         yCor = DatasetUtilities.findYValue(plot.getDataset(), 0, xCor);
-        // Create a marker at the x Coordinate with black paint
-        ValueMarker marker = new ValueMarker(xCor);
-        marker.setPaint(Color.BLACK);
-        // Add a marker on the x axis given a marker. This essentially makes the marker verticle
-        plot.addDomainMarker(marker);
-       
-        
-        //call the method to draw the markers
-        drawMarkers(titleToTag(), plot);
 
         String[] titles = titleToTag();
         int index = 0;
@@ -684,12 +678,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // Set this objects crosshair data to the value we have
         this.xCrosshair.setValue(xCor);
-        this.yCrosshair.setValue(yCor);
     }
     
     private void drawMarkers(String[] tags, XYPlot plot) {
         ArrayList<String> lapMarkers = new ArrayList<>();
         ArrayList<String> markerList = new ArrayList<>();
+        plot.clearDomainMarkers();
         //which dataset we are on
         int count = 0;
         for(String tag : tags) {
@@ -722,7 +716,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             count++;
         }
         
-        if(markerList.isEmpty()) {
+        if(markerList.isEmpty() && lapMarkers.isEmpty()) {
             staticMarkersList.setListData(new String[0]);
         } else {
             ArrayList<String> compile = new ArrayList<>();
