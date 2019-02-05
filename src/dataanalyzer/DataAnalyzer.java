@@ -703,10 +703,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     v.getMarker().setPaint(getColorFromIndex(count));
                     plot.addDomainMarker(v.getMarker());
                     XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(count);
-                    //insert the marker data into current index
-                    markerList.add("(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
+                    //if its a lap marker, show all other markers first
+                    if(v.getNotes().matches("Start Lap[0-9]+") || v.getNotes().matches("End Lap[0-9]+")) {
+                        lapMarkers.add("(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
                             String.format("%.2f", DatasetUtilities.findYValue(col,0,markers.get(k).getMarker().getValue())) + 
                             ") " + v.getNotes());
+                    } else {
+                        markerList.add("(" + String.format("%.2f", markers.get(k).getMarker().getValue()) + ", " +
+                            String.format("%.2f", DatasetUtilities.findYValue(col,0,markers.get(k).getMarker().getValue())) + 
+                            ") " + v.getNotes());
+                    }
                     k++;
                 }
 
@@ -718,7 +724,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         if(markerList.isEmpty()) {
             staticMarkersList.setListData(new String[0]);
         } else {
-            staticMarkersList.setListData(markerList.toArray(new String[markerList.size()]));
+            ArrayList<String> compile = new ArrayList<>();
+            compile.addAll(markerList);
+            compile.addAll(lapMarkers);
+            staticMarkersList.setListData(compile.toArray(new String[compile.size()]));
         }
         
         

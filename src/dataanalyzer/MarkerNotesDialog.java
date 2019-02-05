@@ -139,13 +139,19 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
-        //Apply notes to the provided markers
-        for(CategorizedValueMarker marker : markers) {
-            if(marker != null)
-                marker.setNotes(notesTextArea.getText());
+        String note = notesTextArea.getText();
+        //if reserved note, fail to add and let user know
+        if(note.matches("Start Lap[0-9]+") || note.matches("End Lap[0-9]+"))
+            new MessageBox("Please do not follow the format of \"Start/End Lap#\"").setVisible(true);
+        else {
+            //Apply notes to the provided markers
+            for(CategorizedValueMarker marker : markers) {
+                if(marker != null)
+                    marker.setNotes(note);
+            }
+            //close dialog after finished
+            this.dispose();
         }
-        //close dialog after finished
-        this.dispose();
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
