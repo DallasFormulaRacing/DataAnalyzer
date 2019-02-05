@@ -688,6 +688,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     private void drawMarkers(String[] tags, XYPlot plot) {
+        ArrayList<String> lapMarkers = new ArrayList<>();
         ArrayList<String> markerList = new ArrayList<>();
         //which dataset we are on
         int count = 0;
@@ -1473,14 +1474,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 //get the corresponding CategorizedValueMarker
                 for(String tag : tags) {
                     CategorizedValueMarker currMarker = getMarkerFromString(tag, "" + model.getElementAt(selectedDomains[i]));
-                    if(currMarker != null) {
+                    if(currMarker != null && !(currMarker.getNotes().matches("Start Lap[0-9]+") || currMarker.getNotes().matches("End Lap[0-9]+"))) {
                         markers.add(currMarker);
                     }
                 }
             }
-            
+
             //launch notes dialog
-            new MarkerNotesDialog(markers.toArray(new CategorizedValueMarker[markers.size()])).setVisible(true);
+            if(markers.size() > 0)
+                new MarkerNotesDialog(markers.toArray(new CategorizedValueMarker[markers.size()])).setVisible(true);
         }
         
     }//GEN-LAST:event_staticMarkersListMouseClicked
