@@ -1554,10 +1554,18 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     //begin the lapbreaker
     private void addLapConditionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLapConditionMenuItemActionPerformed
-        //set the lapBreaker to active, this changes the functionality of clicking on the chart
-        lapBreakerActive = 0;
-        //Display message box with instructions
-        new MessageBox("Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.").setVisible(true);
+        //if the lapbreaker is not already active
+        if(lapBreakerActive == -1) {
+            newLap = new Lap();
+            //set the lapBreaker to active, this changes the functionality of clicking on the chart
+            lapBreakerActive = 0;
+            //Display message box with instructions
+            new MessageBox("Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.").setVisible(true);
+        } else {
+            //replace with toast
+            new MessageBox("Adding of Lap cancelled.").setVisible(true);
+            lapBreakerActive = 0;
+        }
     }//GEN-LAST:event_addLapConditionMenuItemActionPerformed
 
     private void lapListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_lapListKeyReleased
