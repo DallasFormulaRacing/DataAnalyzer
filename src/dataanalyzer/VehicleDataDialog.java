@@ -17,7 +17,7 @@ import javax.swing.event.ListSelectionListener;
  *
  * @author aribdhuka
  */
-public class VehicleDataDialog extends javax.swing.JFrame {
+public class VehicleDataDialog extends javax.swing.JDialog {
 
     
     private final static String[] neededVariables = {"Mass", "MotionRatio", "RollingResistance",
@@ -32,7 +32,8 @@ public class VehicleDataDialog extends javax.swing.JFrame {
     /**
      * Creates new form VehicleDataDialog
      */
-    public VehicleDataDialog() {
+    public VehicleDataDialog(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         initComponents();
         //create new vehicle data if not provided
         vehicleData = new VehicleData();
@@ -44,7 +45,8 @@ public class VehicleDataDialog extends javax.swing.JFrame {
         configureListeners();
     }
     
-    public VehicleDataDialog(VehicleData vehicleData, String buttonName) {
+    public VehicleDataDialog(java.awt.Frame parent, boolean modal, VehicleData vehicleData, String buttonName) {
+        super(parent, modal);
         initComponents();
         //set last index visited to 0
         lastIndex = 0;
@@ -169,40 +171,6 @@ public class VehicleDataDialog extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_dataTextAreaKeyReleased
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VehicleDataDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VehicleDataDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VehicleDataDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VehicleDataDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new VehicleDataDialog().setVisible(true);
-            }
-        });
-    }
     
     //updates dataTextArea from the data already present in vehicle data
     private void updateTextFieldFromData() {

@@ -6,6 +6,7 @@
 package dataanalyzer;
 
 import com.arib.categoricalhashtable.*;
+import com.arib.toast.Toast;
 import com.sun.glass.events.KeyEvent;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -666,8 +667,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 double val = DatasetUtilities.findYValue(col, j, xCor);
                 // Add the value to the string
                 yCordss += (titles[index].substring(titles[index].indexOf(',')+1)) + ":" + String.format("%.2f", val) + ", ";
-                index++;
             }
+            index++;
         }
         
         yCordss = yCordss.substring(0, yCordss.length() - 2);
@@ -1291,7 +1292,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         if (choice == JFileChooser.APPROVE_OPTION) {
             String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
             openedFilePath = chosenFilePath;
-            importCSV(chosenFilePath);
+            boolean shouldContinue = askForVehicle();
+            if(shouldContinue)
+                importCSV(chosenFilePath);
         }
         
         //if nothing was loaded do not try to do math channels
@@ -1339,7 +1342,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     private void newVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleMenuItemActionPerformed
         //open vehicle data dialog
-        new VehicleDataDialog(vehicleData, "Create").setVisible(true);
+        new VehicleDataDialog(this, true, vehicleData, "Create").setVisible(true);
     }//GEN-LAST:event_newVehicleMenuItemActionPerformed
 
     private void importVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importVehicleMenuItemActionPerformed
@@ -1383,7 +1386,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     private void editVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editVehicleMenuItemActionPerformed
         //open VehicleDataDialog
-        new VehicleDataDialog(vehicleData, "Apply").setVisible(true);
+        new VehicleDataDialog(this, true, vehicleData, "Apply").setVisible(true);
     }//GEN-LAST:event_editVehicleMenuItemActionPerformed
 
     private void saveVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveVehicleMenuItemActionPerformed
@@ -2353,7 +2356,43 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             break;
         }
         return toReturn;
+    }
+    
+    /**
+     * Ask the user if they want to create a vehicle before the auto dataset creation takes place
+     * @return returns true if not cancel false if cancel was pressed.
+     */
+    private boolean askForVehicle() {
+        //holds the return code by reference
+        int[] returnCode = new int[1];
+        //create the Dialog to ask the user
+        AskVehicleDialog avd = new AskVehicleDialog(this, true, returnCode);
+        avd.setVisible(true);
+        //wait for a return code
+        while(returnCode[0] == 0) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         
+        //the boolean to return.
+        boolean toReturn = true;
+        
+        //create a vehicle data dialog just in case we need it, for proper encapsulation
+        VehicleDataDialog vdd = new VehicleDataDialog(this, true, vehicleData, "Create");
+        //depending on our return code
+        switch(returnCode[0]) {
+            //if the user cancelled, display the cancel message
+            case AskVehicleDialog.OPTION_CANCEL : Toast.makeToast(this, "Opening File Cancelled.", Toast.DURATION_MEDIUM); toReturn = false; break;
+            //if the user said they would import a vehicle open the file chooser. 
+            case AskVehicleDialog.OPTION_IMPORT : importVehicleMenuItemActionPerformed(null); break;
+            //if the user said they would create a new vehicle, show the vehicle data dialog
+            case AskVehicleDialog.OPTION_NEW    : vdd.setVisible(true); break;
+        }
+        
+        return toReturn;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
