@@ -180,7 +180,6 @@ public class VehicleDataDialog extends javax.swing.JDialog {
     
     //updates the neededVariablesList of variables that are still needed
     private void updateNeededVarsList() {
-        //TODO: DEAR GOD PLEASE UPDATE THIS. THIS IS TRASH.
         //split the lines on the newlines
         String[] lines = dataTextArea.getText().split("\n");
         
