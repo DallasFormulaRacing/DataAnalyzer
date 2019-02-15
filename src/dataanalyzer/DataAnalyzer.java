@@ -2166,11 +2166,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.write(sb.toString());
                         //close the file writer
                         fw.close();
+                        //Display success Toast
+                        Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
                         new MessageBox("Error: FileWriter could not be opened").setVisible(true);
-                        System.out.println(e.getMessage());
                     }
                 }
                 else {
@@ -2180,11 +2181,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.write(sb.toString());
                         //close the file writer
                         fw.close();
+                        //Display Success Toast
+                        Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
                         new MessageBox("Error: FileWriter could not be opened ").setVisible(true);
-                        System.out.println(e.getMessage());
                     }
                 }
             } else {
