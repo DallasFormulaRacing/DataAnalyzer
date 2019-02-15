@@ -2234,6 +2234,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             try(FileWriter fw = new FileWriter(new File(filename))) {
                 fw.write(sb.toString());
                 fw.close();
+                //Display Success Toast
+                Toast.makeToast(this, "Saved file", Toast.DURATION_LONG);
             } catch (IOException e) {
                 //error message displayed
                 new MessageBox("Error: File could not be written to").setVisible(true);
