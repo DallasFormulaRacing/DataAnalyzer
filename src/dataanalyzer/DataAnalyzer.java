@@ -1166,6 +1166,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         };
 
         // showOpenDialog returns the chosen option and if it as an approve
+        fileChooser.setMultiSelectionEnabled(false);
         //  option then the file should be imported and opened
         int choice = fileChooser.showOpenDialog(null);
         if (choice == JFileChooser.APPROVE_OPTION) {
@@ -1264,34 +1265,48 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             //  the selection if its is a .csv file.
             @Override
             public void approveSelection() {
-                File chosenFile = getSelectedFile();
+//                File chosenFile = getSelectedFile();
+                File[] chosenFiles = getSelectedFiles();
+                boolean toApprove = true;
+                for(File chosenFile : chosenFiles) {
+                    // Make sure that the chosen file exists
+                    if (chosenFile.exists()) {
+                        // Get the file extension to make sure it is .csv
+                        String filePath = chosenFile.getAbsolutePath();
+                        int lastIndex = filePath.lastIndexOf(".");
+                        String fileExtension = filePath.substring(lastIndex,
+                                filePath.length());
 
-                // Make sure that the chosen file exists
-                if (chosenFile.exists()) {
-                    // Get the file extension to make sure it is .csv
-                    String filePath = chosenFile.getAbsolutePath();
-                    int lastIndex = filePath.lastIndexOf(".");
-                    String fileExtension = filePath.substring(lastIndex,
-                            filePath.length());
+                        // approve selection if it is a .csv file
+                        if (fileExtension.equals(".csv") || fileExtension.equals(".txt")) {
+//                            setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+//                            super.approveSelection();
+                        } else {
+                            toApprove = false;
+                            // display error message - that selection should not be approved
+                            new MessageBox("Error: Wrong File Type").setVisible(true);
+                            this.cancelSelection();
+                        }
 
-                    // approve selection if it is a .csv file
-                    if (fileExtension.equals(".csv")) {
-                        setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
-                        super.approveSelection();
-                    } else {
-                        // display error message - that selection should not be approved
-                        new MessageBox("Error: Wrong File Type").setVisible(true);
-                        this.cancelSelection();
                     }
-
+                }
+                
+                if(toApprove) {
+                    if(chosenFiles.length > 0) {
+                        setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0]
+                                .getAbsolutePath().substring(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/')));
+                        super.approveSelection();
+                    }
                 }
             }
         };
         
+        //see if approved
+        fileChooser.setMultiSelectionEnabled(true);
         int choice = fileChooser.showOpenDialog(null);
+        //if approved
         if (choice == JFileChooser.APPROVE_OPTION) {
-            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
-            openedFilePath = chosenFilePath;
+            //ask the user to import a vehicle. if any but cancel pressed continue
             boolean shouldContinue = askForVehicle();
             if(shouldContinue)
                 importCSV(chosenFilePath);
@@ -1333,11 +1348,79 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             if(dataMap.table[i] != null && !dataMap.table[i].isEmpty() && dataMap.table[i].getFirst().getTAG().contains("Time")) {
                 if(!dataMap.table[i].getFirst().getTAG().equals("Time,Distance"))
                     EquationEvaluater.evaluate("$(" + dataMap.table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", dataMap, dataMap.table[i].getFirst().getTAG().substring(dataMap.table[i].getFirst().getTAG().indexOf(",") + 1, dataMap.table[i].getFirst().getTAG().length()));
+            if(shouldContinue) {
+                //get array of chosenFiles
+                File[] chosenFiles = fileChooser.getSelectedFiles();
+                //should we create a new window?
+                boolean toCreateNewWindow = false;
+                //holds new window number opened
+                int windowCount = 0;
+                //for each file
+                for(File chosenFile : chosenFiles) {
+                    //if we need to create a new window
+                    if(toCreateNewWindow) {
+                        //new window object
+                        DataAnalyzer da = new DataAnalyzer();
+                        //set vehicle data
+                        da.vehicleData = this.vehicleData; //May need to clone
+                        //get file path
+                        String chosenFilePath = chosenFile.getAbsolutePath();
+                        //set the file path for that object
+                        da.openedFilePath = chosenFilePath;
+                        //get index of the last .
+                        int lastIndex = openedFilePath.lastIndexOf(".");
+                        //get file extension
+                        String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+                        //if its a csv
+                        if(fileExtension.equals(".csv")) {
+                            //make the new window import a CSV
+                            da.importCSV(chosenFilePath);
+                        //else if its a TXT make the new window import a CSV
+                        } else if (fileExtension.equals(".txt")) {
+                            da.importTXT(chosenFilePath);
+                        }
+                        da.applyPostProcessing();
+                        da.setVisible(true);
+                        da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                        da.setLocation(100*windowCount, 100*windowCount);
+                    //if we are not to create a new window
+                    } else {
+                        //get file path
+                        String chosenFilePath = chosenFile.getAbsolutePath();
+                        //set this windows last opened filepath to the current filepath
+                        openedFilePath = chosenFilePath;
+                        //get the index of last .
+                        int lastIndex = openedFilePath.lastIndexOf(".");
+                        //get file extension
+                        String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+                        //if CSV
+                        if(fileExtension.equals(".csv")) {
+                            //import CSV
+                            importCSV(chosenFilePath);
+                        //if TXT
+                        } else if (fileExtension.equals(".txt")) {
+                            //import TXT
+                            importTXT(chosenFilePath);
+                        }
+                        applyPostProcessing();
+                        toCreateNewWindow = true;
+                    }
+                    windowCount++;
+                }
             }
+//            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+//            openedFilePath = chosenFilePath;
+//            boolean shouldContinue = askForVehicle();
+//            if(shouldContinue) {
+//                int lastIndex = openedFilePath.lastIndexOf(".");
+//                String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+//                if(fileExtension.equals(".csv")) {
+//                    importCSV(chosenFilePath);
+//                } else if (fileExtension.equals(".txt")) {
+//                    importTXT(chosenFilePath);
+//                }
+//            }
         }
-        
-        //finish file operations
-        openingAFile = false;
     }//GEN-LAST:event_newImportMenuItemActionPerformed
 
     private void newVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleMenuItemActionPerformed
@@ -1729,6 +1812,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         return tags;
     }
 
+    public void importTXT(String filepath) {
+        openingAFile = true;
+        TXTParser.parse(dataMap, filepath);
+    }
     
     public void importCSV(String filepath) {
         //begin file operations
