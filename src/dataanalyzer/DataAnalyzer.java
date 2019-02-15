@@ -1438,7 +1438,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }//GEN-LAST:event_saveVehicleMenuItemActionPerformed
 
     private void categoryListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_categoryListKeyReleased
-        // TODO add your handling code here:
     }//GEN-LAST:event_categoryListKeyReleased
 
     private void histogramMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramMenuItemActionPerformed
@@ -1604,7 +1603,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         } else {
             //replace with toast
             new MessageBox("Adding of Lap cancelled.").setVisible(true);
-            lapBreakerActive = 0;
+            lapBreakerActive = -1;
         }
     }//GEN-LAST:event_addLapConditionMenuItemActionPerformed
 
