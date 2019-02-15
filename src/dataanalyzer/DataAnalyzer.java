@@ -250,7 +250,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         XYSeriesCollection data = getHistogramDataCollection(tags, lapList.getSelectedIndices());
         
         // Gets the independent variable from the title of the data
-        String yAxis = "Instances";
+        String yAxis = "Milliseconds";
         // Gets the dependent variable from the title of the data
         String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
         
@@ -508,7 +508,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     }
                     //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
                     if(counter != 0)
-                        series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter); //TODO, make counter estimate the amount of time spent in this interval.
+                        series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
                 }
 
 
