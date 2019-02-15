@@ -1308,46 +1308,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         if (choice == JFileChooser.APPROVE_OPTION) {
             //ask the user to import a vehicle. if any but cancel pressed continue
             boolean shouldContinue = askForVehicle();
-            if(shouldContinue)
-                importCSV(chosenFilePath);
-        }
-        
-        //if nothing was loaded do not try to do math channels
-        if(dataMap.isEmpty())
-            return;
-        
-        //load wheelspeed averages
-        
-        //calculate front wheel speed averages
-        if(dataMap.tags.contains("Time,WheelspeedFR") && dataMap.tags.contains("Time,WheelspeedFL"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedFR)) * ($(Time,WheelspeedFL)) / 2", dataMap, "Time,WheelspeedFront");
-        
-        //calculate rear wheel speed averages
-        if(dataMap.tags.contains("Time,WheelspeedRR") && dataMap.tags.contains("Time,WheelspeedRL"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedRR)) * ($(Time,WheelspeedRL)) / 2", dataMap, "Time,WheelspeedRear");
-        
-        //calculate full average
-        if(dataMap.tags.contains("Time,WheelspeedRear") && dataMap.tags.contains("Time,WheelspeedFront"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedRear)) * ($(Time,WheelspeedFront)) / 2", dataMap, "Time,WheelspeedAvg");
-        
-        //Create time vs distance
-        if(dataMap.tags.contains("Time,WheelspeedFront"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedFront) * (2 * 3.14159 * 10.2)", dataMap, "Time,Distance");
-        
-        //Create sucky sucky in asain accent
-        if(dataMap.tags.contains("Time,WheelspeedFront") && dataMap.tags.contains("Time,WheelspeedFront")) {
-            EquationEvaluater.evaluate("($(Time,Barometer) - ($(Time,MAP))", dataMap, "Time,SuckySucky");
-        }
-
-        //Perform Operations
-        //TODO: FILTERING
-        EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataMap, "CoolantCelcius");
-        
-        //Create Distance Channels for all datasets that do not contain "Time"
-        for(int i = 0; i < dataMap.table.length; i++) {
-            if(dataMap.table[i] != null && !dataMap.table[i].isEmpty() && dataMap.table[i].getFirst().getTAG().contains("Time")) {
-                if(!dataMap.table[i].getFirst().getTAG().equals("Time,Distance"))
-                    EquationEvaluater.evaluate("$(" + dataMap.table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", dataMap, dataMap.table[i].getFirst().getTAG().substring(dataMap.table[i].getFirst().getTAG().indexOf(",") + 1, dataMap.table[i].getFirst().getTAG().length()));
             if(shouldContinue) {
                 //get array of chosenFiles
                 File[] chosenFiles = fileChooser.getSelectedFiles();
@@ -1867,6 +1827,82 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         
         
+    }
+    
+    public void applyPostProcessing() {
+        //if nothing was loaded do not try to do math channels
+        if(dataMap.isEmpty())
+            return;
+        
+        //load wheelspeed averages
+        
+        //calculate front wheel speed averages
+        if(dataMap.tags.contains("Time,WheelspeedFR") && dataMap.tags.contains("Time,WheelspeedFL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFR)) * ($(Time,WheelspeedFL)) / 2", dataMap, "Time,WheelspeedFront");
+        
+        //calculate rear wheel speed averages
+        if(dataMap.tags.contains("Time,WheelspeedRR") && dataMap.tags.contains("Time,WheelspeedRL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRR)) * ($(Time,WheelspeedRL)) / 2", dataMap, "Time,WheelspeedRear");
+        
+        //calculate full average
+        if(dataMap.tags.contains("Time,WheelspeedRear") && dataMap.tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRear)) * ($(Time,WheelspeedFront)) / 2", dataMap, "Time,WheelspeedAvg");
+        
+        //Create time vs distance
+        if(dataMap.tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFront) * (2 * 3.14159 * 10.2)", dataMap, "Time,Distance");
+        
+        //Create sucky sucky in asain accent
+        if(dataMap.tags.contains("Time,Barometer") && dataMap.tags.contains("Time,MAP")) {
+            EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", dataMap, "Time,SuckySucky");
+        }
+        
+        //Create Average of Analog in 5v form
+        if(dataMap.tags.contains("Time,Analog3") && dataMap.tags.contains("Time,Analog4")) {
+            EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", dataMap, "Time,Lamda5VAveraged");
+        }
+        
+        //average the 5V output to AFR
+        //convert to AFR
+        if(dataMap.tags.contains("Time,Lamda5VAveraged")) {
+            EquationEvaluater.evaluate("2 * $(Time,Lamda5VAveraged) + 10", dataMap, "Time,AFRAveraged");
+        }
+        
+        if(dataMap.tags.contains("Time,Analog1")) {
+            EquationEvaluater.evaluate("(($(Time,Analog1)-.5)*(5000-0))/(4.5-.5)", dataMap, "Time,BrakePressureFront");
+        }
+        if(dataMap.tags.contains("Time,Analog2")) {
+            EquationEvaluater.evaluate("(($(Time,Analog2)-.5)*(5000-0))/(4.5-.5)", dataMap, "Time,BrakePressureRear");
+        }
+        if(dataMap.tags.contains("Time,BrakePressureRear") && dataMap.tags.contains("Time,BrakePressureRear")) {
+            //calculate force on caliper pistons
+            EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", dataMap, "Time,ForceOnCaliperPistonFront");
+            EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", dataMap, "Time,ForceOnCaliperPistonRear");
+            
+            //calcuate torque
+            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonFront)*.106588*2)", dataMap, "Time,EffectiveBrakeTorqueFront");
+            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonRear)*.0823*2)", dataMap, "Time,EffectiveBrakeTorqueRear");
+            
+        }
+        //TODO: what if no brakes are applied, divide by 0 error. above 5.1
+        if(dataMap.tags.contains("Time,EffectiveBrakeTorqueFront") && dataMap.tags.contains("Time,EffectiveBrakeTorqueRear")) {
+            EquationEvaluater.evaluate("$(Time,EffectiveBrakeTorqueFront)/($(Time,EffectiveBrakeTorqueFront) + $(Time,EffectiveBrakeTorqueRear))", dataMap, "Time,BrakeBalance", 0, 1);
+        }
+
+        //Perform Operations
+        //TODO: FILTERING
+        EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataMap, "CoolantCelcius");
+        
+        //Create Distance Channels for all datasets that do not contain "Time"
+        for(int i = 0; i < dataMap.table.length; i++) {
+            if(dataMap.table[i] != null && !dataMap.table[i].isEmpty() && dataMap.table[i].getFirst().getTAG().contains("Time")) {
+                if(!dataMap.table[i].getFirst().getTAG().equals("Time,Distance"))
+                    EquationEvaluater.evaluate("$(" + dataMap.table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", dataMap, dataMap.table[i].getFirst().getTAG().substring(dataMap.table[i].getFirst().getTAG().indexOf(",") + 1, dataMap.table[i].getFirst().getTAG().length()));
+            }
+        }
+        
+        //finish file operations
+        openingAFile = false;
     }
     
     public String hashMapToCSV(ArrayList<String> tags)
