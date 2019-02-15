@@ -40,6 +40,8 @@
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="noButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="importVehicleButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="newVehicleButton" min="-2" max="-2" attributes="0"/>
@@ -61,6 +63,7 @@
                   <Component id="newVehicleButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="importVehicleButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="noButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -100,6 +103,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="noButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="No"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="noButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

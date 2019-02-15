@@ -14,6 +14,7 @@ public class AskVehicleDialog extends javax.swing.JDialog {
     public static final int OPTION_CANCEL = -1;
     public static final int OPTION_IMPORT = 1;
     public static final int OPTION_NEW = 2;
+    public static final int OPTION_NO = 3;
     
     private int[] returnCode;
     /**
@@ -50,6 +51,7 @@ public class AskVehicleDialog extends javax.swing.JDialog {
         newVehicleButton = new javax.swing.JButton();
         importVehicleButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        noButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -78,6 +80,13 @@ public class AskVehicleDialog extends javax.swing.JDialog {
             }
         });
 
+        noButton.setText("No");
+        noButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                noButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -96,6 +105,8 @@ public class AskVehicleDialog extends javax.swing.JDialog {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(cancelButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(noButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(importVehicleButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newVehicleButton)))
@@ -112,7 +123,8 @@ public class AskVehicleDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(newVehicleButton)
                     .addComponent(importVehicleButton)
-                    .addComponent(cancelButton))
+                    .addComponent(cancelButton)
+                    .addComponent(noButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -133,6 +145,11 @@ public class AskVehicleDialog extends javax.swing.JDialog {
         returnCode[0] = OPTION_CANCEL;
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void noButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noButtonActionPerformed
+        returnCode[0] = OPTION_NO;
+        this.dispose();
+    }//GEN-LAST:event_noButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -181,6 +198,7 @@ public class AskVehicleDialog extends javax.swing.JDialog {
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton importVehicleButton;
     private javax.swing.JButton newVehicleButton;
+    private javax.swing.JButton noButton;
     private javax.swing.JLabel subBodyLabel;
     // End of variables declaration//GEN-END:variables
 }
