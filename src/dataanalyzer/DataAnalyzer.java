@@ -2514,6 +2514,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             case AskVehicleDialog.OPTION_IMPORT : importVehicleMenuItemActionPerformed(null); break;
             //if the user said they would create a new vehicle, show the vehicle data dialog
             case AskVehicleDialog.OPTION_NEW    : vdd.setVisible(true); break;
+            //if the user said no, import the file
+            case AskVehicleDialog.OPTION_NO     : break;
         }
         
         return toReturn;
