@@ -21,6 +21,11 @@ public class EquationEvaluater {
     public static void evaluate(String eq, CategoricalHashMap dataMap, String channelTag) {
         evaluate(eq, dataMap, new VehicleData(), channelTag);
     }
+    //if vehicleData is not provided, provide an empty copy
+    public static void evaluate(String eq, CategoricalHashMap dataMap, String channelTag, double lowBound, double upBound) {
+        evaluate(eq, dataMap, new VehicleData(), channelTag, lowBound, upBound);
+    }
+    
     
     public static void evaluate(String eq, CategoricalHashMap dataMap, VehicleData vehicleData, String channelTag) {
         String equationsStr = fixBuffers(eq);
@@ -88,7 +93,98 @@ public class EquationEvaluater {
                 values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
             }
             index++;
-            dataList.add(new SimpleLogObject("Time," + channelTag, values.pop(), time));
+            if(channelTag.contains("Time,"))
+                dataList.add(new SimpleLogObject(channelTag, values.pop(), time));
+            else
+                dataList.add(new SimpleLogObject("Time," + channelTag, values.pop(), time));
+        }
+        if(!dataList.isEmpty())
+            dataMap.put(dataList);
+        else
+            new MessageBox("No data elements created!").setVisible(true);
+        
+    }
+    
+    public static void evaluate(String eq, CategoricalHashMap dataMap, VehicleData vehicleData, String channelTag, double lowBound, double upBound) {
+        String equationsStr = fixBuffers(eq);
+        if(equationsStr.contains("asFunctionOf")) {
+            createFunctionOf(equationsStr, dataMap, vehicleData, channelTag);
+            return;
+        }
+        int varCount = validateEquation(equationsStr, dataMap, vehicleData);
+        int index = 0;
+        LinkedList<LogObject> dataList = new LinkedList<>();
+        while(index < varCount) {
+            double lastVal = 0;
+            long time = 0;
+            Stack<Double> values = new Stack<>();
+            Stack<String> operators = new Stack<>();
+            String[] equation = equationsStr.split(" ");
+            for(String element : equation) {
+                if(isANumber(element.charAt(0)) || element.charAt(0) == '.') {
+                    values.push(Double.parseDouble(element));
+                }
+                //if the element is a variable
+                else if(element.charAt(0) == '$') {
+                    String tag = element.substring(2, element.length() - 1);
+                    LogObject lo = dataMap.getList(tag).get(index); //oh no get index of linked list, maybe make use of an iterator here to keep position to save some time.
+                    time = lo.time;
+                    if(lo instanceof SimpleLogObject)
+                        values.push(((SimpleLogObject) lo).value);
+                    else
+                        break;
+                }
+                //if the element is a vehicle variables
+                else if(element.charAt(0) == '&') {
+                    //get the key
+                    String key = element.substring(2, element.length() - 1);
+                    //ask vehicle data for associating value
+                    double value = vehicleData.get(key);
+                    //push that value to the stack
+                    values.push(value);
+                }
+                //if its open parentheses
+                else if(element.charAt(0) == '(')
+                    operators.push(element);
+                //if closing
+                else if(element.charAt(0) == ')') {
+                    //do operations until we find open
+                    while(!operators.peek().equals("(")) {
+                        values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+                    }
+                    //discard open
+                    operators.pop();
+                }
+                //if its an operator
+                else if(isAOperator(element.charAt(0))) {
+                    //where operators is not empty and the next operator is greater than or the same operator
+                    while(!operators.isEmpty() && precendenceCheck(element.charAt(0), operators.peek().charAt(0)) >= 0) {
+                        //calc value
+                        values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+                    }
+                    //add current operator to stack
+                    operators.push(element);
+                }
+            }
+            //while operators are left
+            while(!operators.isEmpty()) {
+                //do operations
+                values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
+            }
+            index++;
+            
+            //check if the current value is within the bounds. If not, set curr value to be whatever the last value within the bounds was.
+            double currValue = values.pop();
+            if(currValue < lowBound || currValue > upBound) {
+                currValue = lastVal;
+            }
+            else {
+                lastVal = currValue;
+            }
+            if(channelTag.contains("Time,"))
+                dataList.add(new SimpleLogObject(channelTag, currValue, time));
+            else
+                dataList.add(new SimpleLogObject("Time," + channelTag, currValue, time));
         }
         if(!dataList.isEmpty())
             dataMap.put(dataList);
