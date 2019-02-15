@@ -23,8 +23,12 @@ public class CategoricalHashMap {
     //constant load factor. Do not exceed
     private final float loadFactor = .75f;
     
+    //holds true while rehashing
+    private boolean rehashing;
+    
     //constructor with base size of 20
     public CategoricalHashMap() {
+        rehashing = false;
         table = new LinkedList[20];
         tags = new ArrayList<>();
         listeners = new ArrayList<>();
@@ -32,6 +36,7 @@ public class CategoricalHashMap {
     
     //constructor that allows user to define size as long as > 20
     public CategoricalHashMap(int size) {
+        rehashing = false;
         table = new LinkedList[Math.max(size, 20)];
         tags = new ArrayList<>();
         listeners = new ArrayList<>();
@@ -98,8 +103,9 @@ public class CategoricalHashMap {
         //put the list here
         table[index] = los;
         
-        //check the load
-        checkLoad();
+        //check the load if not already rehashing
+        if(!rehashing)
+            checkLoad();
         
         //if a tag was added broadcast was changed
         if(toBroadcast)
@@ -145,6 +151,8 @@ public class CategoricalHashMap {
     
     //extremely expensive function
     private void rehash() {
+        //start rehashing
+        rehashing = true;
         //create new table
         LinkedList<LogObject>[] newTable = new LinkedList[table.length * 2];
         //for each index
@@ -158,6 +166,8 @@ public class CategoricalHashMap {
         
         //current table = new table
         table = newTable;
+        //stop rehashing
+        rehashing = false;
     }
     
     private void broadcastSizeChange() {
