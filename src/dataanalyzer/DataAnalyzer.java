@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
@@ -100,6 +101,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //holds if file operations are currently ongoing
     private boolean openingAFile;
     
+    //holds the default positions of the chartFrame
+    private int frameLocX;
+    private int frameLocY;
+    
     //String array that populates the categories list
     //TODO: add tags to each list element.
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
@@ -113,6 +118,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     public DataAnalyzer() {
         initComponents();
         
+        //Set the title of the frame
         this.setTitle("DataAnalyzer");
         
         //set window listener
@@ -196,6 +202,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             categoryListData[i] = analysisCategories[i].getTitle();
         }
         categoryList.setListData(categoryListData);
+        
+        //set default locations of the chartFrame
+        frameLocX = chartFrame.getX();
+        frameLocY = chartFrame.getY();
     }
 
     private void showEmptyGraph() {
@@ -790,6 +800,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         chartFrame.setPreferredSize(new java.awt.Dimension(899, 589));
         chartFrame.setVisible(true);
+        chartFrame.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentMoved(java.awt.event.ComponentEvent evt) {
+                chartFrameComponentMoved(evt);
+            }
+        });
 
         javax.swing.GroupLayout chartFrameLayout = new javax.swing.GroupLayout(chartFrame.getContentPane());
         chartFrame.getContentPane().setLayout(chartFrameLayout);
@@ -1637,6 +1652,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 System.exit(0);
             }
     }//GEN-LAST:event_closeMenuItemActionPerformed
+
+    private void chartFrameComponentMoved(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_chartFrameComponentMoved
+        //set the location back to default
+        chartFrame.setLocation(frameLocX, frameLocY);
+    }//GEN-LAST:event_chartFrameComponentMoved
 
     private void importVehicleData(String filepath) {
         //create scanner to read file
