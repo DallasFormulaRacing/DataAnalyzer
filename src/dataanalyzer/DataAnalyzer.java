@@ -107,7 +107,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear"),
         new AnalysisCategory("Coolant").addTag("Time,Coolant").addTag("Time,RadiatorInlet"), 
         new AnalysisCategory("Acceleration").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ").addTag("Time,RPM").addTag("Time,WheelspeedFront").addTag("Time,WheelspeedRear"),
-        new AnalysisCategory("Endurance"), 
+        new AnalysisCategory("Endurance").addTag("Time,RPM"), 
         new AnalysisCategory("Skidpad")};
 
     public DataAnalyzer() {
@@ -1388,18 +1388,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     windowCount++;
                 }
             }
-//            String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
-//            openedFilePath = chosenFilePath;
-//            boolean shouldContinue = askForVehicle();
-//            if(shouldContinue) {
-//                int lastIndex = openedFilePath.lastIndexOf(".");
-//                String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
-//                if(fileExtension.equals(".csv")) {
-//                    importCSV(chosenFilePath);
-//                } else if (fileExtension.equals(".txt")) {
-//                    importTXT(chosenFilePath);
-//                }
-//            }
         }
     }//GEN-LAST:event_newImportMenuItemActionPerformed
 
@@ -2138,6 +2126,32 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 }
             }
         });
+        
+        //allow multiple selections and deselect for category list
+        categoryList.setSelectionModel(new DefaultListSelectionModel() {
+            private static final long serialVersionUID = 1L;
+
+            boolean gestureStarted = false;
+
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                if(!gestureStarted){
+                    if (isSelectedIndex(index0)) {
+                        super.removeSelectionInterval(index0, index1);
+                    } else {
+                        super.addSelectionInterval(index0, index1);
+                    }
+                }
+                gestureStarted = true;
+            }
+
+            @Override
+            public void setValueIsAdjusting(boolean isAdjusting) {
+                if (isAdjusting == false) {
+                    gestureStarted = false;
+                }
+            }
+        });
 
         // If another item is selected in the data combo box, change the chart
         dataList.addListSelectionListener(new ListSelectionListener() {
@@ -2224,11 +2238,53 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             if(dataMap.tags.contains(tag))
                                 compatibleTags.add(tag);
                         }
-//                        setChart(compatibleTags.toArray(new String[compatibleTags.size()]), new int[0]);
-                        for(int i = 0; i < titles.length; i++) {
-                            if(compatibleTags.contains(titleToTag(titles[i])[0]))
-                                dataList.addSelectionInterval(i, i);
+                        
+                        titles = new String[compatibleTags.size()];
+                        String str;
+                        for (int i = 0; i < titles.length; i++) {
+                            str = "";
+                            str += compatibleTags.get(i).split(",")[1];
+                            str += " vs ";
+                            str += compatibleTags.get(i).split(",")[0];
+                            titles[i] = str;
                         }
+                        
+                        dataList.setListData(titles);
+                        
+//                        //for each element, see if that string is a category to show, if yes add the index to an array list
+//                        ListModel dataListModel = dataList.getModel();
+//                        ArrayList<Integer> indiciesToSelect = new ArrayList<>();
+//                        for(int i = 0; i < dataListModel.getSize(); i++) {
+//                            if(compatibleTags.contains(titleToTag(""+dataListModel.getElementAt(i))[0])) {
+//                                indiciesToSelect.add(i);
+//                            }
+//                        }
+//                        
+//                        //convert to array
+//                        titles = new String[indiciesToSelect.size()];
+//                        for(int i = 0; i < titles.length; i++) {
+//                            titles[i] = ""+dataListModel.getElementAt(indiciesToSelect.get(i));
+//                        }
+//                        
+//                        dataList.setListData(titles);
+
+                    } else {
+                        //reset tags
+                        // Use the tags list to get the title for each tag
+                        titles = new String[allTags.size()];
+
+                        // Make a list of titles
+                        // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"
+                        String str = "";
+                        for (int i = 0; i < titles.length; i++) {
+                            str = "";
+                            str += allTags.get(i).split(",")[1];
+                            str += " vs ";
+                            str += allTags.get(i).split(",")[0];
+                            titles[i] = str;
+                        }
+                        // Add the list of titles to the data List View 
+                        dataList.setListData(titles);
                     }
                 }
             }
