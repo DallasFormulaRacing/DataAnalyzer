@@ -14,10 +14,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -28,8 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
@@ -50,7 +46,6 @@ import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.general.DatasetUtilities;
-import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
@@ -108,7 +103,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //String array that populates the categories list
     //TODO: add tags to each list element.
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
-        new AnalysisCategory("Brakes").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ"),
+        new AnalysisCategory("Brakes").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,xAccel").addTag("Time,yAccel").addTag("Time,zAccel"),
         new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear"),
         new AnalysisCategory("Coolant").addTag("Time,Coolant").addTag("Time,RadiatorInlet"), 
         new AnalysisCategory("Acceleration").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ").addTag("Time,RPM").addTag("Time,WheelspeedFront").addTag("Time,WheelspeedRear"),
@@ -206,6 +201,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //set default locations of the chartFrame
         frameLocX = chartFrame.getX();
         frameLocY = chartFrame.getY();
+        
     }
 
     private void showEmptyGraph() {
@@ -837,6 +833,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane1.setViewportView(dataList);
 
         lapList.setSize(new java.awt.Dimension(177, 128));
+        lapList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lapListMouseClicked(evt);
+            }
+        });
         lapList.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 lapListKeyReleased(evt);
@@ -1327,6 +1328,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             if(shouldContinue) {
                 //get array of chosenFiles
                 File[] chosenFiles = fileChooser.getSelectedFiles();
+                if(chosenFiles.length > 1) {
+                    //TODO: show progress bar
+                }
                 //should we create a new window?
                 boolean toCreateNewWindow = false;
                 //holds new window number opened
@@ -1658,6 +1662,62 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //set the location back to default
         chartFrame.setLocation(frameLocX, frameLocY);
     }//GEN-LAST:event_chartFrameComponentMoved
+
+    private void lapListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lapListMouseClicked
+        //Determine how many clicks, and if right click: open edit Lap dialog
+        //get list
+        JList list = (JList)evt.getSource();
+        //if two clicks
+        if (SwingUtilities.isRightMouseButton(evt)) {
+            //if more than one is selected, toast that only one should be selected to edit
+            int selectedCount = list.getSelectedIndices().length;
+            if(selectedCount > 1) {
+                Toast.makeToast(this, "Please select one list to open edit dialog", Toast.DURATION_LONG);
+            }
+            
+            //get the list model to get element at index
+            ListModel model = list.getModel();
+            //get indices of items selected
+            int selectedIndex = list.getSelectedIndex();
+            //holds how many different domains are in selected
+            int domainCount = 0;
+            //get string at index
+            String selected = ""+model.getElementAt(selectedIndex);
+            
+            //get lap number
+            int lapNumber = Integer.parseInt(selected.substring(0, selected.indexOf('(')));
+            Lap toEdit = getLapFromLapNumber(lapNumber);
+            
+            //calculate used laps
+            ArrayList<Integer> usedLaps = new ArrayList<>();
+            for(Lap l : lapBreaker) {
+                usedLaps.add(l.lapNumber);
+            }
+            //remove current lap
+            usedLaps.remove(new Integer(lapNumber));
+            //create dialog
+            LapDataDialog ldd = new LapDataDialog(this, true, toEdit, usedLaps);
+            ldd.setVisible(true);
+            //while the dialog is running
+            while(ldd.isRunning()) {
+                try {
+                    Thread.currentThread().wait(250);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            //apply the lap data to the datasets
+            Lap.applyToDataset(dataMap, lapBreaker);
+
+            //fill lap list
+            fillDataList(dataMap.tags);
+            
+            //draw updated markers
+            drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+        }
+
+    }//GEN-LAST:event_lapListMouseClicked
 
     private void importVehicleData(String filepath) {
         //create scanner to read file

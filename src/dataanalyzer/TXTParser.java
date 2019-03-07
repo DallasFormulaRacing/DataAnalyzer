@@ -40,6 +40,7 @@ public class TXTParser {
     
 
     private static long currTime = 0;
+    private static long accelTime = 0;
     
     public static void parse(CategoricalHashMap dataMap, String filepath) {
         parse(dataMap, filepath, 0);
@@ -65,6 +66,7 @@ public class TXTParser {
         coolant = 0;
 
         currTime = currTime1;
+        accelTime = currTime1;
 
         Scanner scanner = null;
         try {
@@ -88,6 +90,12 @@ public class TXTParser {
                 if (hexData.substring(0, 4).equals("#001")) {
                     writeData(dataMap);
                     currTime += 50;
+                }
+                if(hexData.substring(0, 4).equals("#017")) {
+                    dataMap.put(new SimpleLogObject("Time,xAccel", x, accelTime));
+                    dataMap.put(new SimpleLogObject("Time,yAccel", y, accelTime));
+                    dataMap.put(new SimpleLogObject("Time,zAccel", z, accelTime));
+                    accelTime += 5;
                 }
             } else {
                 try {
@@ -180,9 +188,6 @@ public class TXTParser {
         dataMap.put(new SimpleLogObject("Time,Voltage", volts, currTime));
         dataMap.put(new SimpleLogObject("Time,AirTemp", airTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,Coolant", coolant, currTime));
-        dataMap.put(new SimpleLogObject("Time,xAccel", x, currTime));
-        dataMap.put(new SimpleLogObject("Time,yAccel", y, currTime));
-        dataMap.put(new SimpleLogObject("Time,zAccel", z, currTime));
         
     }
 

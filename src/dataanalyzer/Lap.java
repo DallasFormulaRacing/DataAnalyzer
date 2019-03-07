@@ -53,6 +53,14 @@ public class Lap {
        this.stop = stop;
        applyToDataset(dataMap, lapBreaks);
     }
+    
+    //Copy constructor
+    public Lap(Lap orig) {
+        start = orig.start;
+        stop = orig.stop;
+        lapNumber = orig.lapNumber;
+        lapLabel = orig.lapLabel;
+    }
 
     public static void applyToDataset(CategoricalHashMap dataMap, ArrayList<Lap> lapBreaks) {
         //clear all previous lap data
