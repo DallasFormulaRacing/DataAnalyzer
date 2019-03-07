@@ -213,15 +213,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
         // Add values of (Age, Happiness)
         final XYSeries series = new XYSeries("Me");
-        series.add(0, 70);
-        series.add(5, 80);
-        series.add(10, 60);
-        series.add(16, 50);
-        series.add(18, 40);
-        series.add(20, 20);
-        series.add(22, 5);
-        series.add(25, 1);
-        series.add(30, 0.1);
+        Random rand = new Random();
+        series.add(0, rand.nextInt(100));
+        series.add(5, rand.nextInt(100));
+        series.add(10, rand.nextInt(100));
+        series.add(16, rand.nextInt(100));
+        series.add(18, rand.nextInt(100));
+        series.add(20, rand.nextInt(100));
+        series.add(22, rand.nextInt(100));
+        series.add(25, rand.nextInt(100));
+        series.add(30, rand.nextInt(100));
         data.addSeries(series);
 
         // Create a JFreeChart from the Factory, given parameters (Chart Title, Domain name, Range name, series collection, PlotOrientation, show legend, show tooltips, show url)
