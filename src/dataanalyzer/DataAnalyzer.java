@@ -2202,6 +2202,50 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 }
             }
         });
+        
+        //what to do when a category is selected
+        categoryList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if(!e.getValueIsAdjusting()) {
+                    //if an item is selected
+                    if(categoryList.getSelectedIndex() != -1) {
+                        //get the category selected
+                        String selectedCategory = categoryList.getSelectedValue();
+                        AnalysisCategory cat = getCategoryFromString(selectedCategory);
+                        //for each tag of that category
+//                        for(String TAG : cat.getTAG()) {
+//                            //select that value in the dataList
+//                            if(dataMap.tags.contains(TAG))
+//                                dataList.setSelectedValue(TAG, false);
+//                        }
+                        ArrayList<String> compatibleTags = new ArrayList<>();
+                        for(String tag : cat.TAG) {
+                            if(dataMap.tags.contains(tag))
+                                compatibleTags.add(tag);
+                        }
+//                        setChart(compatibleTags.toArray(new String[compatibleTags.size()]), new int[0]);
+                        for(int i = 0; i < titles.length; i++) {
+                            if(compatibleTags.contains(titleToTag(titles[i])[0]))
+                                dataList.addSelectionInterval(i, i);
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    /**
+     * Iterates through the analysis categories list and finds the AnalysisCategory that matches the title provided in the paramter
+     * @param category The title of the category
+     * @return AnalysisCategory who's title matches the parameter, null if not found
+     */
+    private AnalysisCategory getCategoryFromString(String category) {
+        for(AnalysisCategory cat : analysisCategories) {
+            if(cat.title.equals(category))
+                return cat;
+        }
+        return null;
     }
     
     //updates the statistics panel
