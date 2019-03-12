@@ -1327,6 +1327,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         int choice = fileChooser.showOpenDialog(null);
         //if approved
         if (choice == JFileChooser.APPROVE_OPTION) {
+            //ask for post processing
+            boolean applyPostProcessing = askForPostProcessing();
+            
             //ask the user to import a vehicle. if any but cancel pressed continue
             boolean shouldContinue = askForVehicle();
             if(shouldContinue) {
@@ -1363,9 +1366,15 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         } else if (fileExtension.equals(".txt")) {
                             da.importTXT(chosenFilePath);
                         }
-                        da.applyPostProcessing();
+                        if(applyPostProcessing)
+                            da.applyPostProcessing();
                         da.setVisible(true);
                         da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                        if(chosenFilePath.lastIndexOf('/') != -1) {
+                            da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                        } else {
+                            da.setTitle("DataAnalyzer - " + chosenFilePath);
+                        }
                         da.setLocation(100*windowCount, 100*windowCount);
                     //if we are not to create a new window
                     } else {
@@ -1386,7 +1395,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             //import TXT
                             importTXT(chosenFilePath);
                         }
-                        applyPostProcessing();
+                        if(applyPostProcessing)
+                            applyPostProcessing();
                         toCreateNewWindow = true;
                     }
                     windowCount++;
@@ -2706,6 +2716,19 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         
         return toReturn;
+    }
+    
+    /**
+     * 
+     * @return 
+     */
+    private boolean askForPostProcessing() {
+        if (JOptionPane.showConfirmDialog(null, "Would you like to apply post processing? Click no for unsynced data.", "Post Processing",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
