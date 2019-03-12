@@ -38,6 +38,9 @@ public class TXTParser {
     private static double y = 0;
     private static double z = 0;
     
+    private static double speed = 0;
+    private static double transTeeth = 0;
+    
 
     private static long currTime = 0;
     private static long accelTime = 0;
@@ -77,7 +80,7 @@ public class TXTParser {
         boolean first = true;
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if(line.length() != 47)
+            if(line.length() < 32)
                 continue;
             if (!first) {
                 try {
@@ -112,7 +115,7 @@ public class TXTParser {
     
         private static void parse(String data) {
         //if the length of the line is not the right size skip the value
-        if(data.length() != 20) {
+        if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007")) && data.length() != 20) {
             System.out.println("Invalid CAN String!");
             return;
         }
@@ -134,13 +137,17 @@ public class TXTParser {
                 break;
             case "004":
                 break;
+            //speed and transteeth
             case "005":
+                parseGroupFive(data.substring(4));
                 break;
             //group six contains battery voltage, ambient temperature, and coolant temperature
             case "006":
                 parseGroupSix(data.substring(4));
                 break;
+            //radiator inlet outlet temp
             case "007":
+                parseGroupSeven(data.substring(4));
                 break;
             case "008":
                 parseGroupEight(data.substring(4));
@@ -188,6 +195,8 @@ public class TXTParser {
         dataMap.put(new SimpleLogObject("Time,Voltage", volts, currTime));
         dataMap.put(new SimpleLogObject("Time,AirTemp", airTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,Coolant", coolant, currTime));
+        dataMap.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
+        dataMap.put(new SimpleLogObject("Time,TransmissionTeeth", transTeeth, currTime));
         
     }
 
@@ -274,6 +283,16 @@ public class TXTParser {
         analog4 *= 0.001;
 
     }
+    
+    private static void parseGroupFive(String line) {
+        try {
+            transTeeth = Integer.parseInt(line.substring(0, line.length()));
+            speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0010114976);
+            speed *= 60;
+        } catch(NumberFormatException e) {
+            System.out.println("speed format exception--" + line);
+        }
+    }
 
     public static void parseGroupSix(String line)
     {
@@ -296,6 +315,14 @@ public class TXTParser {
         coolant = coolantTemp1 + coolantTemp2;
         coolant *= 0.1;
 
+    }
+    
+    
+    private static void parseGroupSeven(String line) {
+        if(line.contains("inf"))
+            return;
+        double inlet = Double.parseDouble(line.substring(0, line.indexOf('F')));
+        double outlet = Double.parseDouble(line.substring(line.indexOf('F')+1, line.length()));
     }
 
     private static void parseGroupEight(String line)
