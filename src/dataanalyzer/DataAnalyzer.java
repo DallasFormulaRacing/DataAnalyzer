@@ -1310,8 +1310,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 
                 if(toApprove) {
                     if(chosenFiles.length > 0) {
-                        setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0]
-                                .getAbsolutePath().substring(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/')));
+                        if(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/') != -1) {
+                            setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0]
+                                    .getAbsolutePath().substring(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/')));
+                        } else {
+                            setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0].getAbsolutePath());
+                        }
                         super.approveSelection();
                     }
                 }
