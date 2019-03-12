@@ -2272,23 +2272,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         }
                         
                         dataList.setListData(titles);
-                        
-//                        //for each element, see if that string is a category to show, if yes add the index to an array list
-//                        ListModel dataListModel = dataList.getModel();
-//                        ArrayList<Integer> indiciesToSelect = new ArrayList<>();
-//                        for(int i = 0; i < dataListModel.getSize(); i++) {
-//                            if(compatibleTags.contains(titleToTag(""+dataListModel.getElementAt(i))[0])) {
-//                                indiciesToSelect.add(i);
-//                            }
-//                        }
-//                        
-//                        //convert to array
-//                        titles = new String[indiciesToSelect.size()];
-//                        for(int i = 0; i < titles.length; i++) {
-//                            titles[i] = ""+dataListModel.getElementAt(indiciesToSelect.get(i));
-//                        }
-//                        
-//                        dataList.setListData(titles);
 
                     } else {
                         //reset tags
@@ -2384,6 +2367,8 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         sb.append("LAPDATA");
         sb.append("\n");
         sb.append(Lap.getStringOfData(lapBreaker));
+        
+        String chosenFileName = "";
         
         //if a filename was not provided
         if(filename.isEmpty() || !filename.contains(".dfr")) {
