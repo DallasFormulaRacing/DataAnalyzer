@@ -6,6 +6,7 @@
 package dataanalyzer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Scanner;
@@ -43,7 +44,7 @@ public class TXTParser {
     
 
     private static long currTime = 0;
-    private static long accelTime = 0;
+    private static double accelTime = 0;
     
     public static void parse(CategoricalHashMap dataMap, String filepath) {
         parse(dataMap, filepath, 0);
@@ -70,6 +71,8 @@ public class TXTParser {
 
         currTime = currTime1;
         accelTime = currTime1;
+        
+        String lastAccel = "";
 
         Scanner scanner = null;
         try {
@@ -95,10 +98,15 @@ public class TXTParser {
                     currTime += 50;
                 }
                 if(hexData.substring(0, 4).equals("#017")) {
-                    dataMap.put(new SimpleLogObject("Time,xAccel", x, accelTime));
-                    dataMap.put(new SimpleLogObject("Time,yAccel", y, accelTime));
-                    dataMap.put(new SimpleLogObject("Time,zAccel", z, accelTime));
-                    accelTime += 5;
+                    if(lastAccel.isEmpty()) {
+                        accelTime = 0;
+                    } else {
+                        accelTime += secondDifference(lastAccel, line);
+                    }
+                    dataMap.put(new SimpleLogObject("Time,xAccel", x, Math.round(accelTime * 1000)));
+                    dataMap.put(new SimpleLogObject("Time,yAccel", y, Math.round(accelTime * 1000)));
+                    dataMap.put(new SimpleLogObject("Time,zAccel", z, Math.round(accelTime * 1000)));
+                    lastAccel = line;
                 }
             } else {
                 try {
@@ -349,5 +357,19 @@ public class TXTParser {
         x = ((float) (Integer.parseInt(line.substring(0,4), 16) - 20000)) / -100;
         y = ((float) (Integer.parseInt(line.substring(4,8), 16) - 20000)) / -100;
         z = ((float) (Integer.parseInt(line.substring(8,12), 16) - 20000)) / -100;
+    }
+
+    private static double secondDifference(String first, String second) {
+        double timeone = 0;
+        double timetwo = 0;
+        try {
+            timeone = Double.parseDouble(first.substring(first.indexOf('.')-2, first.indexOf(' ')));
+            timetwo = Double.parseDouble(second.substring(second.indexOf('.')-2, second.indexOf(' ')));
+        } catch(IndexOutOfBoundsException e) {
+            System.out.println("first --- second: " + first + " --- " + second);
+        }
+        if(timetwo-timeone < 0)
+            return timetwo - timeone + 60;
+        return timetwo - timeone;
     }
 }
