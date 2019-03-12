@@ -1944,6 +1944,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", dataMap, "Time,Lamda5VAveraged");
         }
         
+        if(dataMap.tags.contains("Time,TransmissionTeeth")) {
+            EquationEvaluater.evaluate("($(Time,TransmissionTeeth)/23)*(23/27)*60", dataMap, "Time,TransRPM");
+        }
+        
+        if(dataMap.tags.contains("Time,TransRPM") && dataMap.tags.contains("Time,RPM")) {
+            EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataMap, "Time,GearRatio", 0, 7);
+        }
+        
         //average the 5V output to AFR
         //convert to AFR
         if(dataMap.tags.contains("Time,Lamda5VAveraged")) {
