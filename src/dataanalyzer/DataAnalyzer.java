@@ -2398,6 +2398,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.close();
                         //Display success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
+                        this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
@@ -2413,6 +2414,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         fw.close();
                         //Display Success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
+                        this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
@@ -2431,6 +2433,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 fw.close();
                 //Display Success Toast
                 Toast.makeToast(this, "Saved file", Toast.DURATION_LONG);
+                this.setTitle("DataAnalyzer - " + filename);
             } catch (IOException e) {
                 //error message displayed
                 new MessageBox("Error: File could not be written to").setVisible(true);
