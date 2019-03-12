@@ -364,7 +364,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 sx.setSeriesFillPaint(index, Color.GREEN);
                 break;
             case 2:
-                sx.setSeriesFillPaint(index, Color.YELLOW);
+                sx.setSeriesFillPaint(index, Color.CYAN); //TODO: CHECK IF THIS FIXED THIS SHITTY YELLOW PIECE OF SHIT COLOR
                 break;
             case 3:
                 sx.setSeriesFillPaint(index, Color.BLACK);
