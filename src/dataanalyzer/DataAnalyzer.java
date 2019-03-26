@@ -110,9 +110,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     //TODO: add tags to each list element.
     AnalysisCategory[] analysisCategories = new AnalysisCategory[] { 
         new AnalysisCategory("Brakes").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,xAccel").addTag("Time,yAccel").addTag("Time,zAccel"),
-        new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear"),
+        new AnalysisCategory("Brake Balance").addTag("Time,BrakePressureFront").addTag("Time,BrakePressureRear").addTag("Time,BrakeBalance"),
         new AnalysisCategory("Coolant").addTag("Time,Coolant").addTag("Time,RadiatorInlet"), 
-        new AnalysisCategory("Acceleration").addTag("Time,AccelX").addTag("Time,AccelY").addTag("Time,AccelZ").addTag("Time,RPM").addTag("Time,WheelspeedFront").addTag("Time,WheelspeedRear"),
+        new AnalysisCategory("Acceleration").addTag("Time,xAccel").addTag("Time,yAccel").addTag("Time,zAccel").addTag("Time,RPM").addTag("Time,WheelspeedFront").addTag("Time,WheelspeedRear"),
         new AnalysisCategory("Endurance").addTag("Time,RPM"), 
         new AnalysisCategory("Skidpad")};
 
@@ -2538,18 +2538,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     //if an item is selected
                     if(categoryList.getSelectedIndex() != -1) {
                         //get the category selected
-                        String selectedCategory = categoryList.getSelectedValue();
-                        AnalysisCategory cat = getCategoryFromString(selectedCategory);
-                        //for each tag of that category
-//                        for(String TAG : cat.getTAG()) {
-//                            //select that value in the dataList
-//                            if(dataMap.tags.contains(TAG))
-//                                dataList.setSelectedValue(TAG, false);
-//                        }
+                        ArrayList<String> selectedCategory = (ArrayList) categoryList.getSelectedValuesList();
                         ArrayList<String> compatibleTags = new ArrayList<>();
-                        for(String tag : cat.TAG) {
-                            if(dataMap.tags.contains(tag))
-                                compatibleTags.add(tag);
+                        for(String s : selectedCategory) {
+                            AnalysisCategory cat = getCategoryFromString(s);
+                            for(String tag : cat.TAG) {
+                                if(dataMap.tags.contains(tag) && !compatibleTags.contains(tag))
+                                    compatibleTags.add(tag);
+                            }
                         }
                         
                         titles = new String[compatibleTags.size()];
