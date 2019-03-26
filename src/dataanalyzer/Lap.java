@@ -152,8 +152,43 @@ public class Lap {
             }
         }
     }
+
+    //getters and setters
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
+    }
+
+    public long getStop() {
+        return stop;
+    }
+
+    public void setStop(long stop) {
+        this.stop = stop;
+    }
+
+    public int getLapNumber() {
+        return lapNumber;
+    }
+
+    public void setLapNumber(int lapNumber) {
+        this.lapNumber = lapNumber;
+    }
+
+    public String getLapLabel() {
+        return lapLabel;
+    }
+
+    public void setLapLabel(String lapLabel) {
+        this.lapLabel = lapLabel;
+    }
+    
+    
         
-            /**
+    /**
      * Turns a list of Laps into lines of their data.
      * @param lapBreaker ArrayList of Laps that will be formatted into a string
      * @return A formatted string of the lap in the lapBreaker
