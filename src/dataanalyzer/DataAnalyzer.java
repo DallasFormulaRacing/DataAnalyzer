@@ -290,7 +290,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics panel
-        updateStatistics(tags);
+        updateStatistics(tags, lapList.getSelectedIndices());
         
     }
 
@@ -350,7 +350,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics
-        updateStatistics(titleToTag());
+        updateStatistics(titleToTag(), laps);
         
         //draw markers
         drawMarkers(tags, chart.getXYPlot());
@@ -1049,6 +1049,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         viewMenu = new javax.swing.JMenu();
         histogramMenuItem = new javax.swing.JMenuItem();
         fullscreenMenuItem = new javax.swing.JMenuItem();
+        applyFilteringMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
@@ -2597,39 +2598,76 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     //updates the statistics panel
-    private void updateStatistics(String[] tags) {
+    private void updateStatistics(String[] tags, int[] laps) {
         //holds the final strings
         String avgStr = "";
         String minStr = "";
         String maxStr = "";
-        //for each tag
-        for(String tag : tags) {
-            //get the data list thats showing
-            List<LogObject> data = dataMap.getList(tag);
-            //variables that hold average, min, and max
-            double avg = 0;
-            double min = Double.MAX_VALUE;
-            double max = Double.MIN_VALUE;
-            //for each logobject in the list we got
-            for(LogObject lo : data) {
-                //if the LogObject is an instance of a SimpleLogObject
-                if(lo instanceof SimpleLogObject) {
-                    //add all the values to average
-                    avg += ((SimpleLogObject) lo).getValue();
-                    //if the current object is less than the current min, update min
-                    if(((SimpleLogObject) lo).getValue() < min)
-                        min = ((SimpleLogObject) lo).getValue();
-                    //if the current object is greater than the current max, update max
-                    if(((SimpleLogObject) lo).getValue() > max)
-                        max = ((SimpleLogObject) lo).getValue();
+        //for each lap if laps is not null
+        if(laps != null) {
+            for(int lap : laps) {
+                //for each tag
+                for(String tag : tags) {
+                    //get the data list thats showing
+                    List<LogObject> data = dataMap.getList(tag);
+                    //variables that hold average, min, and max
+                    double avg = 0;
+                    double min = Double.MAX_VALUE;
+                    double max = Double.MIN_VALUE;
+                    //for each logobject in the list we got
+                    for(LogObject lo : data) {
+                        if(!lo.getLaps().contains(lap))
+                            continue;
+                        //if the LogObject is an instance of a SimpleLogObject
+                        if(lo instanceof SimpleLogObject) {
+                            //add all the values to average
+                            avg += ((SimpleLogObject) lo).getValue();
+                            //if the current object is less than the current min, update min
+                            if(((SimpleLogObject) lo).getValue() < min)
+                                min = ((SimpleLogObject) lo).getValue();
+                            //if the current object is greater than the current max, update max
+                            if(((SimpleLogObject) lo).getValue() > max)
+                                max = ((SimpleLogObject) lo).getValue();
+                        }
+                    }
+                    //divide average by number of objects we added
+                    avg /= data.size();
+                    //append the string
+                    avgStr += tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", avg) + ", ";
+                    minStr += tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", min) + ", ";
+                    maxStr += tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", max) + ", ";
                 }
             }
-            //divide average by number of objects we added
-            avg /= data.size();
-            //append the string
-            avgStr += String.format("%.2f", avg) + ", ";
-            minStr += String.format("%.2f", min) + ", ";
-            maxStr += String.format("%.2f", max) + ", ";
+        } else {
+            //for each tag
+            for(String tag : tags) {
+                //get the data list thats showing
+                List<LogObject> data = dataMap.getList(tag);
+                //variables that hold average, min, and max
+                double avg = 0;
+                double min = Double.MAX_VALUE;
+                double max = Double.MIN_VALUE;
+                //for each logobject in the list we got
+                for(LogObject lo : data) {
+                    //if the LogObject is an instance of a SimpleLogObject
+                    if(lo instanceof SimpleLogObject) {
+                        //add all the values to average
+                        avg += ((SimpleLogObject) lo).getValue();
+                        //if the current object is less than the current min, update min
+                        if(((SimpleLogObject) lo).getValue() < min)
+                            min = ((SimpleLogObject) lo).getValue();
+                        //if the current object is greater than the current max, update max
+                        if(((SimpleLogObject) lo).getValue() > max)
+                            max = ((SimpleLogObject) lo).getValue();
+                    }
+                }
+                //divide average by number of objects we added
+                avg /= data.size();
+                //append the string
+                avgStr += tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", avg) + ", ";
+                minStr += tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", min) + ", ";
+                maxStr += tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", max) + ", ";
+            }
         }
         
         //remove the last ", "
