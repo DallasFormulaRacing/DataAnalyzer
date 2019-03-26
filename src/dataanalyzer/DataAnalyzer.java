@@ -3001,12 +3001,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
      */
     private boolean askForVehicle() {
         //holds the return code by reference
-        int[] returnCode = new int[1];
+        ReturnCode returnCode = new ReturnCode();
         //create the Dialog to ask the user
         AskVehicleDialog avd = new AskVehicleDialog(this, true, returnCode);
         avd.setVisible(true);
         //wait for a return code
-        while(returnCode[0] == 0) {
+        while(returnCode.getCode() == 0) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
@@ -3020,7 +3020,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //create a vehicle data dialog just in case we need it, for proper encapsulation
         VehicleDataDialog vdd = new VehicleDataDialog(this, true, vehicleData, "Create");
         //depending on our return code
-        switch(returnCode[0]) {
+        switch(returnCode.getCode()) {
             //if the user cancelled, display the cancel message
             case AskVehicleDialog.OPTION_CANCEL : Toast.makeToast(this, "Opening File Cancelled.", Toast.DURATION_MEDIUM); toReturn = false; break;
             //if the user said they would import a vehicle open the file chooser. 
