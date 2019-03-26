@@ -13,6 +13,7 @@ import dataanalyzer.dialog.LapDataDialog;
 import com.arib.categoricalhashtable.*;
 import com.arib.toast.Toast;
 import com.sun.glass.events.KeyEvent;
+import dataanalyzer.dialog.ApplyFilteringDialog;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -355,6 +356,68 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         drawMarkers(tags, chart.getXYPlot());
     }
 
+    // Displays the data for all selected data types
+    private void setChart(String[] tags, int[] laps, int bucketSize) {
+
+        // Gets the specific data based on what kind of data we want to show for which 
+        XYSeriesCollection[] seriesCollection;
+        if(laps == null || laps.length == 0) {
+            seriesCollection = new XYSeriesCollection[tags.length];
+        } else {
+            seriesCollection = new XYSeriesCollection[tags.length * laps.length];
+        }
+        
+        String title = "";
+        
+        // Store data for each data type in different XYSeriesCollection
+        // New title for all the Y-Axis labels added together
+        for(int i = 0; i < tags.length; i++){
+            seriesCollection[i] = getDataCollection(tags[i], laps, bucketSize);
+            title += tags[i].split(",")[1] + " vs ";
+        }
+        
+        //add domain
+        title += tags[0].split(",")[0];
+        
+        // Use XYPlot in JFreeChart to draw the data
+        XYPlot plot = new XYPlot();
+        for(int i = 0; i < tags.length; i++){
+            // Assign each dataset at some index
+            plot.setDataset(i, seriesCollection[i]);
+            // Label the Y-Axis for specific data set
+            plot.setRangeAxis(i, new NumberAxis(tags[i].split(",")[1]));
+            // Give the line a different color
+            plot.setRenderer(i, getNewRenderer(i));
+            // Makes sure that the Y-values for each dataset are proportional to the data inside it
+            plot.mapDatasetToRangeAxis(i, i);
+        }
+        // Just show the X-Axis data type (Time, Distance, etc)
+        plot.setDomainAxis(new NumberAxis(tags[0].split(",")[0]));
+
+        // Create a new JFreeChart with the XYPlot
+        JFreeChart chart = new JFreeChart(title, getFont(), plot, true);
+        chart.setBackgroundPaint(Color.WHITE);
+        
+        // Instantiate chart panel object from the object created from ChartFactory
+        chartPanel = new ChartPanel(chart);
+        chartPanel.addOverlay(overlay);
+        // Set the size of the panel
+        chartPanel.setSize(new java.awt.Dimension(800, 600));
+
+        // Mouse listener
+        chartPanel.addChartMouseListener(this);
+
+        // The form has a subframe inside the mainframe
+        // Set the subframe's content to be the chartpanel
+        chartFrame.setContentPane(chartPanel);
+        
+        //update statistics
+        updateStatistics(titleToTag(), laps);
+        
+        //draw markers
+        drawMarkers(tags, chart.getXYPlot());
+    }
+    
     // Creates a new render for a new series or data type. Gives a new color
     private XYSplineRenderer getNewRenderer(int index){
         Random r = new Random();
@@ -381,6 +444,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         return sx;
     }
     
+    /**
+     * Generates a XYSeriesCollection based on a list retrieved from a tag
+     * @param tag the tag of the dataset, used to get the data from the CategoricalHashMap
+     * @param laps the laps the user wants to see
+     * @return 
+     */
     private XYSeriesCollection getDataCollection(String tag, int[] laps) {
 
         // XY Series Collection allows there to be multiple data lines on the graph
@@ -449,6 +518,197 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             String[] values = lo.toString().split(",");
                             //Add the x and y value to the series
                             series.add(Double.parseDouble(values[0]) - currLap.start, Double.parseDouble(values[1]));
+                        }
+                    }
+                }
+                
+                //add to collection
+                graphData.addSeries(series);
+            }
+        }
+
+
+        // Return the XYCollection
+        return graphData;
+    }
+    
+    private XYSeriesCollection getDataCollection(String tag, int[] laps, int bucketSize) {
+
+        // XY Series Collection allows there to be multiple data lines on the graph
+        XYSeriesCollection graphData = new XYSeriesCollection();
+
+        //if laps were not provided show whole dataset
+        if(laps == null || laps.length == 0) {
+            // Get the list of data elements based on the tag
+            LinkedList<LogObject> data = dataMap.getList(tag);
+
+            // Declare the series to add the data elements to
+            final XYSeries series = new XYSeries(tag.split(",")[1]);
+
+            //if tag contains time then its not a function of another dataset
+            if(tag.contains("Time,")) {
+                // We could make a XYSeries Array if we wanted to show different lap data
+                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+                // Iterate through each data element in the received dataMap LinkedList
+                
+                //for each element
+                for(int i = 0; i < data.size(); i++) {
+                    //modifes the index
+                    int modifier = ((bucketSize - 1) / 2) * -1;
+                    //holds current avg
+                    double avg = 0;
+                    //x to add to series
+                    long x = 0;
+                    //how many indecies we actually used
+                    int usedIndecies = 0;
+                    //while we have not accounted for each item in the bucket
+                    while(modifier <= ((bucketSize - 1) / 2)) {
+                        //make sure the index is correct
+                        if(i + modifier > -1 && i + modifier < data.size()) {
+                            //add this index value's object's value
+                            avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
+                            //increment usedIndevies
+                            usedIndecies++;
+                        }
+                        if(modifier == 0) {
+                            x = Long.parseLong(data.get(i + modifier).toString().split(",")[0]);
+                        }
+                        modifier++;
+                    }
+                    
+                    if(usedIndecies != 0) {
+                        //calculate average
+                        avg /= usedIndecies;
+                        //add that to series
+                        series.add(x, avg);
+                    }
+                }
+            } else {
+                // We could make a XYSeries Array if we wanted to show different lap data
+                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
+                // Iterate through each data element in the received dataMap LinkedList
+                
+                //for each element
+                for(int i = 0; i < data.size(); i++) {
+                    //modifes the index
+                    int modifier = ((bucketSize - 1) / 2) * -1;
+                    //holds current avg
+                    double avg = 0;
+                    //x to add to series
+                    double x = 0;
+                    //how many indecies we actually used
+                    int usedIndecies = 0;
+                    //while we have not accounted for each item in the bucket
+                    while(modifier <= ((bucketSize - 1) / 2)) {
+                        //make sure the index is correct
+                        if(i + modifier > -1 && i + modifier < data.size()) {
+                            //add this index value's object's value
+                            avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
+                            //increment usedIndevies
+                            usedIndecies++;
+                        }
+                        if(modifier == 0) {
+                            x = Double.parseDouble(data.get(i + modifier).toString().split(",")[0]);
+                        }
+                        modifier++;
+                    }
+                    
+                    if(usedIndecies != 0) {
+                        //calculate average
+                        avg /= usedIndecies;
+                        //add that to series
+                        series.add(x, avg);
+                    }
+                }
+            }
+            //add series to collection
+            graphData.addSeries(series);
+        } else { //if lap data was provided
+            // Get the list of data elements based on the tag
+            LinkedList<LogObject> rawdata = dataMap.getList(tag);
+            //for each lap
+            for(int l = 0; l < laps.length; l++) {
+                Lap currLap = new Lap(0, 0);
+                for(Lap lap : lapBreaker) {
+                    if(lap.lapNumber == laps[l]) {
+                        currLap = lap;
+                    }
+                }
+                
+                //create a dataset of items only of the current lap.
+                LinkedList<LogObject> data = new LinkedList<>();
+                for(LogObject lo : rawdata) {
+                    if(lo.laps.contains(laps[l]))
+                        data.add(lo);
+                }
+                //create a series with the tag and lap #
+                XYSeries series = new XYSeries(tag.split(",")[1] + "Lap " + laps[l]);
+                //if its a base dataset
+                if(tag.contains("Time,")) {
+                    //for each log object if the log object belongs in this lap add it to the series
+                    for(int i = 0; i < data.size(); i++) {
+                        //modifes the index
+                        int modifier = ((bucketSize - 1) / 2) * -1;
+                        //holds current avg
+                        double avg = 0;
+                        //x to add to series
+                        long x = 0;
+                        //how many indecies we actually used
+                        int usedIndecies = 0;
+                        //while we have not accounted for each item in the bucket
+                        while(modifier <= ((bucketSize - 1) / 2)) {
+                            //make sure the index is correct
+                            if(i + modifier > -1 && i + modifier < data.size()) {
+                                //add this index value's object's value
+                                avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
+                                //increment usedIndevies
+                                usedIndecies++;
+                            }
+                            if(modifier == 0) {
+                                x = Long.parseLong(data.get(i + modifier).toString().split(",")[0]);
+                            }
+                            modifier++;
+                        }
+
+                        if(usedIndecies != 0) {
+                            //calculate average
+                            avg /= usedIndecies;
+                            //add that to series
+                            series.add(x - currLap.start, avg);
+                        }
+                    }
+                //else its function of another dataset
+                } else {
+                    //for each element
+                    for(int i = 0; i < data.size(); i++) {
+                        //modifes the index
+                        int modifier = ((bucketSize - 1) / 2) * -1;
+                        //holds current avg
+                        double avg = 0;
+                        //x to add to series
+                        double x = 0;
+                        //how many indecies we actually used
+                        int usedIndecies = 0;
+                        //while we have not accounted for each item in the bucket
+                        while(modifier <= ((bucketSize - 1) / 2)) {
+                            //make sure the index is correct
+                            if(i + modifier > -1 && i + modifier < data.size()) {
+                                //add this index value's object's value
+                                avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
+                                //increment usedIndevies
+                                usedIndecies++;
+                            }
+                            if(modifier == 0) {
+                                x = Double.parseDouble(data.get(i + modifier).toString().split(",")[0]);
+                            }
+                            modifier++;
+                        }
+
+                        if(usedIndecies != 0) {
+                            //calculate average
+                            avg /= usedIndecies;
+                            //add that to series
+                            series.add(x - currLap.start, avg);
                         }
                     }
                 }
@@ -1112,6 +1372,14 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         });
         viewMenu.add(fullscreenMenuItem);
 
+        applyFilteringMenuItem.setText("Apply Filtering");
+        applyFilteringMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyFilteringMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(applyFilteringMenuItem);
+
         menuBar.add(viewMenu);
 
         vehicleMenu.setText("Vehicle");
@@ -1725,6 +1993,24 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
 
     }//GEN-LAST:event_lapListMouseClicked
+
+    private void applyFilteringMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyFilteringMenuItemActionPerformed
+        //dialog for bucket size
+        ReturnCode rc = new ReturnCode();
+        ApplyFilteringDialog afd = new ApplyFilteringDialog(this, true, rc);
+        afd.setVisible(true);
+        while(rc.getCode() == 0) {
+            try {
+                Thread.sleep(100);
+            } catch(InterruptedException ex) {
+                Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        //apply filtering
+        if(rc.getCode() != -1) {
+            setChart(titleToTag(), selectedLaps, rc.getCode());
+        }
+    }//GEN-LAST:event_applyFilteringMenuItemActionPerformed
 
     private void importVehicleData(String filepath) {
         //create scanner to read file
@@ -2735,6 +3021,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
+    private javax.swing.JMenuItem applyFilteringMenuItem;
     private javax.swing.JLabel averageText;
     private javax.swing.JList<String> categoryList;
     private javax.swing.JInternalFrame chartFrame;
