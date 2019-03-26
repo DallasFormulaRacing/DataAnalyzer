@@ -3040,11 +3040,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     }
     
     /**
-     * 
-     * @return 
+     * Displays a confirm dialog to apply post processing, useful for unsynced data
+     * @return true if yes is pressed, false if no.
      */
     private boolean askForPostProcessing() {
-        if (JOptionPane.showConfirmDialog(null, "Would you like to apply post processing? Click no for unsynced data.", "Post Processing",
+        return createConfirmDialog("Post Processing", "Would you like to apply post processing? Click no for unsynced data.");
+    }
+    
+    /**
+     * Creates a confirm dialog with given parameters, returns which button was pressed
+     * @param title title of the dialog
+     * @param message body message of the dialog
+     * @return true if yes is pressed, false if no.
+     */
+    private boolean createConfirmDialog(String title, String message) {
+        if (JOptionPane.showConfirmDialog(null, message, title,
                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             return true;
         } else {
