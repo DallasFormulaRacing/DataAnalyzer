@@ -12,11 +12,12 @@ import java.io.IOException;
 import java.util.Scanner;
 
 /**
- *
+ * Functionality for opening a text file in serial format from car
  * @author aribdhuka
  */
 public class TXTParser {
     
+    //all variables we are reading
     private static int RPM = 0;
     private static double TPS = 0;
     private static double FOT = 0;
@@ -42,15 +43,18 @@ public class TXTParser {
     private static double speed = 0;
     private static double transTeeth = 0;
     
-
+    //time variables
     private static long currTime = 0;
     private static double accelTime = 0;
     
+    //default constructor for no start time given
     public static void parse(CategoricalHashMap dataMap, String filepath) {
         parse(dataMap, filepath, 0);
     }
     
-    public static void parse(CategoricalHashMap dataMap, String filepath, long currTime1) {        
+    //if start time has been given
+    public static void parse(CategoricalHashMap dataMap, String filepath, long currTime1) {
+        //ensure all items start at 0
         RPM = 0;
         TPS = 0;
         FOT = 0;
@@ -69,59 +73,84 @@ public class TXTParser {
         airTemp = 0;
         coolant = 0;
 
+        //initialize times at given starting time
         currTime = currTime1;
         accelTime = currTime1;
         
+        //holds the last accel time
         String lastAccel = "";
 
+        //try to create a scanner from the filepath given
         Scanner scanner = null;
         try {
             scanner = new Scanner(new File(filepath));
         } catch (Exception e) {
             new MessageBox("TXTParser: Error opening file.").setVisible(true);
+            return;
         }
+        //holds if first iteration
         boolean first = true;
+        //for each line of the file
         while (scanner.hasNextLine()) {
+            //get the current line
             String line = scanner.nextLine();
+            //if its too short skip to prevent errors
             if(line.length() < 32)
                 continue;
+            //if we aren't on the first iteration
             if (!first) {
+                //try to get the time, catch any out of bounds interupts
                 try {
                     String time = line.substring(line.indexOf('T') + 1, line.indexOf('#') - 1);
                 } catch (StringIndexOutOfBoundsException e) {
                     continue;
                 }
+                //get the hexdata
                 String hexData = line.substring(line.indexOf('#'));
+                //parse it
                 parse(hexData);
+                //if its a 001 identifier, write all the data to the HashMap
                 if (hexData.substring(0, 4).equals("#001")) {
                     writeData(dataMap);
                     currTime += 50;
                 }
+                //if its an accel data, write it to the HashMap
                 if(hexData.substring(0, 4).equals("#017")) {
+                    //get the last acceleration time
+                    //if we do not have a last one current time is zero
                     if(lastAccel.isEmpty()) {
                         accelTime = 0;
                     } else {
+                        //else move acceleration time by the difference in times
                         accelTime += secondDifference(lastAccel, line);
                     }
+                    //put all the data, base to nearing millisecond
                     dataMap.put(new SimpleLogObject("Time,xAccel", x, Math.round(accelTime * 1000)));
                     dataMap.put(new SimpleLogObject("Time,yAccel", y, Math.round(accelTime * 1000)));
                     dataMap.put(new SimpleLogObject("Time,zAccel", z, Math.round(accelTime * 1000)));
+                    //set last accel time
                     lastAccel = line;
                 }
+            //if we are on the first iteration
             } else {
+                //try to get the time, catch out of bounds exception
                 try {
                     String time = line.substring(line.indexOf('T') + 1, line.indexOf('#') - 1);
                 } catch (StringIndexOutOfBoundsException e) {
                     continue;
                 }
+                //get the hex data
                 String hexData = line.substring(line.indexOf('#'), line.length());
+                //parse it
                 parse(hexData);
+                //we are no longer on first iteration
                 first = false;
             }
         }
     }
     
-        private static void parse(String data) {
+    //parses a hex string
+    private static void parse(String data) {
         //if the length of the line is not the right size skip the value
         if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007")) && data.length() != 20) {
             System.out.println("Invalid CAN String!");
@@ -188,6 +217,7 @@ public class TXTParser {
         }
     }
 
+    //writes the current data values to the HashMap
     private static void writeData(CategoricalHashMap dataMap) {
         dataMap.put(new SimpleLogObject("Time,RPM", RPM, currTime));
         dataMap.put(new SimpleLogObject("Time,TPS", TPS, currTime));
@@ -295,7 +325,8 @@ public class TXTParser {
     private static void parseGroupFive(String line) {
         try {
             transTeeth = Integer.parseInt(line.substring(0, line.length()));
-            speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0010114976);
+            speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0010114976); //TODO: change me to proper gear ratios
+            //speed = transrpm * (final ratio) * (60 to hours) * pi*diameter of tire in miles
             speed *= 60;
         } catch(NumberFormatException e) {
             System.out.println("speed format exception--" + line);
@@ -359,6 +390,7 @@ public class TXTParser {
         z = ((float) (Integer.parseInt(line.substring(8,12), 16) - 20000)) / -100;
     }
 
+    //calculates the difference in milliseconds given two strings formatted in "Seconds.SubSeconds"
     private static double secondDifference(String first, String second) {
         double timeone = 0;
         double timetwo = 0;
