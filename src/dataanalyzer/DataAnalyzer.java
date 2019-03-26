@@ -1522,6 +1522,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         else {
             //set these sizes
             this.setSize(screenSize.width, screenSize.height);
+            this.setLocation(0, 0);
             fullscreenMenuItem.setText("Minimize");
             chartPanel.setSize(new Dimension(screenSize.width - chartPanel.getX(), (screenSize.width - chartPanel.getX()) / 16 * 9));
             chartFrame.setSize(new Dimension(screenSize.width - chartFrame.getX(), (screenSize.width - chartFrame.getX()) / 16 * 9));
@@ -2555,6 +2556,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         }
                         
                         dataList.setListData(titles);
+                        
 
                     } else {
                         //reset tags
