@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package dataanalyzer;
+package dataanalyzer.dialog;
 
+import dataanalyzer.Lap;
+import dataanalyzer.MessageBox;
 import java.awt.Dialog;
 import java.util.ArrayList;
 
@@ -48,8 +50,8 @@ public class LapDataDialog extends javax.swing.JDialog {
         this.toEdit = toEdit;
         running = true;
         this.usedLaps = usedLaps;
-        startTextField.setText(toEdit.start + "");
-        stopTextField.setText(toEdit.stop + "");
+        startTextField.setText(toEdit.getStart() + "");
+        stopTextField.setText(toEdit.getStop() + "");
         lapNumberTextField.requestFocus();
     }
 
@@ -193,7 +195,7 @@ public class LapDataDialog extends javax.swing.JDialog {
             try {
                 attemptParse = Long.parseLong(startTextField.getText());
                 if(attemptParse >= 0) {
-                    toEdit.start = attemptParse;
+                    toEdit.setStart(attemptParse);
                 } else {
                     new MessageBox("How can the start of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.").setVisible(true);
                 }
@@ -209,7 +211,7 @@ public class LapDataDialog extends javax.swing.JDialog {
             try {
                 attemptParse = Long.parseLong(stopTextField.getText());
                 if(attemptParse >= 0) {
-                    toEdit.stop = attemptParse;
+                    toEdit.setStop(attemptParse);
                 } else {
                     new MessageBox("How can the stop of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.").setVisible(true);
                 }
@@ -224,7 +226,7 @@ public class LapDataDialog extends javax.swing.JDialog {
             int attemptParse;
             try {
                 attemptParse = Integer.parseInt(lapNumberTextField.getText());
-                toEdit.lapNumber = attemptParse;
+                toEdit.setLapNumber(attemptParse);
             } catch(NumberFormatException e) {
                 new MessageBox("Does that look like a integer to you? Please enter an integer.").setVisible(true);
             }
@@ -232,12 +234,12 @@ public class LapDataDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_lapNumberTextFieldFocusLost
 
     private void lapLabelTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_lapLabelTextFieldFocusLost
-        toEdit.lapLabel = lapLabelTextField.getText();
+        toEdit.setLapLabel(lapLabelTextField.getText());
     }//GEN-LAST:event_lapLabelTextFieldFocusLost
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         //lose the data and finish
-        toEdit.lapLabel = "!#@$LAPCANCELLED";
+        toEdit.setLapLabel("!#@$LAPCANCELLED");
         running = false;
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
@@ -248,8 +250,8 @@ public class LapDataDialog extends javax.swing.JDialog {
             return false;
         }
         
-        if(toEdit.start >= toEdit.stop) {
-            new MessageBox("How can the lap stop before it starts? Please enter an integer for stop time that is larger than the start integer.").setVisible(true);
+        if(toEdit.getStart() >= toEdit.getStop()) {
+            new MessageBox("How can the lap stop before it starts? \nPlease enter an integer for stop time that is larger than the start integer.").setVisible(true);
             return false;
         }
                 
@@ -258,7 +260,7 @@ public class LapDataDialog extends javax.swing.JDialog {
             return false;
         }
         
-        if(usedLaps != null && usedLaps.contains(toEdit.lapNumber)) {
+        if(usedLaps != null && usedLaps.contains(toEdit.getLapNumber())) {
             new MessageBox("That lap number is already being used.").setVisible(true);
             return false;
         }

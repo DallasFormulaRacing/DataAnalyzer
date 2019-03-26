@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package dataanalyzer;
+package dataanalyzer.dialog;
+
+import dataanalyzer.ReturnCode;
 
 /**
  *
@@ -16,7 +18,7 @@ public class AskVehicleDialog extends javax.swing.JDialog {
     public static final int OPTION_NEW = 2;
     public static final int OPTION_NO = 3;
     
-    private int[] returnCode;
+    ReturnCode returnCode;
     /**
      * Creates new form AskVehicleDialog
      */
@@ -31,10 +33,20 @@ public class AskVehicleDialog extends javax.swing.JDialog {
      * @param modal should the form lock the user to it
      * @param returnCode what the dialog returns
      */
-    public AskVehicleDialog(java.awt.Frame parent, boolean modal, int[] returnCode) {
+    public AskVehicleDialog(java.awt.Frame parent, boolean modal, ReturnCode returnCode) {
         super(parent, modal);
         initComponents();
         this.returnCode = returnCode;
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                setNullReturnCode();
+            }
+        });
+    }
+    
+    private void setNullReturnCode() {
+        returnCode.setCode(-1);
     }
 
     /**
@@ -132,22 +144,22 @@ public class AskVehicleDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void newVehicleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleButtonActionPerformed
-        returnCode[0] = OPTION_NEW;
+        returnCode.setCode(OPTION_NEW);
         this.dispose();
     }//GEN-LAST:event_newVehicleButtonActionPerformed
 
     private void importVehicleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importVehicleButtonActionPerformed
-        returnCode[0] = OPTION_IMPORT;
+        returnCode.setCode(OPTION_IMPORT);
         this.dispose();
     }//GEN-LAST:event_importVehicleButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        returnCode[0] = OPTION_CANCEL;
+        returnCode.setCode(OPTION_CANCEL);
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void noButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noButtonActionPerformed
-        returnCode[0] = OPTION_NO;
+        returnCode.setCode(OPTION_NO);
         this.dispose();
     }//GEN-LAST:event_noButtonActionPerformed
 

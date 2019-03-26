@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package dataanalyzer;
+package dataanalyzer.dialog;
 
+import dataanalyzer.VehicleData;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Set;
