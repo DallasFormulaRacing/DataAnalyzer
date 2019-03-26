@@ -1543,7 +1543,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             switch(code) {
                 //if its backspace, remove the item from the datamap
                 case KeyEvent.VK_DELETE :
-                case KeyEvent.VK_BACKSPACE : dataMap.remove(titleToTag(dataList.getSelectedValue())[0]); break;
+                case KeyEvent.VK_BACKSPACE : deleteSelected("tag"); break;
             }
         }
     }//GEN-LAST:event_dataListKeyReleased
@@ -1816,8 +1816,11 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
 
             //launch notes dialog
-            if(markers.size() > 0)
+            if(markers.size() > 0) {
                 new MarkerNotesDialog(markers.toArray(new CategorizedValueMarker[markers.size()])).setVisible(true);
+                //update markers and panel
+                drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+            }
         }
         
     }//GEN-LAST:event_staticMarkersListMouseClicked
@@ -1828,20 +1831,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         int code = evt.getKeyCode();
         //if the data list has an index that is selected
         if(staticMarkersList.getSelectedIndex() > -1) {
-            //get list and model
-            JList list = (JList) evt.getSource();
-            ListModel model = list.getModel();
             //depending on the code
             switch(code) {
                 //if its backspace or delete, remove the item from the datamap
                 case KeyEvent.VK_DELETE :
                 case KeyEvent.VK_BACKSPACE : 
-                    String[] tags = titleToTag();
-                    for(String tag : tags) {
-                        staticMarkers.remove(getMarkerFromString(tag, "" +
-                                model.getElementAt(staticMarkersList.getSelectedIndex())));
-                    }
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot()); 
+                    deleteSelected("marker"); 
                     break;
             }
         }
@@ -1913,7 +1908,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             switch(code) {
                 //if its backspace or delete, remove the item from the lapBreaker and update the Lap for the data objects.
                 case KeyEvent.VK_DELETE :
-                case KeyEvent.VK_BACKSPACE : lapBreaker.remove(getLapFromLapNumber(Integer.parseInt(lapList.getSelectedValue().charAt(0) + ""))); fillDataList(dataMap.tags); Lap.applyToDataset(dataMap, lapBreaker); break;
+                case KeyEvent.VK_BACKSPACE : deleteSelected("lap"); break;
             }
         }
         
@@ -3059,6 +3054,74 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             return true;
         } else {
             return false;
+        }
+    }
+    
+    private void deleteSelected(String which) {
+        boolean shouldDelete = true;
+        if(!which.equals("marker")) {
+            shouldDelete = createConfirmDialog("Delete " + which + "?", "Are you sure you want to delete? This action cannot be undone.");
+        }
+        if(!shouldDelete)
+            return;
+        if(which.equals("tag")) {
+            for(String title : dataList.getSelectedValuesList()) {
+                dataMap.remove(titleToTag(title)[0]);
+            }
+        } else if(which.equals("lap")) {
+            //holds which laps we are deleting
+            ArrayList<Integer> deleted = new ArrayList<>();
+            
+            //for each selected lap, delete and add to list of deleted
+            for(String lap : lapList.getSelectedValuesList()) {
+                deleted.add(Integer.parseInt(lap.charAt(0) + ""));
+                lapBreaker.remove(getLapFromLapNumber(Integer.parseInt(lap.charAt(0) + "")));
+            }
+            
+            //holds the number of tags
+            int tagSize = staticMarkers.getTags().size();
+            //for each tag
+            for(int iTag = 0; iTag < tagSize; iTag++) {
+                //get number of markers in this tag
+                int markerSize = staticMarkers.getList(staticMarkers.getTags().get(iTag)).size();
+                //for each lap
+                for(int lapnumber : deleted) {
+                    //for each marker
+                    for(int iMarker = 0; iMarker < markerSize; iMarker++) {
+                        //if is a start or end marker for the recently deleted lap
+                        if(staticMarkers.getList(staticMarkers.getTags().get(iTag)).get(iMarker).getNotes().equals("Start Lap" + lapnumber) || staticMarkers.getList(staticMarkers.getTags().get(iTag)).get(iMarker).getNotes().equals("End Lap" + lapnumber)) {
+                            //delete marker
+                            staticMarkers.remove(staticMarkers.getList(staticMarkers.getTags().get(iTag)).get(iMarker));
+                            //move back index to check
+                            iMarker--;
+                            //update sizes, markersize will have changed, tags may have if last marker was deleted
+                            int lastTagSize = tagSize;
+                            tagSize = staticMarkers.getTags().size();
+                            if(tagSize != lastTagSize) {
+                                markerSize = 0;
+                                iTag--;
+                            } else if(iTag < tagSize) {
+                                if(staticMarkers.getList(staticMarkers.getTags().get(iTag)) != null) {
+                                    markerSize = staticMarkers.getList(staticMarkers.getTags().get(iTag)).size();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //update UI
+            fillDataList(dataMap.tags);
+            Lap.applyToDataset(dataMap, lapBreaker);
+        } else if(which.equals("marker")) {
+            //get list and model
+            ListModel model = staticMarkersList.getModel();
+            String[] tags = titleToTag();
+            for(String tag : tags) {
+                staticMarkers.remove(getMarkerFromString(tag, "" +
+                        model.getElementAt(staticMarkersList.getSelectedIndex())));
+            }
+            drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
         }
     }
 
