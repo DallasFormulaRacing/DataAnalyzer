@@ -5,6 +5,11 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.dialog.VehicleDataDialog;
+import dataanalyzer.dialog.AskVehicleDialog;
+import dataanalyzer.dialog.MathChannelDialog;
+import dataanalyzer.dialog.MarkerNotesDialog;
+import dataanalyzer.dialog.LapDataDialog;
 import com.arib.categoricalhashtable.*;
 import com.arib.toast.Toast;
 import com.sun.glass.events.KeyEvent;
