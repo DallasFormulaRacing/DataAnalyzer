@@ -1473,13 +1473,21 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
     private void searchFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyReleased
         //if the key is alphabetic
-        if(Character.isAlphabetic(evt.getKeyChar())) {
+        if(Character.isAlphabetic(evt.getKeyChar()) &&
+                Character.isLetter(evt.getKeyChar())) {
             //if the titles array is not null 
-            if(titles != null) {
+            if(titles != null && titles.length > 0) {
                 //create array list of new titles that will hold all matches
                 ArrayList<String> newTitles = new ArrayList<>();
+                
+                //holds if all titles were properly initialized
+                boolean properInit = true;
                 //for each array element of titles array
                 for(String s : titles) {
+                    if(s == null) {
+                        properInit = false;
+                        break;
+                    }
                     //if the element contains the search box text
                     if(s.contains(searchField.getText())) {
                         //add it to the array list
@@ -1487,8 +1495,9 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                     }
                 }
 
-                //set the data list view to all the elements of the array list
-                dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
+                if(properInit)
+                    //set the data list view to all the elements of the array list
+                    dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
             }
         }
         
