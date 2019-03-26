@@ -192,6 +192,10 @@ public class CategoricalHashMap {
         return true;
     }
     
+    public ArrayList<String> getTags() {
+        return tags;
+    }
+    
     //get function
     public LinkedList<LogObject> getList(String TAG) {
         //for each linkedlist in the hash table
