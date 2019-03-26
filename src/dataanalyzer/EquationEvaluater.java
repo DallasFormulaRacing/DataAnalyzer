@@ -114,8 +114,8 @@ public class EquationEvaluater {
         int varCount = validateEquation(equationsStr, dataMap, vehicleData);
         int index = 0;
         LinkedList<LogObject> dataList = new LinkedList<>();
+        double lastVal = 0;
         while(index < varCount) {
-            double lastVal = 0;
             long time = 0;
             Stack<Double> values = new Stack<>();
             Stack<String> operators = new Stack<>();
