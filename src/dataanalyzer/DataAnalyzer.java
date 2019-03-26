@@ -2237,7 +2237,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         }
         
         if(dataMap.tags.contains("Time,TransRPM") && dataMap.tags.contains("Time,RPM")) {
-            EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataMap, "Time,GearRatio", 0, 7);
+            EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataMap, "Time,GearRatio", 0, 10);
         }
         
         //average the 5V output to AFR
