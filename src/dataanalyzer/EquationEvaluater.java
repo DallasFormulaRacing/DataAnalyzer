@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import com.arib.toast.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -200,8 +201,10 @@ public class EquationEvaluater {
         String equationsStr = equationAndVar[0];
         String functionOfTag = equationAndVar[1];
         //if the equation is replaced with error, something went wrong, do not continue;
-        if(equationsStr.equals("ERROR"))
+        if(equationsStr.equals("ERROR")) {
+            new MessageBox("Parse Error").setVisible(true);
             return;
+        }
         //get the dataset we are getting the function of
         LinkedList<LogObject> functionOfList = dataMap.getList(functionOfTag);
         //if the data set is empty, do not continue
@@ -293,7 +296,7 @@ public class EquationEvaluater {
             return new String[] {"ERROR", "ERROR"};
         }
         String var = str[1];
-        var = var.substring(5, var.indexOf(')'));
+        var = var.substring(var.indexOf('(', 2) + 1, var.indexOf(')'));
         return new String[] {equation.substring(0, equation.indexOf("asFunctionOf")), var};   
     }
     
