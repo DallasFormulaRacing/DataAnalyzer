@@ -12,6 +12,7 @@ import dataanalyzer.dialog.MarkerNotesDialog;
 import dataanalyzer.dialog.LapDataDialog;
 import com.arib.categoricalhashtable.*;
 import com.arib.toast.Toast;
+import com.hareesh.progressbar.ProgressBar;
 import com.sun.glass.events.KeyEvent;
 import dataanalyzer.dialog.ApplyFilteringDialog;
 import java.awt.BasicStroke;
@@ -33,7 +34,11 @@ import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -161,7 +166,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         //start with no laps selected
         selectedLaps = null;
-
+        
         //on new element entry of dataMap, update the view
         dataMap.addTagSizeChangeListener(new HashMapTagSizeListener() {
             @Override
@@ -177,7 +182,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         
         // Init the graph with some dummy data until there is data given to read
         showEmptyGraph();
-        
+
         //extend the statistics panel to the edge
         //get the screen size
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -722,7 +727,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 graphData.addSeries(series);
             }
         }
-
 
         // Return the XYCollection
         return graphData;
