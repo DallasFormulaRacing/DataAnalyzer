@@ -59,7 +59,7 @@
   <SubComponents>
     <Component class="javax.swing.JSlider" name="bucketSlider">
       <Properties>
-        <Property name="maximum" type="int" value="21"/>
+        <Property name="maximum" type="int" value="200"/>
         <Property name="minimum" type="int" value="1"/>
         <Property name="minorTickSpacing" type="int" value="2"/>
         <Property name="paintTicks" type="boolean" value="true"/>

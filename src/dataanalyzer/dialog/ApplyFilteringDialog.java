@@ -85,7 +85,7 @@ public class ApplyFilteringDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        bucketSlider.setMaximum(21);
+        bucketSlider.setMaximum(200);
         bucketSlider.setMinimum(1);
         bucketSlider.setMinorTickSpacing(2);
         bucketSlider.setPaintTicks(true);
