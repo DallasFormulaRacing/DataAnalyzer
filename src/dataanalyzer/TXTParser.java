@@ -152,7 +152,7 @@ public class TXTParser {
     //parses a hex string
     private static void parse(String data) {
         //if the length of the line is not the right size skip the value
-        if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007")) && data.length() != 20) {
+        if(!(data.substring(0, 4).equals("#005") || data.substring(0, 4).equals("#007") || data.substring(0, 4).equals("#017")) && data.length() != 20) {
             System.out.println("Invalid CAN String!");
             return;
         }
@@ -385,9 +385,16 @@ public class TXTParser {
     }
     
     private static void parseGroupSeventeen(String line) {
-        x = ((float) (Integer.parseInt(line.substring(0,4), 16) - 20000)) / -100;
-        y = ((float) (Integer.parseInt(line.substring(4,8), 16) - 20000)) / -100;
-        z = ((float) (Integer.parseInt(line.substring(8,12), 16) - 20000)) / -100;
+//        x = ((float) (Integer.parseInt(line.substring(0,4), 16) - 20000)) / -100;
+//        y = ((float) (Integer.parseInt(line.substring(4,8), 16) - 20000)) / -100;
+//        z = ((float) (Integer.parseInt(line.substring(8,12), 16) - 20000)) / -100;
+        String[] split = line.split(",");
+        if(split.length == 3) {
+            x = Double.parseDouble(split[0]);
+            y = Double.parseDouble(split[1]);
+            z = Double.parseDouble(split[2]);
+        }
+        
     }
 
     //calculates the difference in milliseconds given two strings formatted in "Seconds.SubSeconds"
