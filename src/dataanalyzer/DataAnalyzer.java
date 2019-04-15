@@ -260,7 +260,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
         }
         //update laps
-        XYSeriesCollection data = getHistogramDataCollection(tags, lapList.getSelectedIndices());
+        XYSeriesCollection data = getHistogramDataCollection(tags, selectedLaps);
         
         // Gets the independent variable from the title of the data
         String yAxis = "Milliseconds";
@@ -290,7 +290,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         chartFrame.setContentPane(chartPanel);
         
         //update statistics panel
-        updateStatistics(tags, lapList.getSelectedIndices());
+        updateStatistics(tags, selectedLaps);
         
     }
 
@@ -540,7 +540,12 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //if laps were not provided show whole dataset
         if(laps == null || laps.length == 0) {
             // Get the list of data elements based on the tag
-            LinkedList<LogObject> data = dataMap.getList(tag);
+            LinkedList<LogObject> dataLinked = dataMap.getList(tag);
+            //copy to a arraylist for a better runtime letter
+            ArrayList<LogObject> data = new ArrayList<>(dataLinked.size());
+            for(LogObject lo : dataLinked) {
+                data.add(lo);
+            }
 
             // Declare the series to add the data elements to
             final XYSeries series = new XYSeries(tag.split(",")[1]);
@@ -731,20 +736,76 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         //get data from dataset
             LinkedList<LogObject> data = dataMap.getList(tag);
             
-            for(int l = 0; l < laps.length; l++) {
+            //if asked for data with laps, complete for each lap
+            if(laps != null) {
+                for(int l = 0; l < laps.length; l++) {
+                    //series that will hold the data
+                    XYSeries series = new XYSeries(tag.split(",")[1] + "Laps " + laps[l]);
+                    //calculate min and max value of the data 
+                    double min = Double.MAX_VALUE;
+                    double max = Double.MIN_VALUE;
+                    for(LogObject lo : data) {
+                        if(lo.getLaps().contains(laps[l])) {
+                            if(lo instanceof SimpleLogObject) {
+                                if(((SimpleLogObject) lo).getValue() > max)
+                                    max = ((SimpleLogObject) lo).getValue();
+                                if(((SimpleLogObject) lo).getValue() < min)
+                                    min = ((SimpleLogObject) lo).getValue();
+                            }
+                        }
+                    }
+
+                    //get the intervals to work with
+                    double interval = max - min;
+                    interval /= 50;
+
+                    //holds how many instances occured within this interval
+                    int counter;
+
+                    //for each of the 50 intervals
+                    for(int i = 1; i < 51; i++) {
+                        //start with 0 count
+                        counter = 0;
+
+                        //for each data element
+                        for(LogObject lo : data) {
+                            if(lo.getLaps().contains(laps[l])) {
+                                //if its a simple log object its value can be obtained
+                                if(lo instanceof SimpleLogObject) {
+                                    //if the value of the current object is between the interval we are searching for
+                                    if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                        //increment the counter
+                                        counter++;
+                                    }
+                                } else if(lo instanceof FunctionOfLogObject) {
+                                    if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                        //increment the counter
+                                        counter++;
+                                    }
+                                }
+                            }
+                        }
+                        //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
+                        if(counter != 0)
+                            series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
+                    }
+
+
+
+                    graphData.addSeries(series);
+                }
+            } else {
                 //series that will hold the data
-                XYSeries series = new XYSeries(tag.split(",")[1] + "Laps " + laps[l]);
+                XYSeries series = new XYSeries(tag.split(",")[1]);
                 //calculate min and max value of the data 
                 double min = Double.MAX_VALUE;
                 double max = Double.MIN_VALUE;
                 for(LogObject lo : data) {
-                    if(lo.getLaps().contains(laps[l])) {
-                        if(lo instanceof SimpleLogObject) {
-                            if(((SimpleLogObject) lo).getValue() > max)
-                                max = ((SimpleLogObject) lo).getValue();
-                            if(((SimpleLogObject) lo).getValue() < min)
-                                min = ((SimpleLogObject) lo).getValue();
-                        }
+                    if(lo instanceof SimpleLogObject) {
+                        if(((SimpleLogObject) lo).getValue() > max)
+                            max = ((SimpleLogObject) lo).getValue();
+                        if(((SimpleLogObject) lo).getValue() < min)
+                            min = ((SimpleLogObject) lo).getValue();
                     }
                 }
 
@@ -762,19 +823,17 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
 
                     //for each data element
                     for(LogObject lo : data) {
-                        if(lo.getLaps().contains(laps[l])) {
-                            //if its a simple log object its value can be obtained
-                            if(lo instanceof SimpleLogObject) {
-                                //if the value of the current object is between the interval we are searching for
-                                if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                    //increment the counter
-                                    counter++;
-                                }
-                            } else if(lo instanceof FunctionOfLogObject) {
-                                if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                    //increment the counter
-                                    counter++;
-                                }
+                        //if its a simple log object its value can be obtained
+                        if(lo instanceof SimpleLogObject) {
+                            //if the value of the current object is between the interval we are searching for
+                            if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                //increment the counter
+                                counter++;
+                            }
+                        } else if(lo instanceof FunctionOfLogObject) {
+                            if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                //increment the counter
+                                counter++;
                             }
                         }
                     }
@@ -1049,6 +1108,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         viewMenu = new javax.swing.JMenu();
         histogramMenuItem = new javax.swing.JMenuItem();
         fullscreenMenuItem = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         applyFilteringMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
@@ -1112,7 +1172,6 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         jScrollPane2.setViewportView(lapList);
 
         jScrollPane4.setPreferredSize(new java.awt.Dimension(43, 128));
-        jScrollPane4.setSize(new java.awt.Dimension(43, 128));
 
         staticMarkersList.setSize(new java.awt.Dimension(177, 128));
         staticMarkersList.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1372,6 +1431,10 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         });
         viewMenu.add(fullscreenMenuItem);
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setText("Hide Info Panel");
+        viewMenu.add(jMenuItem1);
 
         applyFilteringMenuItem.setText("Apply Filtering");
         applyFilteringMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -2249,6 +2312,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataMap, "Time,GearRatio", 0, 10);
         }
         
+        
         //average the 5V output to AFR
         //convert to AFR
         if(dataMap.tags.contains("Time,Lamda5VAveraged")) {
@@ -2471,6 +2535,32 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                 }
             }
         });
+        
+        //allow multiple selections and deselect for category list
+        dataList.setSelectionModel(new DefaultListSelectionModel() {
+            private static final long serialVersionUID = 1L;
+
+            boolean gestureStarted = false;
+
+            @Override
+            public void setSelectionInterval(int index0, int index1) {
+                if(!gestureStarted){
+                    if (isSelectedIndex(index0)) {
+                        super.removeSelectionInterval(index0, index1);
+                    } else {
+                        super.addSelectionInterval(index0, index1);
+                    }
+                }
+                gestureStarted = true;
+            }
+
+            @Override
+            public void setValueIsAdjusting(boolean isAdjusting) {
+                if (isAdjusting == false) {
+                    gestureStarted = false;
+                }
+            }
+        });
 
         // If another item is selected in the data combo box, change the chart
         dataList.addListSelectionListener(new ListSelectionListener() {
@@ -2498,6 +2588,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                         }
                         //update global var that holds which laps are selected
                         selectedLaps = laps;
+                        //TODO: show empty graph here
                         setChart(tags, laps);
                     }
                 }
@@ -2626,6 +2717,16 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
                             continue;
                         //if the LogObject is an instance of a SimpleLogObject
                         if(lo instanceof SimpleLogObject) {
+                            //add all the values to average
+                            avg += ((SimpleLogObject) lo).getValue();
+                            //if the current object is less than the current min, update min
+                            if(((SimpleLogObject) lo).getValue() < min)
+                                min = ((SimpleLogObject) lo).getValue();
+                            //if the current object is greater than the current max, update max
+                            if(((SimpleLogObject) lo).getValue() > max)
+                                max = ((SimpleLogObject) lo).getValue();
+                        }
+                        else if(lo instanceof FunctionOfLogObject) {
                             //add all the values to average
                             avg += ((SimpleLogObject) lo).getValue();
                             //if the current object is less than the current min, update min
@@ -2764,7 +2865,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
             }
         }
     }
-    
+        
     //open file
     private void openFile(String filepath) {
         //begin file operation
@@ -2782,7 +2883,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
         if(scanner == null) {
             return;
         }
-        
+
         //is the current item a marker
         boolean isMarker = false;
         //current tag
@@ -3159,6 +3260,7 @@ public class DataAnalyzer extends javax.swing.JFrame implements ChartMouseListen
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
