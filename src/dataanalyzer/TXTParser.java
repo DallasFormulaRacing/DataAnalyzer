@@ -35,6 +35,9 @@ public class TXTParser {
     private static double volts = 0;
     private static double airTemp = 0;
     private static double coolant = 0;
+    private static double inletTemp = 0;
+    private static double outletTemp = 0;
+    
     
     private static double x = 0;
     private static double y = 0;
@@ -72,6 +75,9 @@ public class TXTParser {
         volts = 0;
         airTemp = 0;
         coolant = 0;
+        inletTemp = 0;
+        outletTemp = 0;
+        
 
         //initialize times at given starting time
         currTime = currTime1;
@@ -233,8 +239,11 @@ public class TXTParser {
         dataMap.put(new SimpleLogObject("Time,Voltage", volts, currTime));
         dataMap.put(new SimpleLogObject("Time,AirTemp", airTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,Coolant", coolant, currTime));
+        dataMap.put(new SimpleLogObject("Time,InletTemp", inletTemp, currTime));
+        dataMap.put(new SimpleLogObject("Time,OutletTemp", outletTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
         dataMap.put(new SimpleLogObject("Time,TransmissionTeeth", transTeeth, currTime));
+        
         
     }
 
@@ -360,8 +369,8 @@ public class TXTParser {
     private static void parseGroupSeven(String line) {
         if(line.contains("inf"))
             return;
-        double inlet = Double.parseDouble(line.substring(0, line.indexOf('F')));
-        double outlet = Double.parseDouble(line.substring(line.indexOf('F')+1, line.length()));
+        inletTemp = Double.parseDouble(line.substring(0, line.indexOf('F')));
+        outletTemp = Double.parseDouble(line.substring(line.indexOf('F')+1, line.length()));
     }
 
     private static void parseGroupEight(String line)
