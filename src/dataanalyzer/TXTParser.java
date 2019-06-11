@@ -5,11 +5,14 @@
  */
 package dataanalyzer;
 
+import com.arib.categoricalhashtable.CategoricalHashTable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
+import org.jfree.chart.plot.ValueMarker;
 
 /**
  * Functionality for opening a text file in serial format from car
@@ -18,36 +21,40 @@ import java.util.Scanner;
 public class TXTParser {
     
     //all variables we are reading
-    private static int RPM = 0;
-    private static double TPS = 0;
-    private static double FOT = 0;
-    private static double ignAngle = 0;
+    private static int RPM          = 0;
+    private static double TPS       = 0;
+    private static double FOT       = 0;
+    private static double ignAngle  = 0;
 
-    private static double bar = 0;
-    private static double MAP = 0;
-    private static double lambda = 0;
+    private static double bar       = 0;
+    private static double MAP       = 0;
+    private static double lambda    = 0;
 
-    private static double analog1 = 0;
-    private static double analog2 = 0;
-    private static double analog3 = 0;
-    private static double analog4 = 0;
+    private static double analog1   = 0;
+    private static double analog2   = 0;
+    private static double analog3   = 0;
+    private static double analog4   = 0;
 
-    private static double volts = 0;
-    private static double airTemp = 0;
-    private static double coolant = 0;
+    private static double volts     = 0;
+    private static double airTemp   = 0;
+    private static double coolant   = 0;
     private static double inletTemp = 0;
     private static double outletTemp = 0;
     
+    private static double lat       = 0;
+    private static double longi     = 0;
+    private static double gpsSpeed  = 0;
     
-    private static double x = 0;
-    private static double y = 0;
-    private static double z = 0;
     
-    private static double speed = 0;
+    private static double x         = 0;
+    private static double y         = 0;
+    private static double z         = 0;
+    
+    private static double speed     = 0;
     private static double transTeeth = 0;
     
     //time variables
-    private static long currTime = 0;
+    private static long currTime    = 0;
     private static double accelTime = 0;
     
     //default constructor for no start time given
@@ -57,6 +64,11 @@ public class TXTParser {
     
     //if start time has been given
     public static void parse(CategoricalHashMap dataMap, String filepath, long currTime1) {
+        CategoricalHashTable<CategorizedValueMarker> staticMarkers = new CategoricalHashTable<>();
+        parse(dataMap, staticMarkers, filepath, currTime1);
+    }
+    
+    public static void parse(CategoricalHashMap dataMap, CategoricalHashTable<CategorizedValueMarker> staticMarkers, String filepath, long currTime1) {
         //ensure all items start at 0
         RPM = 0;
         TPS = 0;
@@ -85,7 +97,9 @@ public class TXTParser {
         
         //holds the last accel time
         String lastAccel = "";
-
+        
+        ArrayList<Long> markerTimes = new ArrayList<>();
+        
         //try to create a scanner from the filepath given
         Scanner scanner = null;
         try {
@@ -137,6 +151,10 @@ public class TXTParser {
                     //set last accel time
                     lastAccel = line;
                 }
+                //handle marker button independently
+                if(hexData.substring(0, 4).equals("#019")) {
+                    markerTimes.add(currTime);
+                }
             //if we are on the first iteration
             } else {
                 //try to get the time, catch out of bounds exception
@@ -151,6 +169,13 @@ public class TXTParser {
                 parse(hexData);
                 //we are no longer on first iteration
                 first = false;
+            }
+        }
+        
+        //for each button marker pressed, add a marker for each tag.
+        for(Long l : markerTimes) {
+            for(String tag : dataMap.getTags()) {
+                staticMarkers.put(new CategorizedValueMarker(tag, new ValueMarker(l)));
             }
         }
     }
@@ -243,8 +268,6 @@ public class TXTParser {
         dataMap.put(new SimpleLogObject("Time,OutletTemp", outletTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
         dataMap.put(new SimpleLogObject("Time,TransmissionTeeth", transTeeth, currTime));
-        
-        
     }
 
     /**
@@ -403,6 +426,23 @@ public class TXTParser {
             y = Double.parseDouble(split[1]);
             z = Double.parseDouble(split[2]);
         }
+        
+    }
+    
+    private static void parseGroupEighteen(String line) {
+        //XXXX.XXXXX(N/S)
+        //XXXX.XXXXX(E/W)
+        if(line.isEmpty())
+            return;
+        String[] split = line.split(",");
+        if(split.length != 3)
+            return;
+        lat = Double.parseDouble(split[0]);
+        longi = Double.parseDouble(split[1]);
+        gpsSpeed = Double.parseDouble(split[2]);
+    }
+    
+    private static void parseGroupNineteen() {
         
     }
 

@@ -80,7 +80,7 @@ public class EquationEvaluater {
                 //if its an operator
                 else if(isAOperator(element.charAt(0))) {
                     //where operators is not empty and the next operator is greater than or the same operator
-                    while(!operators.isEmpty() && precendenceCheck(element.charAt(0), operators.peek().charAt(0)) >= 0) {
+                    while(!operators.isEmpty() && precendenceCheck(operators.peek().charAt(0), element.charAt(0)) >= 0) {
                         //calc value
                         values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
                     }
@@ -159,7 +159,7 @@ public class EquationEvaluater {
                 //if its an operator
                 else if(isAOperator(element.charAt(0))) {
                     //where operators is not empty and the next operator is greater than or the same operator
-                    while(!operators.isEmpty() && precendenceCheck(element.charAt(0), operators.peek().charAt(0)) >= 0) {
+                    while(!operators.isEmpty() && precendenceCheck(operators.peek().charAt(0), element.charAt(0)) >= 0) {
                         //calc value
                         values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
                     }
@@ -248,7 +248,7 @@ public class EquationEvaluater {
                 //if its an operator
                 else if(isAOperator(element.charAt(0))) {
                     //where operators is not empty and the next operator is greater than or the same operator
-                    while(!operators.isEmpty() && precendenceCheck(element.charAt(0), operators.peek().charAt(0)) >= 0) {
+                    while(!operators.isEmpty() && precendenceCheck(operators.peek().charAt(0), element.charAt(0)) >= 0) {
                         //calc value
                         values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
                     }

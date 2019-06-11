@@ -15,6 +15,7 @@ import dataanalyzer.MessageBox;
 public class MarkerNotesDialog extends javax.swing.JFrame {
     
     private CategorizedValueMarker[] markers;
+    private StaticMarkersFrame parent;
     /**
      * Creates new form MarkerNotesDialog
      */
@@ -22,8 +23,10 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
         initComponents();
     }
     
-    public MarkerNotesDialog(CategorizedValueMarker[] markers) {
+    public MarkerNotesDialog(StaticMarkersFrame parent, CategorizedValueMarker[] markers) {
         initComponents();
+        //save parent
+        this.parent = parent;
         //save the array locally
         this.markers = markers;
         
@@ -152,6 +155,7 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
                 if(marker != null)
                     marker.setNotes(note);
             }
+            parent.populateList();
             //close dialog after finished
             this.dispose();
         }
