@@ -44,10 +44,12 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.ChartChangeEvent;
 import org.jfree.chart.event.ChartChangeListener;
 import org.jfree.chart.panel.CrosshairOverlay;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.XYSeries;
@@ -435,9 +437,9 @@ public class ChartAssembly implements ChartMouseListener {
                 true,
                 true,
                 false
-        );
+        );        
         
-        
+
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
         

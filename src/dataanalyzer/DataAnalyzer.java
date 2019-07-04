@@ -1669,11 +1669,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //all the data should be split by commas in the same order as the header
                     String[] data = line.split(",");
                     //the first element is time
-                    long time = Long.parseLong(data[0]);
+                    double timeInSeconds = Double.parseDouble(data[0]);
+                    
+                    long time = (long) (timeInSeconds*1000);
                     //for each of the remaining columns
                     for(int i = 1; i < data.length; i++) {
                         //add this element to the datamap
-                        chartManager.getDataMap().put(new SimpleLogObject(keys[i], Double.parseDouble(data[i]), time));
+                        chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
                     }
                     
                 }
