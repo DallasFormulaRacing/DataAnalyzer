@@ -145,6 +145,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         fileMenu = new javax.swing.JMenu();
         newWindowMenuItem = new javax.swing.JMenuItem();
         newImportMenuItem = new javax.swing.JMenuItem();
+        importECUDataMenuItem = new javax.swing.JMenuItem();
         openBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -192,6 +193,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         fileMenu.add(newImportMenuItem);
+
+        importECUDataMenuItem.setText("Import PE3 data");
+        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importECUDataMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(importECUDataMenuItem);
 
         openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
@@ -385,7 +394,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 //get all selected files
                 File[] chosenFiles = getSelectedFiles();
                 
-
                 //check to see if all files are legal
                 boolean toApprove = true;
                 for(File chosenFile : chosenFiles) {
@@ -878,6 +886,70 @@ public class DataAnalyzer extends javax.swing.JFrame {
         // TODO create notes dialog.
     }//GEN-LAST:event_addNotesMenuItemActionPerformed
 
+    private void importECUDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importECUDataMenuItemActionPerformed
+        //open file for vehicleData
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                File[] chosenFiles = getSelectedFiles();
+
+                // Make sure that the chosen file exists
+                if (allExist(chosenFiles)) {
+
+                    // approve selection if it is a .csv file
+                    if (allAreCSV(chosenFiles)) {
+                        super.approveSelection();
+                    } else {
+                        //inform the user of a selection error.
+                        Toast.makeToast(DataAnalyzer.this, "Not a CSV file!", Toast.DURATION_MEDIUM);
+                    }
+
+                } else {
+                    Toast.makeToast(DataAnalyzer.this, "How in the hell did you choose a file that doesnt exist?", Toast.DURATION_LONG);
+                }
+            }
+            
+            private boolean allExist(File[] files) {
+                for (File file : files) {
+                    if(!file.exists())
+                        return false;
+                }
+                return true;
+            }
+            
+            private boolean allAreCSV(File[] files) {
+                for(File file : files) {
+                    String filePath = file.getAbsolutePath();
+                    int lastIndex = filePath.lastIndexOf(".");
+                    if(lastIndex == -1)
+                        return false;
+                    String fileExtension = filePath.substring(lastIndex,
+                            filePath.length());
+                    
+                    if(!fileExtension.equals(".csv"))
+                        return false;
+                }
+                
+                return true;
+            }
+        };
+
+        fileChooser.setMultiSelectionEnabled(true);
+        // showOpenDialog returns the chosen option and if it as an approve
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            try {
+                openPE3Files(fileChooser.getSelectedFiles());
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_importECUDataMenuItemActionPerformed
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -894,6 +966,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chart.getOverlay().invertRangeActive();
         }
     }
+    
     private void importVehicleData(String filepath) {
         //create scanner to read file
         Scanner scanner = null;
@@ -1003,7 +1076,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     public void importTXT(String filepath) {
         openingAFile = true;
-        TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath);
+        TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
     }
     
     public void importCSV(String filepath) {
@@ -1113,6 +1186,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(chartManager.getDataMap().tags.contains("Time,Analog2")) {
             EquationEvaluater.evaluate("(($(Time,Analog2)-.5)*(5000-0))/(4.5-.5)", chartManager.getDataMap(), "Time,BrakePressureRear");
         }
+        //TODO: REDO ALL OF THESE VALUES.
         if(chartManager.getDataMap().tags.contains("Time,BrakePressureRear") && chartManager.getDataMap().tags.contains("Time,BrakePressureRear")) {
             //calculate force on caliper pistons
             EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonFront");
@@ -1136,7 +1210,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         for(int i = 0; i < chartManager.getDataMap().table.length; i++) {
             if(chartManager.getDataMap().table[i] != null && !chartManager.getDataMap().table[i].isEmpty() && chartManager.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
                 if(!chartManager.getDataMap().table[i].getFirst().getTAG().equals("Time,Distance"))
-                    EquationEvaluater.evaluate("$(" + chartManager.getDataMap().table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", chartManager.getDataMap(), chartManager.getDataMap().table[i].getFirst().getTAG().substring(chartManager.getDataMap().table[i].getFirst().getTAG().indexOf(",") + 1, chartManager.getDataMap().table[i].getFirst().getTAG().length()));
+                    EquationEvaluater.evaluate("$(" + chartManager.getDataMap().table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", 
+                            chartManager.getDataMap(), 
+                            chartManager.getDataMap().table[i].getFirst().getTAG().substring(chartManager.getDataMap().table[i].getFirst().getTAG().indexOf(",") + 1, 
+                            chartManager.getDataMap().table[i].getFirst().getTAG().length()));
             }
         }
         
@@ -1144,6 +1221,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = false;
     }
     
+    //TODO: REDO TO MATCH PE3 STYLE
     public String hashMapToCSV(ArrayList<String> tags) {
         //output String
         StringBuilder out = new StringBuilder();
@@ -1562,6 +1640,48 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
+    /**
+     * Opens files that are formatted in PE3 style.
+     * @param filepaths 
+     */
+    private void openPE3Files(File[] files) throws FileNotFoundException {
+        //handle the first file to not open a new screen
+        boolean first = true;
+        
+        //for each file
+        for(File file : files) {
+            //if its the first file we don't need to do this in a new window.
+            if(first) {
+                //Create way to read file
+                Scanner scan = new Scanner(file);
+                //get the first line which tells us the order of parameters
+                String header = scan.nextLine();
+                //store these as an array of keys
+                String[] keys = header.split(",");
+                //for each remaining line
+                while(scan.hasNextLine()) {
+                    //get the next line
+                    String line = scan.nextLine();
+                    //if its empty move forward which will skip corrupted lines or end
+                    if(line.isEmpty())
+                        continue;
+                    
+                    //all the data should be split by commas in the same order as the header
+                    String[] data = line.split(",");
+                    //the first element is time
+                    long time = Long.parseLong(data[0]);
+                    //for each of the remaining columns
+                    for(int i = 1; i < data.length; i++) {
+                        //add this element to the datamap
+                        chartManager.getDataMap().put(new SimpleLogObject(keys[i], Double.parseDouble(data[i]), time));
+                    }
+                    
+                }
+                
+            }
+        }
+    }
+    
     //returns chartManager
     public ChartManager getChartManager() {
         return chartManager;
@@ -1641,6 +1761,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
+    private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;

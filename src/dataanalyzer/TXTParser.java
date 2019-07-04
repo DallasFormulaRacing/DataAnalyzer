@@ -53,6 +53,22 @@ public class TXTParser {
     private static double speed     = 0;
     private static double transTeeth = 0;
     
+    private static double wheelTeeth_FR = 0;
+    private static double wheelTeeth_FL = 0;
+    private static double wheelTeeth_RR = 0;
+    private static double wheelTeeth_RL = 0;
+    
+    private static double adc0      = 0;
+    private static double adc1      = 0;
+    private static double adc2      = 0;
+    private static double adc3      = 0;
+    private static double adc4      = 0;
+    private static double adc5      = 0;
+    private static double adc6      = 0;
+    private static double adc7      = 0;
+    
+    private static double steeringAngle = 0;
+    
     //time variables
     private static long currTime    = 0;
     private static double accelTime = 0;
@@ -90,7 +106,21 @@ public class TXTParser {
         inletTemp = 0;
         outletTemp = 0;
         
-
+        wheelTeeth_FR = 0;
+        wheelTeeth_FL = 0;
+        wheelTeeth_RR = 0;
+        wheelTeeth_RL = 0;
+        
+        adc0      = 0;
+        adc1      = 0;
+        adc2      = 0;
+        adc3      = 0;
+        adc4      = 0;
+        adc5      = 0;
+        adc6      = 0;
+        adc7      = 0;
+        steeringAngle = 0;
+    
         //initialize times at given starting time
         currTime = currTime1;
         accelTime = currTime1;
@@ -242,6 +272,16 @@ public class TXTParser {
             case "017":
                 parseGroupSeventeen(data.substring(4));
                 break;
+            case "018":
+                parseGroupEighteen(data.substring(4));
+                break;
+            case "020":
+                parseGroupTwenty(data.substring(4));
+                break;
+            case "021":
+                parseGroupTwentyOne(data.substring(4));
+                break;
+            
             default:
                 System.out.println("Parse fail");
                 break;
@@ -268,6 +308,23 @@ public class TXTParser {
         dataMap.put(new SimpleLogObject("Time,OutletTemp", outletTemp, currTime));
         dataMap.put(new SimpleLogObject("Time,WheelspeedRear", speed, currTime));
         dataMap.put(new SimpleLogObject("Time,TransmissionTeeth", transTeeth, currTime));
+        dataMap.put(new SimpleLogObject("Time,Latitude", lat, currTime));
+        dataMap.put(new SimpleLogObject("Time,Longitude", longi, currTime));
+        dataMap.put(new SimpleLogObject("Time,GPSSpeed", gpsSpeed, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC0", adc0, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC1", adc1, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC2", adc2, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC3", adc3, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC4", adc4, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC5", adc5, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC6", adc6, currTime));
+        dataMap.put(new SimpleLogObject("Time,ADC7", adc7, currTime));
+        dataMap.put(new SimpleLogObject("Time,steeringAngle", steeringAngle, currTime));
+        dataMap.put(new SimpleLogObject("Time,wheelTeethFR", wheelTeeth_FR, currTime));
+        dataMap.put(new SimpleLogObject("Time,wheelTeethFL", wheelTeeth_FR, currTime));
+        dataMap.put(new SimpleLogObject("Time,wheelTeethRR", wheelTeeth_FR, currTime));
+        dataMap.put(new SimpleLogObject("Time,wheelTeethRL", wheelTeeth_FR, currTime));
+        
     }
 
     /**
@@ -355,14 +412,15 @@ public class TXTParser {
     }
     
     private static void parseGroupFive(String line) {
-        try {
-            transTeeth = Integer.parseInt(line.substring(0, line.length()));
-            speed = ((transTeeth/23.0)*.2323090909*60)*(3.141592654*.0010114976); //TODO: change me to proper gear ratios
-            //speed = transrpm * (final ratio) * (60 to hours) * pi*diameter of tire in miles
-            speed *= 60;
-        } catch(NumberFormatException e) {
-            System.out.println("speed format exception--" + line);
-        }
+        String[] values = line.split(",");
+        if(values.length != 5)
+            return;
+        wheelTeeth_FR = Integer.parseInt(values[0]);
+        wheelTeeth_FL = Integer.parseInt(values[1]);
+        wheelTeeth_RR = Integer.parseInt(values[2]);
+        wheelTeeth_RL = Integer.parseInt(values[3]);
+        transTeeth    = Integer.parseInt(values[4]);
+        
     }
 
     public static void parseGroupSix(String line)
@@ -442,8 +500,23 @@ public class TXTParser {
         gpsSpeed = Double.parseDouble(split[2]);
     }
     
-    private static void parseGroupNineteen() {
-        
+    //parse strain gauges
+    private static void parseGroupTwenty(String line) {
+        String[] values = line.split(",");
+        if(values.length != 8)
+            return;
+        adc0 = Double.parseDouble(values[0]);
+        adc1 = Double.parseDouble(values[1]);
+        adc2 = Double.parseDouble(values[2]);
+        adc3 = Double.parseDouble(values[3]);
+        adc4 = Double.parseDouble(values[4]);
+        adc5 = Double.parseDouble(values[5]);
+        adc6 = Double.parseDouble(values[6]);
+        adc7 = Double.parseDouble(values[7]);
+    }
+    
+    private static void parseGroupTwentyOne(String line) {
+        steeringAngle = Double.parseDouble(line);
     }
 
     //calculates the difference in milliseconds given two strings formatted in "Seconds.SubSeconds"
