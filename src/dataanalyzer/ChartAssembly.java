@@ -177,6 +177,8 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
+        data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
+
         
         //create histogram menuitem to filter current chart
         JMenuItem histogram = new JMenuItem("Toggle Histogram");
@@ -189,6 +191,7 @@ public class ChartAssembly implements ChartMouseListener {
                     setChart(selectedTags, selectedLaps);
             }
         });
+        histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
         
         //create filtering menu to filter current chart
         JMenuItem filtering = new JMenuItem("Apply Filtering");
@@ -212,6 +215,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
+        filtering.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         
         //create static markers menu item
         JMenuItem markers = new JMenuItem("Show Static Markers");
