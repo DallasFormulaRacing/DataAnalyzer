@@ -93,6 +93,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //disable new import button
         newImportMenuItem.setVisible(false);
+        
+        //on new element entry of dataMap, update the view
+        chartManager.getDataMap().addTagSizeChangeListener(new HashMapTagSizeListener() {
+            @Override
+            public void sizeUpdate() {
+                if(!openingAFile)
+                    Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+            }
+        });
     }
     
     private void clearAllCharts() {
@@ -110,7 +119,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
     }
     
-    private void twoHorizontalView() {
+    private void twoVerticalView() {
         Dimension frameSize = this.getSize();
         clearAllCharts();
         ChartAssembly leftChart = chartManager.addChart();
@@ -122,7 +131,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         rightChart.getChartFrame().setSize(frameSize.width/2, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
     }
     
-    private void twoVerticalView() {
+    private void twoHorizontalView() {
         Dimension frameSize = this.getSize();
         clearAllCharts();
         
@@ -165,6 +174,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
+        singleViewMenuItem = new javax.swing.JMenuItem();
         twoVerticalMenuItem = new javax.swing.JMenuItem();
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
@@ -311,6 +321,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(showRangeMarkersMenuItem);
+
+        singleViewMenuItem.setText("Single View");
+        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleViewMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(singleViewMenuItem);
 
         twoVerticalMenuItem.setText("Two Vertical");
         twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -579,7 +597,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //set these sizes
             this.setSize(screenSize.width, screenSize.height);
             this.setLocation(0, 0);
-            fullscreenMenuItem.setText("Minimize");
+            fullscreenMenuItem.setText("Restore Down");
             if(chartManager.getNumberOfCharts() == 1) {
                 Dimension frameSize = this.getSize();
                 chartManager.getCharts().get(0).getChartFrame().setSize(screenSize.width, screenSize.height - (2 * ((int) menuBar.getSize().getHeight())));
@@ -958,6 +976,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_importECUDataMenuItemActionPerformed
+
+    private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
+        //delete all current charts
+        for(ChartAssembly assembly : chartManager.getCharts())
+            assembly.chartFrame.dispose();
+        
+        //reinitialize the initial basic view.
+        initializeBasicView();
+    }//GEN-LAST:event_singleViewMenuItemActionPerformed
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1798,6 +1825,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
+    private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
     private javax.swing.JMenuItem twoVerticalMenuItem;
