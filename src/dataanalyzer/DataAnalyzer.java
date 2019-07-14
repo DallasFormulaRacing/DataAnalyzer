@@ -9,6 +9,7 @@ import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
+import dataanalyzer.dialog.FileNotesDialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -42,9 +43,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
     protected boolean rangeMarkersActive;
     
     ChartManager chartManager;
+    
+    private String fileNotes;
 
     public DataAnalyzer() {
         initComponents();
+        
+        //to prevent nulls, start as blank
+        fileNotes = "";
         
         //initialize chart manager
         chartManager = new ChartManager(this);
@@ -883,7 +889,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_swapChartsMenuItemActionPerformed
 
     private void addNotesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNotesMenuItemActionPerformed
-        // TODO create notes dialog.
+        Referencer<String> reference = new Referencer<>(fileNotes);
+        new FileNotesDialog(reference, this, true).setVisible(true);
+        fileNotes = reference.get();
     }//GEN-LAST:event_addNotesMenuItemActionPerformed
 
     private void importECUDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importECUDataMenuItemActionPerformed
@@ -1333,9 +1341,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         sb.append("VEHICLEDYNAMICDATA");
         sb.append("\n");
         sb.append(chartManager.getVehicleData().getStringOfData());
+        //append lap data
         sb.append("LAPDATA");
         sb.append("\n");
         sb.append(Lap.getStringOfData(chartManager.getLapBreaker()));
+        if(!fileNotes.isEmpty()) {
+            sb.append("FILENOTES\n");
+            sb.append(fileNotes);
+        }
         
         String chosenFileName = "";
         
@@ -1610,6 +1623,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     String line = scanner.nextLine();
                     if(line.isEmpty())
                         continue;
+                    
+                    if(line.equals(("FILENOTES"))) {
+                        break;
+                    }
 
                     //holds the data
                     long lapStart;
@@ -1626,6 +1643,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
                     else
                         chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                }
+                
+                //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                while(scanner.hasNextLine()) {
+                    fileNotes += scanner.nextLine();
                 }
 
                 //give the data to the vehicleData class to create
