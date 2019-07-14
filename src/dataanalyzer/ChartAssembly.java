@@ -65,10 +65,14 @@ public class ChartAssembly implements ChartMouseListener {
     String[] selectedTags;
     int[] selectedLaps;
     
+    //boolean holding if a histogram is currently being shown
+    boolean showingHistogram;
+    
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
         selectedTags = new String[1];
         selectedLaps = new int[1];
+        showingHistogram = false;
         chartPanel = null;
         chartFrame = new JInternalFrame();
         chartFrame.setSize(new Dimension(800,600));
@@ -174,11 +178,14 @@ public class ChartAssembly implements ChartMouseListener {
         });
         
         //create histogram menuitem to filter current chart
-        JMenuItem histogram = new JMenuItem("Show Histogram");
+        JMenuItem histogram = new JMenuItem("Toggle Histogram");
         histogram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showHistogram();
+                if(!showingHistogram)
+                    showHistogram();
+                else
+                    setChart(selectedTags, selectedLaps);
             }
         });
         
@@ -206,12 +213,14 @@ public class ChartAssembly implements ChartMouseListener {
         });
         
         //create static markers menu item
-        JMenuItem markers = new JMenuItem("Show static markers");
+        JMenuItem markers = new JMenuItem("Show Static Markers");
         markers.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //TODO: Launch mini window that shows all static markers for this tag
-                new StaticMarkersFrame(manager.getDataMap(), selectedTags, manager.getStaticMarkers()).setVisible(true);
+                //Launch mini window that shows all static markers for this tag
+                StaticMarkersFrame frame = new StaticMarkersFrame(manager.getDataMap(), selectedTags, manager.getStaticMarkers(), manager.getParentFrame(), true);
+                frame.setVisible(true);
+                drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
             }
         });
         
@@ -320,6 +329,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //draw markers
         drawMarkers(tags, chart.getXYPlot());
+        
+        //declare that we are not showing a histogram
+        showingHistogram = false;
     }
 
     // Displays the data for all selected data types
@@ -393,6 +405,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //draw markers
         drawMarkers(tags, chart.getXYPlot());
+        
+        //declare that we are not showing a histogram
+        showingHistogram = false;
     }
     
     private void showHistogram() {
@@ -435,6 +450,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //set frame content
         chartFrame.setContentPane(chartPanel);
+        
+        //declare that we are showing a histogram
+        showingHistogram = true;
     }
     
     //draw the static markers on the screen

@@ -25,13 +25,14 @@ import javax.swing.SwingUtilities;
  *
  * @author aribdhuka
  */
-public class StaticMarkersFrame extends javax.swing.JFrame {
+public class StaticMarkersFrame extends javax.swing.JDialog {
     
     private CategoricalHashMap dataMap;
     private String[] tags;
     private CategoricalHashTable<CategorizedValueMarker> staticMarkers;
 
-    public StaticMarkersFrame(CategoricalHashMap dataMap, String[] tags, CategoricalHashTable<CategorizedValueMarker> staticMarkers) {
+    public StaticMarkersFrame(CategoricalHashMap dataMap, String[] tags, CategoricalHashTable<CategorizedValueMarker> staticMarkers, java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         this.dataMap = dataMap;
         this.tags = tags;
         this.staticMarkers = staticMarkers;
@@ -142,6 +143,8 @@ public class StaticMarkersFrame extends javax.swing.JFrame {
         for(String tag : tags) {
             LinkedList<LogObject> data = dataMap.getList(tag);
             LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
+            if(markers == null)
+                continue;
             for(CategorizedValueMarker v : markers) {
                 //if its a lap marker, show all other markers first
                 if(v.getNotes().matches("Start Lap[0-9]+") || v.getNotes().matches("End Lap[0-9]+")) {
@@ -167,12 +170,17 @@ public class StaticMarkersFrame extends javax.swing.JFrame {
     }
     
     private void deleteSelected() {
+        if(staticMarkersList.getSelectedIndex() == -1)
+            return;
         //get list and model
         ListModel model = staticMarkersList.getModel();
         for(String tag : tags) {
-            staticMarkers.remove(getMarkerFromString(tag, "" +
-                    model.getElementAt(staticMarkersList.getSelectedIndex())));
+            CategorizedValueMarker marker = getMarkerFromString(tag, "" +
+                    model.getElementAt(staticMarkersList.getSelectedIndex()));
+            if(marker != null)
+                staticMarkers.remove(marker);
         }
+        populateList();
     }
     
     /**
