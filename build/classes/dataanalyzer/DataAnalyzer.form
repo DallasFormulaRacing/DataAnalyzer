@@ -169,6 +169,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showRangeMarkersMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="singleViewMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Single View"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="singleViewMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="twoVerticalMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Two Vertical"/>
