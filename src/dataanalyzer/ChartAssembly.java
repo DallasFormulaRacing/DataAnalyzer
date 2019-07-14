@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -920,7 +921,7 @@ public class ChartAssembly implements ChartMouseListener {
         //else handle normal chart clicking duties
         else {
             //if the lap breaker hasn't been activiates
-            if(manager.getLapBreakerActive() < 0) {
+            if(manager.getLapBreakerActive() < 0 && !SwingUtilities.isRightMouseButton(cme.getTrigger())) {
                 // Create a static cursor that isnt cleared every time
                 ValueMarker marker = new ValueMarker(xCrosshair.getValue());
                 //calculate the tag
