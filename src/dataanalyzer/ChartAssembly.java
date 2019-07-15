@@ -18,6 +18,8 @@ import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +74,9 @@ public class ChartAssembly implements ChartMouseListener {
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
     
+    //holds list of MenuItems that were added custom
+    private ArrayList<JMenuItem> customMenuItems;
+    
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
         selectedTags = new String[1];
@@ -81,6 +86,7 @@ public class ChartAssembly implements ChartMouseListener {
         chartFrame = new JInternalFrame();
         chartFrame.setSize(new Dimension(800,600));
         chartFrame.setResizable(true);
+        customMenuItems = new ArrayList<>();
         showEmptyGraph();
         createOverlay();
     }
@@ -180,7 +186,6 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
-
         
         //create histogram menuitem to filter current chart
         JMenuItem histogram = new JMenuItem("Toggle Histogram");
@@ -193,7 +198,6 @@ public class ChartAssembly implements ChartMouseListener {
                     setChart(selectedTags, selectedLaps);
             }
         });
-        histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
         
         //create filtering menu to filter current chart
         JMenuItem filtering = new JMenuItem("Apply Filtering");
@@ -245,6 +249,17 @@ public class ChartAssembly implements ChartMouseListener {
         menu.add(filtering);
         menu.add(markers);
         menu.add(statistics);
+        
+        //clear list
+        customMenuItems.clear();
+        
+        //add new items
+        customMenuItems.add(data);
+        customMenuItems.add(histogram);
+        customMenuItems.add(filtering);
+        customMenuItems.add(markers);
+        customMenuItems.add(statistics);
+        
         
         //set new popup menu to chart
         chart.setPopupMenu(menu);
@@ -1220,6 +1235,25 @@ public class ChartAssembly implements ChartMouseListener {
         //return what we stored as time
         //this value is either -1 for no value found or the time realted to the other domain the user clicked
         return time;
+    }
+    
+    /**
+     * Finds and returns a menu item that has a name that matched the parameter
+     * @param name Name associated with JMenuItem to find
+     * @return JMenuItem that has the same name as String provided in parameter. Null if not found.
+     */
+    protected JMenuItem getMenuItemFromName(String name) {
+        //for each JMenuItem that we added
+        for(JMenuItem item : customMenuItems) {
+            //check if name matches
+            if(item.getText().equals(name)) {
+                //if it matches, return this item
+                return item;
+            }
+        }
+        
+        //if we went through the whole list and nothing matched, return null
+        return null;
     }
 
     public ChartPanel getChartPanel() {

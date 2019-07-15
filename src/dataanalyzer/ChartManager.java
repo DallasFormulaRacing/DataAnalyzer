@@ -48,6 +48,9 @@ public class ChartManager {
     //holds all active charts
     ArrayList<ChartAssembly> charts;
     
+    //holds focused chart
+    private ChartAssembly focused;
+    
     //holds if swapper is active
     int swapActive;
     //holds charts being swapped;
@@ -64,6 +67,7 @@ public class ChartManager {
         swapActive = -1;
         newLap = new Lap();
         charts = new ArrayList<>();
+        focused = null;
         first = null;
         second = null;
         
@@ -138,10 +142,32 @@ public class ChartManager {
             first = null;
             second = null;
         }
+        focused = ca;
     }
     
+    /**
+     * Gets the focused chart or the first chart in the list if no charts are focused.
+     * If no charts are available, returns null.
+     * @return ChartAssembly that has highest priorty. Focused > first > null
+     */
+    protected ChartAssembly getFocusedChart() {
+        if(focused == null) {
+            if(charts.size() > 0) {
+                return charts.get(0);
+            }
+            return null;
+        }
+        
+        return focused;
+    }
     
-    
+    /**
+     * Sets a chart to focused. No visual changes.
+     * @param ca Chart to mark as focused.
+     */
+    private void setFocusedChart(ChartAssembly ca) {
+        focused = ca;
+    }
     
     /**
      * 

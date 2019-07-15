@@ -179,6 +179,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
+        chartMenu = new javax.swing.JMenu();
+        chooseDataMenuItem = new javax.swing.JMenuItem();
+        histogramMenuItem = new javax.swing.JMenuItem();
+        applyFilteringMenuItem = new javax.swing.JMenuItem();
+        showStaticMarkersMenuItem = new javax.swing.JMenuItem();
+        showStatisticsMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
@@ -202,6 +208,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newWindowMenuItem);
 
+        newImportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newImportMenuItem.setText("New Import");
         newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,6 +217,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newImportMenuItem);
 
+        importECUDataMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         importECUDataMenuItem.setText("Import PE3 data");
         importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -364,6 +372,57 @@ public class DataAnalyzer extends javax.swing.JFrame {
         viewMenu.add(addChartMenuItem);
 
         menuBar.add(viewMenu);
+
+        chartMenu.setText("Chart");
+
+        chooseDataMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.ALT_MASK));
+        chooseDataMenuItem.setText("Choose Data");
+        chooseDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chooseDataMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(chooseDataMenuItem);
+
+        histogramMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
+        histogramMenuItem.setText("Toggle Histogram");
+        histogramMenuItem.setToolTipText("");
+        histogramMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                histogramMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(histogramMenuItem);
+
+        applyFilteringMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.ALT_MASK));
+        applyFilteringMenuItem.setText("Apply Filtering");
+        applyFilteringMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyFilteringMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(applyFilteringMenuItem);
+
+        showStaticMarkersMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.ALT_MASK));
+        showStaticMarkersMenuItem.setText("Show Static Markers");
+        showStaticMarkersMenuItem.setToolTipText("");
+        showStaticMarkersMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showStaticMarkersMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(showStaticMarkersMenuItem);
+
+        showStatisticsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
+        showStatisticsMenuItem.setText("Show Statistics");
+        showStatisticsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showStatisticsMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(showStatisticsMenuItem);
+
+        menuBar.add(chartMenu);
 
         vehicleMenu.setText("Vehicle");
 
@@ -985,6 +1044,31 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //reinitialize the initial basic view.
         initializeBasicView();
     }//GEN-LAST:event_singleViewMenuItemActionPerformed
+
+    private void chooseDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDataMenuItemActionPerformed
+        //perform the choose data menu item on the focused chart
+        chartManager.getFocusedChart().getMenuItemFromName("Choose Data").doClick();
+    }//GEN-LAST:event_chooseDataMenuItemActionPerformed
+
+    private void histogramMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_histogramMenuItemActionPerformed
+        //perform the show histogram menu item on the focused chart
+        chartManager.getFocusedChart().getMenuItemFromName("Toggle Histogram").doClick();
+    }//GEN-LAST:event_histogramMenuItemActionPerformed
+
+    private void applyFilteringMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyFilteringMenuItemActionPerformed
+        //perform the apply filtering menu item on the focused chart
+        chartManager.getFocusedChart().getMenuItemFromName("Apply Filtering").doClick();
+    }//GEN-LAST:event_applyFilteringMenuItemActionPerformed
+
+    private void showStaticMarkersMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showStaticMarkersMenuItemActionPerformed
+        //perform the show static markers menu item on the focused chart
+        chartManager.getFocusedChart().getMenuItemFromName("Show Static Markers").doClick();
+    }//GEN-LAST:event_showStaticMarkersMenuItemActionPerformed
+
+    private void showStatisticsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showStatisticsMenuItemActionPerformed
+        //perform the show statistics menu item on the focused chart
+        chartManager.getFocusedChart().getMenuItemFromName("Show Statistics").doClick();
+    }//GEN-LAST:event_showStatisticsMenuItemActionPerformed
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1805,6 +1889,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenuItem applyFilteringMenuItem;
+    private javax.swing.JMenu chartMenu;
+    private javax.swing.JMenuItem chooseDataMenuItem;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
@@ -1812,6 +1899,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
+    private javax.swing.JMenuItem histogramMenuItem;
     private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
     private javax.swing.JMenuItem jMenuItem2;
@@ -1825,6 +1913,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
+    private javax.swing.JMenuItem showStaticMarkersMenuItem;
+    private javax.swing.JMenuItem showStatisticsMenuItem;
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
