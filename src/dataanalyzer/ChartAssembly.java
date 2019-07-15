@@ -17,6 +17,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,8 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MenuKeyEvent;
+import javax.swing.event.MenuKeyListener;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -177,7 +180,6 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
-        data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.CTRL_MASK));
 
         
         //create histogram menuitem to filter current chart
@@ -215,7 +217,6 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
-        filtering.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         
         //create static markers menu item
         JMenuItem markers = new JMenuItem("Show Static Markers");
@@ -228,7 +229,7 @@ public class ChartAssembly implements ChartMouseListener {
                 drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
             }
         });
-        
+
         //create static markers menu item
         JMenuItem statistics = new JMenuItem("Show Statistics");
         statistics.addActionListener(new ActionListener() {
@@ -237,7 +238,7 @@ public class ChartAssembly implements ChartMouseListener {
                 new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
             }
         });
-        
+
         //add created menus to current menu
         menu.add(data);
         menu.add(histogram);
