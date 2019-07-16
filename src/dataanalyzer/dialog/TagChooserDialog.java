@@ -12,6 +12,9 @@ import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.CategorizedValueMarker;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Lap;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -68,6 +71,14 @@ public class TagChooserDialog extends javax.swing.JDialog {
         this.staticMarkers = staticMarkers;
         fillDataList(dataMap.getTags());
         running = true;
+        //on window closing, dispose properly.
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                tagsToReturn.add("EVENTCANCELLED");
+                running = false;
+            }
+        });
     }
 
     /**
