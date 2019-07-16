@@ -190,6 +190,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         saveVehicleMenuItem = new javax.swing.JMenuItem();
         importVehicleMenuItem = new javax.swing.JMenuItem();
         editVehicleMenuItem = new javax.swing.JMenuItem();
+        engineMenu = new javax.swing.JMenu();
+        engineChartSetup = new javax.swing.JMenuItem();
+        showLambdaMap = new javax.swing.JMenuItem();
 
         jMenuItem2.setText("jMenuItem2");
 
@@ -459,6 +462,27 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(editVehicleMenuItem);
 
         menuBar.add(vehicleMenu);
+
+        engineMenu.setText("Engine");
+
+        engineChartSetup.setText("Setup Charts");
+        engineChartSetup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                engineChartSetupActionPerformed(evt);
+            }
+        });
+        engineMenu.add(engineChartSetup);
+
+        showLambdaMap.setText("Show Lambda Map");
+        showLambdaMap.setEnabled(false);
+        showLambdaMap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaMapActionPerformed(evt);
+            }
+        });
+        engineMenu.add(showLambdaMap);
+
+        menuBar.add(engineMenu);
 
         setJMenuBar(menuBar);
 
@@ -1069,6 +1093,88 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //perform the show statistics menu item on the focused chart
         chartManager.getFocusedChart().getMenuItemFromName("Show Statistics").doClick();
     }//GEN-LAST:event_showStatisticsMenuItemActionPerformed
+
+    private void engineChartSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_engineChartSetupActionPerformed
+        //delete all current charts
+        clearAllCharts();
+        
+        //create main graph which will show overlay between RPM, TPS, and Lambda
+        Dimension frameSize = this.getSize();
+        ChartAssembly main = chartManager.addChart();
+        main.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 * 2);
+        main.getChartFrame().setLocation(0, 0);
+        
+        //create fuel open time below main frame
+        ChartAssembly fot = chartManager.addChart();
+        fot.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3);
+        fot.getChartFrame().setLocation(0, frameSize.height / 3 * 2 + 1);
+        
+        //create RPM chart
+        ChartAssembly rpm = chartManager.addChart();
+        rpm.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3);
+        rpm.getChartFrame().setLocation(frameSize.width / 2 + 1, 0);
+        
+        //create TPS chart
+        ChartAssembly tps = chartManager.addChart();
+        tps.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3);
+        tps.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 + 1);
+        
+        //create Lambda chart
+        ChartAssembly lambda = chartManager.addChart();
+        lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3);
+        lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 + 1);
+        
+        //set charts data
+
+        //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
+        if(chartManager.getDataMap().getTags().contains("Time,AFRAveraged") && 
+                chartManager.getDataMap().getTags().contains("Time,TPS") && 
+                chartManager.getDataMap().getTags().contains("Time,RPM")) {
+            
+            main.selectedTags = new String[] {"Time,RPM", "Time,TPS", "Time,AFRAveraged"};
+            main.selectedLaps = new int[0];
+            
+            main.setChart(main.selectedTags, main.selectedLaps);
+        }
+        
+        //if RPM data exists, put it on the rpm chart
+        if(chartManager.getDataMap().getTags().contains("Time,RPM")) {
+            rpm.selectedTags = new String[] {"Time,RPM"};
+            rpm.selectedLaps = new int[0];
+            
+            rpm.setChart(rpm.selectedTags, rpm.selectedLaps);
+        }
+       
+        //if tps data exists, put it on the tps chart
+        if(chartManager.getDataMap().getTags().contains("Time,TPS")) {
+            tps.selectedTags = new String[] {"Time,TPS"};
+            tps.selectedLaps = new int[0];
+            
+            tps.setChart(tps.selectedTags, tps.selectedLaps);
+        }
+        
+        //if AFR data exists, put it on the lambda chart
+        if(chartManager.getDataMap().getTags().contains("Time,AFRAveraged")) {
+            lambda.selectedTags = new String[] {"Time,AFRAveraged"};
+            lambda.selectedLaps = new int[0];
+            
+            lambda.setChart(lambda.selectedTags, lambda.selectedLaps);
+        }
+        
+        //if fuel open time data exists, put it on the fuel open time chart
+        if(chartManager.getDataMap().getTags().contains("Time,FuelOpenTime")) {
+            fot.selectedTags = new String[] {"Time,FuelOpenTime"};
+            fot.selectedLaps = new int[0];
+            
+            fot.setChart(fot.selectedTags, fot.selectedLaps);
+        }
+        
+        
+    }//GEN-LAST:event_engineChartSetupActionPerformed
+
+    private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_showLambdaMapActionPerformed
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1895,6 +2001,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
+    private javax.swing.JMenuItem engineChartSetup;
+    private javax.swing.JMenu engineMenu;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
@@ -1912,6 +2020,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
+    private javax.swing.JMenuItem showLambdaMap;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
     private javax.swing.JMenuItem showStaticMarkersMenuItem;
     private javax.swing.JMenuItem showStatisticsMenuItem;
