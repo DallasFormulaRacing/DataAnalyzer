@@ -17,9 +17,8 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,12 +27,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.event.MenuKeyEvent;
-import javax.swing.event.MenuKeyListener;
+import javax.swing.border.Border;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -74,19 +75,16 @@ public class ChartAssembly implements ChartMouseListener {
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
     
-    //holds list of MenuItems that were added custom
-    private ArrayList<JMenuItem> customMenuItems;
-    
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
         selectedTags = new String[1];
         selectedLaps = new int[1];
         showingHistogram = false;
         chartPanel = null;
-        chartFrame = new JInternalFrame();
+        chartFrame = new ChartFrame();
         chartFrame.setSize(new Dimension(800,600));
         chartFrame.setResizable(true);
-        customMenuItems = new ArrayList<>();
+        addMenuBar();
         showEmptyGraph();
         createOverlay();
     }
@@ -139,6 +137,123 @@ public class ChartAssembly implements ChartMouseListener {
         chartFrame.setVisible(true);
     }
     
+    private void addMenuBar() {
+        //830
+        JMenuBar frameMenuBar = new JMenuBar();
+        //create data menuitem for user to choose data in this chart.
+        JMenuItem data = new JMenuItem("Choose Data");
+        data.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //TODO: OPEN DIALOG WITH TAGS, CHOOSE TAGS/LAPS, THEN APPLY.
+                ArrayList<String> tags = new ArrayList<>();
+                ArrayList<Integer> laps = new ArrayList<>();
+                TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(),
+                        manager.getDataMap(), manager.getLapBreaker(), 
+                        manager.getStaticMarkers(), tags, laps);
+                tcd.setVisible(true);
+                
+                //wait for the dialog to finish running
+                while(tcd.isRunning()) {
+                    try {
+                        Thread.currentThread().sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
+                //set the chart with new params
+                if(!tags.isEmpty() && tags.get(0) != null && !tags.get(0).equals("EVENTCANCELLED")) {
+                    selectedTags = new String[tags.size()];
+                    for(int i = 0; i < tags.size(); i++) {
+                            selectedTags[i] = tags.get(i);
+                        }
+                    if(!laps.isEmpty()) {
+                        selectedLaps = new int[laps.size()];
+                        for(int i = 0; i < laps.size(); i++) {
+                            selectedLaps[i] = laps.get(i);
+                        }
+                    } else {
+                        selectedLaps = null;
+                    }
+                    System.out.printf("Tags: %s Laps: %s", Arrays.toString(selectedTags), Arrays.toString(selectedLaps));
+                    setChart(selectedTags, selectedLaps);
+                }
+            }
+        });
+        data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.ALT_MASK));
+        
+        //create histogram menuitem to filter current chart
+        JMenuItem histogram = new JMenuItem("Histogram");
+        histogram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!showingHistogram)
+                    showHistogram();
+                else
+                    setChart(selectedTags, selectedLaps);
+            }
+        });
+        histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
+        
+        //create filtering menu to filter current chart
+        JMenuItem filtering = new JMenuItem("Filtering");
+        filtering.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //dialog for bucket size
+                ReturnCode rc = new ReturnCode();
+                ApplyFilteringDialog afd = new ApplyFilteringDialog(manager.getParentFrame(), true, rc);
+                afd.setVisible(true);
+                while(rc.getCode() == 0) {
+                    try {
+                        Thread.currentThread().sleep(100);
+                    } catch(InterruptedException ex) {
+                        Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                //apply filtering
+                if(rc.getCode() != -1) {
+                    setChart(titleToTag(), selectedLaps, rc.getCode());
+                }
+            }
+        });
+        filtering.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.ALT_MASK));
+        
+        //create static markers menu item
+        JMenuItem markers = new JMenuItem("Static Markers");
+        markers.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Launch mini window that shows all static markers for this tag
+                StaticMarkersFrame frame = new StaticMarkersFrame(manager.getDataMap(), selectedTags, manager.getStaticMarkers(), manager.getParentFrame(), true);
+                frame.setVisible(true);
+                drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
+            }
+        });
+        markers.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.ALT_MASK));
+
+        //create static markers menu item
+        JMenuItem statistics = new JMenuItem("Statistics");
+        statistics.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
+            }
+        });
+        statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
+        
+        //add created menu items to menu for frame
+        frameMenuBar.add(data);
+        frameMenuBar.add(histogram);
+        frameMenuBar.add(filtering);
+        frameMenuBar.add(markers);
+        frameMenuBar.add(statistics);
+        
+        //set created menu to frame
+        chartFrame.setJMenuBar(frameMenuBar);
+    }
+    
     /**
     * changes the popup menu for a given chart
     * @param chart Chart that owns popupmenu
@@ -186,6 +301,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
+        data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.ALT_MASK));
         
         //create histogram menuitem to filter current chart
         JMenuItem histogram = new JMenuItem("Toggle Histogram");
@@ -198,6 +314,7 @@ public class ChartAssembly implements ChartMouseListener {
                     setChart(selectedTags, selectedLaps);
             }
         });
+        histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
         
         //create filtering menu to filter current chart
         JMenuItem filtering = new JMenuItem("Apply Filtering");
@@ -221,6 +338,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         });
+        filtering.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.ALT_MASK));
         
         //create static markers menu item
         JMenuItem markers = new JMenuItem("Show Static Markers");
@@ -233,6 +351,7 @@ public class ChartAssembly implements ChartMouseListener {
                 drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
             }
         });
+        markers.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.ALT_MASK));
 
         //create static markers menu item
         JMenuItem statistics = new JMenuItem("Show Statistics");
@@ -242,24 +361,14 @@ public class ChartAssembly implements ChartMouseListener {
                 new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
             }
         });
+        statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
 
-        //add created menus to current menu
+        //add created menu items to current menu
         menu.add(data);
         menu.add(histogram);
         menu.add(filtering);
         menu.add(markers);
         menu.add(statistics);
-        
-        //clear list
-        customMenuItems.clear();
-        
-        //add new items
-        customMenuItems.add(data);
-        customMenuItems.add(histogram);
-        customMenuItems.add(filtering);
-        customMenuItems.add(markers);
-        customMenuItems.add(statistics);
-        
         
         //set new popup menu to chart
         chart.setPopupMenu(menu);
@@ -353,6 +462,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //declare that we are not showing a histogram
         showingHistogram = false;
+        
+        //set menu item to say histogram
+        ((JMenuItem) chartFrame.getJMenuBar().getComponent(1)).setText("Histogram");
     }
 
     // Displays the data for all selected data types
@@ -429,6 +541,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //declare that we are not showing a histogram
         showingHistogram = false;
+        
+        //set menu item to say histogram
+        ((JMenuItem) chartFrame.getJMenuBar().getComponent(1)).setText("Histogram");
     }
     
     private void showHistogram() {
@@ -474,6 +589,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //declare that we are showing a histogram
         showingHistogram = true;
+        
+        //set menu item to say chart
+        ((JMenuItem) chartFrame.getJMenuBar().getComponent(1)).setText("Chart");
     }
     
     //draw the static markers on the screen
@@ -1235,25 +1353,6 @@ public class ChartAssembly implements ChartMouseListener {
         //return what we stored as time
         //this value is either -1 for no value found or the time realted to the other domain the user clicked
         return time;
-    }
-    
-    /**
-     * Finds and returns a menu item that has a name that matched the parameter
-     * @param name Name associated with JMenuItem to find
-     * @return JMenuItem that has the same name as String provided in parameter. Null if not found.
-     */
-    protected JMenuItem getMenuItemFromName(String name) {
-        //for each JMenuItem that we added
-        for(JMenuItem item : customMenuItems) {
-            //check if name matches
-            if(item.getText().equals(name)) {
-                //if it matches, return this item
-                return item;
-            }
-        }
-        
-        //if we went through the whole list and nothing matched, return null
-        return null;
     }
 
     public ChartPanel getChartPanel() {
