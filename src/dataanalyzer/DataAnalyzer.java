@@ -137,11 +137,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         ChartAssembly topChart = chartManager.addChart();
         topChart.getChartFrame().setLocation(0,0);
-        topChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2);
+        topChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2 - 22);
         
         ChartAssembly bottomChart = chartManager.addChart();
-        bottomChart.getChartFrame().setLocation(0,frameSize.height/2 + 1);
-        bottomChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2);
+        bottomChart.getChartFrame().setLocation(0,frameSize.height/2 - 22 + 1);
+        bottomChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2 - 22);
 
     }
  
