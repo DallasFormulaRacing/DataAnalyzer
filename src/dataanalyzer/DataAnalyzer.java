@@ -469,7 +469,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     if(chosenFiles.length > 0) {
                         if(chosenFiles[0].exists()) {
                             String filePath = chosenFiles[0].getAbsolutePath();
-                            setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+                            
+                            if(filePath.lastIndexOf('/') != -1) {
+                                setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+                            } else if(filePath.lastIndexOf('\\') != -1) {
+                                setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('\\')));
+                            } else {
+                                setTitle("DataAnalyzer - " + filePath);
+                            }
                         }
                     }
                     super.approveSelection();
@@ -549,7 +556,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     }
                     
                     da.setVisible(true);
-                    da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
                     if(chosenFilePath.lastIndexOf('/') != -1) {
                         da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
                     } else {
