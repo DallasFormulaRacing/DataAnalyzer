@@ -59,8 +59,8 @@ public class ChartConfiguration {
     }
     
     /**
-     * 
-     * @param filename filename of the file to be saved. Chosen by the user during the save process. 
+     * Saves the current chart configuration to the chart configuration directory with the name specified by the user. 
+     * @param filename filename of the file to be saved. Specified by the user during the save process. 
      */
     public void saveChartConfiguration(String filename){
         //TODO: Figure out format
