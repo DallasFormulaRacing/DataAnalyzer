@@ -68,6 +68,16 @@ public class ChartConfiguration {
      * @param filename filename of the file to be saved. Specified by the user during the save process. 
      */
     public void saveChartConfiguration(String filename){
+        File fout = new File(fileDirectory + File.separator + filename + ".dfrconfig");
+        FileOutputStream fos = new FileOutputStream(fout);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+
+        for (ChartLocation location : locations) {
+            bw.write("");//TODO: Fill in what needs to be saved
+            bw.newLine();
+        }
+     
+        bw.close();
         //TODO: Figure out format
         
         //Possible format for each location per line
