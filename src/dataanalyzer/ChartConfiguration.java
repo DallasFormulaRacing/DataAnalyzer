@@ -13,9 +13,7 @@ public class ChartConfiguration {
     private int numCharts;
     private ArrayList<ChartAssembly> charts;
     private ChartManager chartManager;
-    private Util util = new Util();
-    //TODO: Figure out file directory and how to get a persons username to replace with "Nolan"
-    
+    private Util util = new Util();    
     private String fileDirectory;
    
     //Holds the data for each chart in the configuration.
