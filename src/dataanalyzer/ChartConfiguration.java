@@ -75,6 +75,7 @@ public class ChartConfiguration {
                 locationLines.add(line);
             }
             
+            br.close();
             //TODO: Convert each line to a location in the ChartLocation array
             
         }else{
