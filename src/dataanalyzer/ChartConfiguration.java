@@ -1,6 +1,7 @@
 package dataanalyzer;
 import java.util.ArrayList;
 import javax.swing.*;
+import java.io.*;
 
 /**
  * This class will hold an array of chart data.
@@ -10,6 +11,9 @@ import javax.swing.*;
 public class ChartConfiguration {
     private int numCharts;
     private ArrayList<ChartAssembly> charts;
+    private ChartManager chartManager;
+    //TODO: Figure out file directory and how to get a persons username to replace with "Nolan"
+    private String fileDirectory = "C:" + File.separator + "Nolan" + File.separator + "Desktop" + File.separator +"TestDirectory";
    
     //Holds the data for each chart in the configuration.
     class ChartLocation{
@@ -35,8 +39,9 @@ public class ChartConfiguration {
      * @param charts ArrayList of charts that are going to be saved in a chart configuration.
      * @param dataAnalyzer The instantiated object of the DataAnalyzer class. Used to get the dimensions of the window. 
      */
-    public ChartConfiguration(ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer){
+    public ChartConfiguration(ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer, ChartManager chartManager){
         this.charts = charts;
+        this.chartManager = chartManager;
         numCharts = charts.size();
         for(ChartAssembly chart : charts){
             JInternalFrame chartFrame = chart.getChartFrame();
@@ -66,7 +71,8 @@ public class ChartConfiguration {
         //TODO: Figure out format
         
         //Possible format for each location per line
-        //[file name] [x] [y] [width] [height]
+        //[String formatted by showing all data types and separated by commas, "AFRAveraged,TPS,RPM"] [x] [y] [width] [height]
+        
         
     }
     
