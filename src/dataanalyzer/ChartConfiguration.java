@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import java.io.*;
 
+
 /**
  * This class will hold an array of chart data.
  * 
@@ -12,8 +13,10 @@ public class ChartConfiguration {
     private int numCharts;
     private ArrayList<ChartAssembly> charts;
     private ChartManager chartManager;
+    private Util util = new Util();
     //TODO: Figure out file directory and how to get a persons username to replace with "Nolan"
-    private String fileDirectory = "C:" + File.separator + "Nolan" + File.separator + "Desktop" + File.separator +"TestDirectory";
+    
+    private String fileDirectory;
    
     //Holds the data for each chart in the configuration.
     class ChartLocation{
@@ -40,6 +43,7 @@ public class ChartConfiguration {
      * @param dataAnalyzer The instantiated object of the DataAnalyzer class. Used to get the dimensions of the window. 
      */
     public ChartConfiguration(ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer, ChartManager chartManager){
+        setFileDirectory();
         this.charts = charts;
         this.chartManager = chartManager;
         numCharts = charts.size();
@@ -60,6 +64,7 @@ public class ChartConfiguration {
      * @param filename File name of the saved chart configuration.
      */
     public ChartConfiguration(String filename){//The file name should be a .dfrchartconfig
+        setFileDirectory();
         //TODO: Talk with people making an installation process to figure out file directories. 
     }
     
@@ -67,13 +72,16 @@ public class ChartConfiguration {
      * Saves the current chart configuration to the chart configuration directory with the name specified by the user. 
      * @param filename filename of the file to be saved. Specified by the user during the save process. 
      */
-    public void saveChartConfiguration(String filename){
+    public void saveChartConfiguration(String filename) throws Exception{
         File fout = new File(fileDirectory + File.separator + filename + ".dfrconfig");
+        fout.mkdirs();
+        fout.createNewFile();
+        
         FileOutputStream fos = new FileOutputStream(fout);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 
         for (ChartLocation location : locations) {
-            bw.write("");//TODO: Fill in what needs to be saved
+            bw.write("PLACE HOLDER" + " " + location.x + " " + location.y + " " + location.width + " " + location.height);//TODO: Fill in "PLACEHOLDER" 
             bw.newLine();
         }
      
@@ -84,6 +92,17 @@ public class ChartConfiguration {
         //[String formatted by showing all data types and separated by commas, "AFRAveraged,TPS,RPM"] [x] [y] [width] [height]
         
         
+    }
+    
+    /**
+     * Sets the file directory according to the operating system
+     */
+    public void setFileDirectory(){
+        if(util.os == "WINDOWS"){
+            fileDirectory = "C:" + File.separator + "Program Files" + File.separator + "DataAnalyzer" + File.separator +"ChartConfigurations";
+        }else if(util.os == "MAC"){
+            fileDirectory = "C:" + File.separator + "Applications" + File.separator + "DataAnalyzer" + File.separator +"ChartConfigurations";
+        }
     }
     
     
