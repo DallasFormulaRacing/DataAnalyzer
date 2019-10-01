@@ -61,8 +61,25 @@ public class ChartConfiguration {
      * Opens an existing chart configuration.
      * @param filename File name of the saved chart configuration.
      */
-    public ChartConfiguration(String filename){//The file name should be a .dfrchartconfig
+    public ChartConfiguration(String filename) throws Exception{//The file name should be a .dfrchartconfig
         setFileDirectory();
+        
+        ArrayList<String> locationLines = new ArrayList<String>();
+        if(filename.contains(".dfrchartconfig")){
+            File fin = new File(fileDirectory + File.separator + filename);
+            FileInputStream fis = new FileInputStream(fin);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+            
+            String line;
+            while((line = br.readLine()) != null){
+                locationLines.add(line);
+            }
+            
+            //TODO: Convert each line to a location in the ChartLocation array
+            
+        }else{
+            System.err.println("That is not the correct file type");
+        }
         //TODO: Talk with people making an installation process to figure out file directories. 
     }
     
@@ -71,7 +88,7 @@ public class ChartConfiguration {
      * @param filename filename of the file to be saved. Specified by the user during the save process. 
      */
     public void saveChartConfiguration(String filename) throws Exception{
-        File fout = new File(fileDirectory + File.separator + filename + ".dfrconfig");
+        File fout = new File(fileDirectory + File.separator + filename + ".dfrchartconfig");
         fout.mkdirs();
         fout.createNewFile();
         
