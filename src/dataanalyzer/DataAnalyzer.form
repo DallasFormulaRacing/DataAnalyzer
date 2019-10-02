@@ -269,7 +269,6 @@
             <MenuItem class="javax.swing.JMenuItem" name="showLambdaMap">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Show Lambda Map"/>
-                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showLambdaMapActionPerformed"/>
