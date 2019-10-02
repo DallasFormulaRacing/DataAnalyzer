@@ -55,7 +55,7 @@ public class ChartConfiguration {
             float width = (float)chartFrame.getWidth() / dataAnalyzer.getWidth();
             float height = (float)chartFrame.getHeight() / dataAnalyzer.getHeight();
             
-            locations.add(new ChartLocation(chart.getSelectedTags(), y, width, height));//TODO: figure out how to get file name of a chart.
+            locations.add(new ChartLocation(chart.getSelectedTags(), x, y, width, height));//TODO: figure out how to get file name of a chart.
         }
     }
     
@@ -63,7 +63,7 @@ public class ChartConfiguration {
      * Opens an existing chart configuration.
      * @param filename File name of the saved chart configuration.
      */
-    public ChartConfiguration(String filename) throws Exception{//The file name should be a .dfrchartconfig
+    public ChartConfiguration(String filename) throws Exception{//The file name should be .dfrchartconfig
         setFileDirectory();
         
         ArrayList<String> locationLines = new ArrayList<String>();
@@ -83,7 +83,6 @@ public class ChartConfiguration {
         }else{
             System.err.println("That is not the correct file type");
         }
-        //TODO: Talk with people making an installation process to figure out file directories. 
     }
     
     /**
@@ -109,7 +108,7 @@ public class ChartConfiguration {
                 }
                 
             }
-            bw.write("PLACE HOLDER" + " " + location.x + " " + location.y + " " + location.width + " " + location.height);//TODO: Fill in "PLACEHOLDER" 
+            bw.write(tags + " " + location.x + " " + location.y + " " + location.width + " " + location.height);
             bw.newLine();
         }
      
