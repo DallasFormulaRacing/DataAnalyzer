@@ -84,6 +84,10 @@ public class ChartConfiguration {
             System.err.println("That is not the correct file type");
         }
         //TODO: Talk with people making an installation process to figure out file directories. 
+
+        //IMPORTANT: engineChartSetupActionPerformed found on line 1019 of DataAnalyzer class
+        //TODO: Create method in DataAnalyzer that displays the chart configuration similar to how "engineChartSetupActionPerformed" does it. 
+        //This needs to take in all of the important information in order to accomplish this. 
     }
     
     /**
@@ -105,7 +109,7 @@ public class ChartConfiguration {
 
                 tags += location.selectedTags[i];
                 if(i < location.selectedTags.length - 1){
-                    tags += ",";
+                    tags += "~";
                 }
                 
             }
