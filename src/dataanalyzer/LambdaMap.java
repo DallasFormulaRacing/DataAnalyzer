@@ -4,8 +4,10 @@
  * and open the template in the editor.
  */
 package dataanalyzer;
+
 import java.awt.Color;
 import java.awt.Component;
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -17,77 +19,84 @@ import javax.swing.JLabel;
  *
  * @author peter
  */
-public class LambdaMap extends javax.swing.JFrame
-{
+public class LambdaMap extends javax.swing.JFrame {
+
     //Stores table data and table column/row headers 
     private DefaultTableModel table;
-    
+
     /**
      * Creates new form LambdaMap
      */
-    public LambdaMap()
-    {
-        initTableModel(12500,520,100,4);
-        initComponents(); 
+    public LambdaMap() {
+        initTableModel(12500, 520, 100, 4);
+        initComponents();
     }
     
-    
-    public void initTableModel(int columnLimit, int columnInterval, int rowLimit, int rowInterval){
+    /**
+     * Initializes the classes DefaultTableModel attribute with row and column headers based on parameters
+     * @param columnLimit The last/largest value in the column header sequence
+     * @param columnInterval The interval value each column header is incremented by
+     * @param rowLimit The last/largest value in the row header sequence
+     * @param rowInterval The interval value each row header is incremented by
+     */
+    public void initTableModel(int columnLimit, int columnInterval, int rowLimit, int rowInterval) {
         //Stores table models column and row size
         int colSize;
         int rowSize;
-        
+
         //Determines the row and column size of the table
-        if(columnLimit%columnInterval == 0){
-            colSize = columnLimit/columnInterval+1;
-        } else {
-            colSize = columnLimit/columnInterval+2;
+        if (columnLimit % columnInterval == 0) {
+            colSize = columnLimit / columnInterval + 1;
         }
-        if(rowLimit%rowInterval == 0){
-            rowSize = rowLimit/rowInterval;
-        } else {
-            rowSize = rowLimit/rowInterval+1;
+        else {
+            colSize = columnLimit / columnInterval + 2;
         }
-        
+        if (rowLimit % rowInterval == 0) {
+            rowSize = rowLimit / rowInterval;
+        }
+        else {
+            rowSize = rowLimit / rowInterval + 1;
+        }
+
         //Creates 2D array for table data (first column contains row headers, not table data)
         Object[][] dataTable = new Object[rowSize][colSize];
-        
+
         //Creates 2D array for column headers
         Object columnHeader[] = new Object[colSize];
-        
+
         //Initializes all table data to zero
-        for(int row = 0; row < rowSize; row++){
-            for(int col = 1; col < colSize; col++){
-                    dataTable[row][col] = 0;
+        for (int row = 0; row < rowSize; row++) {
+            for (int col = 1; col < colSize; col++) {
+                dataTable[row][col] = 0;
             }
         }
-        
+
         //Initializes row headers based on parameter values
         int i = 1;
-        while(rowInterval * i < rowLimit){
-            dataTable[i-1][0] = (rowInterval * i) + "%";
+        while (rowInterval * i < rowLimit) {
+            dataTable[i - 1][0] = (rowInterval * i) + "%";
             i++;
         }
-        dataTable[rowSize-1][0] = rowLimit + "%";
-        
+        dataTable[rowSize - 1][0] = rowLimit + "%";
+
         //Initializes column headers based on parameter values
         int j = 1;
         columnHeader[0] = "";
-        while(columnInterval * j < columnLimit){
+        while (columnInterval * j < columnLimit) {
             columnHeader[j] = columnInterval * j;
             j++;
         }
-        columnHeader[colSize-1] = columnLimit; 
-        
-        //sets table equal to a new DefaultTableModel using dataTable and columnHeader
-        table = new DefaultTableModel(dataTable, columnHeader){
+        columnHeader[colSize - 1] = columnLimit;
+
+        //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
+        table = new DefaultTableModel(dataTable, columnHeader) {
             //Makes the first column uneditable and the rest editable
             @Override
-            public boolean isCellEditable(int rowIndex, int columnIndex)
-            {
-                if(columnIndex == 0){
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                if (columnIndex == 0) {
                     return false;
-                } else {
+                }
+                else {
                     return true;
                 }
             }
@@ -101,17 +110,18 @@ public class LambdaMap extends javax.swing.JFrame
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         //Custom initialization of jTable
         jTable1 = new javax.swing.JTable()
         {
-            //Prerenders the first column of data table as a header
+            //Overrides prepareRenderer so that the jTable can be formated
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col)
             {
+                //JComponent component = (JComponent) super.prepareRenderer(renderer, row, col);
+
                 if (col == 0)
                 {
                     return this.getTableHeader().getDefaultRenderer()
@@ -141,8 +151,7 @@ public class LambdaMap extends javax.swing.JFrame
         //Centers all of the cells in the data table
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment( JLabel.CENTER );
-        for(int i = 0; i < jTable1.getModel().getColumnCount(); i++)
-        {
+        for(int i = 0; i < jTable1.getModel().getColumnCount(); i++){
             jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
         jTable1.setShowVerticalLines(true);
@@ -203,43 +212,33 @@ public class LambdaMap extends javax.swing.JFrame
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
-        try
-        {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels())
-            {
-                if ("Nimbus".equals(info.getName()))
-                {
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex)
-        {
+        } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex)
-        {
+        } catch (InstantiationException ex) {
             java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex)
-        {
+        } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex)
-        {
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable()
-        {
-            public void run()
-            {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
                 new LambdaMap().setVisible(true);
             }
         });
@@ -256,17 +255,21 @@ public class LambdaMap extends javax.swing.JFrame
     // End of variables declaration//GEN-END:variables
 }
 
-//Table header renderer class for row headers (since row headers aren't natively supported)
+
+/**
+ * Table header renderer class for row headers (since row headers aren't natively supported by jTable)
+ */
 class HeaderRenderer implements TableCellRenderer {
+
     DefaultTableCellRenderer renderer;
-    
+
     public HeaderRenderer(JTable jTable1) {
         renderer = (DefaultTableCellRenderer) jTable1.getTableHeader().getDefaultRenderer();
         renderer.setHorizontalAlignment(JLabel.CENTER);
     }
-    
+
     @Override
-    public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
         return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
     }
 }
