@@ -139,8 +139,8 @@ public class LambdaMap extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1250, 675));
-        setPreferredSize(new java.awt.Dimension(1250, 675));
+        setMinimumSize(new java.awt.Dimension(1350, 675));
+        setPreferredSize(new java.awt.Dimension(1350, 675));
 
         //Renders the row headers
         final JTableHeader header = jTable1.getTableHeader();
@@ -184,7 +184,7 @@ public class LambdaMap extends javax.swing.JFrame {
                         .addGap(7, 7, 7)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1001, Short.MAX_VALUE))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel1)
