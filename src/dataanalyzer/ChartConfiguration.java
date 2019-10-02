@@ -105,6 +105,7 @@ public class ChartConfiguration {
                 tags += location.selectedTags[i];
                 if(i < location.selectedTags.length - 1){
                     tags += ",";
+                    
                 }
                 
             }
