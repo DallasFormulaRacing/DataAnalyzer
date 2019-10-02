@@ -23,10 +23,12 @@ public class ChartConfiguration {
         //These are proportions of the dimention and location of the main data analyzer length. These should be >0 and <1.
         public float x,y;
         public float width,height;
+
+        public String[] selectedTags;
         
         //Constructs an instance of ChartLocation.
-        public ChartLocation(String fileName, float x, float y, float width, float height){
-            this.fileName = fileName;
+        public ChartLocation(String[] selectedTags, float x, float y, float width, float height){
+            this.selectedTags = selectedTags;
             this.x = x;
             this.y = y;
             this.width = width;
@@ -53,7 +55,7 @@ public class ChartConfiguration {
             float width = (float)chartFrame.getWidth() / dataAnalyzer.getWidth();
             float height = (float)chartFrame.getHeight() / dataAnalyzer.getHeight();
             
-            locations.add(new ChartLocation("", x, y, width, height));//TODO: figure out how to get file name of a chart.
+            locations.add(new ChartLocation(chart.getSelectedTags(), y, width, height));//TODO: figure out how to get file name of a chart.
         }
     }
     
@@ -96,7 +98,17 @@ public class ChartConfiguration {
         FileOutputStream fos = new FileOutputStream(fout);
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 
+        
         for (ChartLocation location : locations) {
+            String tags = "";
+            for(int i = 0; i < location.selectedTags.length; i++){
+
+                tags += location.selectedTags[i];
+                if(i < location.selectedTags.length - 1){
+                    tags += ",";
+                }
+                
+            }
             bw.write("PLACE HOLDER" + " " + location.x + " " + location.y + " " + location.width + " " + location.height);//TODO: Fill in "PLACEHOLDER" 
             bw.newLine();
         }

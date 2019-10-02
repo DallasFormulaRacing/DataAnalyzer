@@ -1378,6 +1378,10 @@ public class ChartAssembly implements ChartMouseListener {
     public void setOverlay(MyCrosshairOverlay overlay) {
         this.overlay = overlay;
     }
+
+    public String[] getSelectedTags(){
+        return selectedTags;
+    }
     
     /**
      * Class that overwrites a few aspects of crosshair overlay to keep crosshairs more accessible
