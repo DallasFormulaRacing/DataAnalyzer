@@ -1145,7 +1145,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_engineChartSetupActionPerformed
 
     private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
-        new LambdaMap().setVisible(true);
+        new LambdaMap(chartManager.getDataMap()).setVisible(true);
     }//GEN-LAST:event_showLambdaMapActionPerformed
   
     public void invertRangeMarkersActive() {
