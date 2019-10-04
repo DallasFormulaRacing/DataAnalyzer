@@ -7,6 +7,7 @@ package dataanalyzer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.LinkedList;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -17,14 +18,21 @@ import javax.swing.JLabel;
 
 /**
  *
- * @author peter
+ * @author Peter
+ * @author Preston
  */
 public class LambdaMap extends javax.swing.JFrame {
 
     //Stores table data and table column/row headers 
     private DefaultTableModel table;
+    
+    //Contains the information from the char manager
     private CategoricalHashMap dataMap;
-
+    
+    //Float 2D arrays that mirror the dataTableModel that store respective quantities
+    private double[][] afrTable;
+    private double[][] injectorTimingTable;
+    
     /**
      * Creates new form LambdaMap
      */
@@ -34,9 +42,19 @@ public class LambdaMap extends javax.swing.JFrame {
     }
     
     public LambdaMap(CategoricalHashMap dataMap){
-        initTableModel(12500, 520, 100, 4);
         this.dataMap = dataMap;
+        
+        initTableModel(12500, 520, 100, 4);
+        
+        afrTable = new double[table.getColumnCount()][table.getRowCount()];
+        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        //TODO: Update tables
+        updateTables();
+        //updateInjectorTimingTable();
+        
         populateFuelMap();
+        
         initComponents();
     }
     
@@ -111,8 +129,66 @@ public class LambdaMap extends javax.swing.JFrame {
         };
     }
     
-    void populateFuelMap(){
-        System.out.println(dataMap.getTags());
+    //squeezes a large range into a defined range
+    private int squeeze(double value, int min, int max, int floor, int ceil){
+        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + min);
+    }
+    
+    private void updateTables(){
+        LinkedList<LogObject> list = dataMap.getList("Time,RPM");
+        LinkedList<LogObject> list2 = dataMap.getList("Time,TPS");
+        LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
+        LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime");
+        
+        
+        int[][] avg = new int[table.getColumnCount()][table.getRowCount()];
+        
+        for(int i = 0; i<list.size(); i++){
+            double rpm = 0, tps = 0, lambda = 0, injectorTime = 0;
+            try{
+                LogObject rpmObj = list.pop();
+                list.addLast(rpmObj);
+                rpm = ((SimpleLogObject)rpmObj).value;
+                
+                LogObject tpsObj = list2.pop();
+                list2.addLast(tpsObj);
+                tps = ((SimpleLogObject)tpsObj).value;
+                
+                LogObject lambdaObj = list3.pop();
+                list3.addLast(lambdaObj);
+                lambda = ((SimpleLogObject)lambdaObj).value;
+                
+                LogObject injectorObj = list4.pop();
+                list4.addLast(injectorObj);
+                injectorTime = ((SimpleLogObject)injectorObj).value;
+            }catch(Exception e){
+                System.out.println(e);
+            }
+            
+            int column = squeeze(rpm, 0,12500, 0,25);
+            int row = squeeze(tps, 0, 100, 0,24);
+            
+            afrTable[column][row] += lambda;
+            injectorTimingTable[column][row] += injectorTime;
+            avg[column][row] += 1;
+        }
+        for(int y = 0; y<table.getColumnCount(); y++){
+            for(int x = 0; x<table.getRowCount(); x++){
+                if(avg[y][x] != 0){
+                    afrTable[y][x] = afrTable[y][x] / avg[y][x];
+                    injectorTimingTable[y][x] = injectorTimingTable[y][x] / avg[y][x];
+                }
+            }
+        }
+    }
+   
+    
+    private void populateFuelMap(){
+        for(int y = 0; y<table.getColumnCount(); y++){
+                for(int x = 0; x<table.getRowCount(); x++){
+                    table.setValueAt((afrTable[y][x] * 2)+10, x, y);
+                }
+            }
     }
 
     /**
