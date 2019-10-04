@@ -23,12 +23,20 @@ public class LambdaMap extends javax.swing.JFrame {
 
     //Stores table data and table column/row headers 
     private DefaultTableModel table;
+    private CategoricalHashMap dataMap;
 
     /**
      * Creates new form LambdaMap
      */
     public LambdaMap() {
         initTableModel(12500, 520, 100, 4);
+        initComponents();
+    }
+    
+    public LambdaMap(CategoricalHashMap dataMap){
+        initTableModel(12500, 520, 100, 4);
+        this.dataMap = dataMap;
+        populateFuelMap();
         initComponents();
     }
     
@@ -101,6 +109,10 @@ public class LambdaMap extends javax.swing.JFrame {
                 }
             }
         };
+    }
+    
+    void populateFuelMap(){
+        System.out.println(dataMap.getTags());
     }
 
     /**
