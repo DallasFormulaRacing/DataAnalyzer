@@ -134,6 +134,11 @@ public class LambdaMap extends javax.swing.JFrame {
         return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + min);
     }
     
+    /**
+     * Runs through the RPM, TPS, Lambda, and FuelOpenTime to update the afrTable
+     * and injectorTimingTable to the averaged value across the data set for that
+     * rpm and tps
+     */
     private void updateTables(){
         LinkedList<LogObject> list = dataMap.getList("Time,RPM");
         LinkedList<LogObject> list2 = dataMap.getList("Time,TPS");
@@ -145,6 +150,8 @@ public class LambdaMap extends javax.swing.JFrame {
         
         for(int i = 0; i<list.size(); i++){
             double rpm = 0, tps = 0, lambda = 0, injectorTime = 0;
+            
+            //to make sure the LogObject has a value
             try{
                 LogObject rpmObj = list.pop();
                 list.addLast(rpmObj);
@@ -165,13 +172,18 @@ public class LambdaMap extends javax.swing.JFrame {
                 System.out.println(e);
             }
             
+            //Finds which column the data should go into
             int column = squeeze(rpm, 0,12500, 0,25);
             int row = squeeze(tps, 0, 100, 0,24);
             
+            //adds the respective value to its slot and increments how many values
+            //in that particular slot
             afrTable[column][row] += lambda;
             injectorTimingTable[column][row] += injectorTime;
             avg[column][row] += 1;
         }
+        
+        //Averages out each slot of the tables
         for(int y = 0; y<table.getColumnCount(); y++){
             for(int x = 0; x<table.getRowCount(); x++){
                 if(avg[y][x] != 0){
@@ -182,7 +194,7 @@ public class LambdaMap extends javax.swing.JFrame {
         }
     }
    
-    
+    //populates each cell of the fuel map
     private void populateFuelMap(){
         for(int y = 0; y<table.getColumnCount(); y++){
                 for(int x = 0; x<table.getRowCount(); x++){
