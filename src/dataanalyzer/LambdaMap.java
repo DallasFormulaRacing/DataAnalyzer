@@ -184,7 +184,7 @@ public class LambdaMap extends javax.swing.JFrame {
         }
         
         //Averages out each slot of the tables
-        for(int y = 0; y<table.getColumnCount(); y++){
+        for(int y = 0; y<table.getColumnCount()-1; y++){
             for(int x = 0; x<table.getRowCount(); x++){
                 if(avg[y][x] != 0){
                     afrTable[y][x] = afrTable[y][x] / avg[y][x];
@@ -196,9 +196,9 @@ public class LambdaMap extends javax.swing.JFrame {
    
     //populates each cell of the fuel map
     private void populateFuelMap(){
-        for(int y = 0; y<table.getColumnCount(); y++){
+        for(int y = 0; y<table.getColumnCount()-1; y++){
                 for(int x = 0; x<table.getRowCount(); x++){
-                    table.setValueAt((afrTable[y][x] * 2)+10, x, y);
+                    table.setValueAt((afrTable[y][x] * 2)+10, x, y+1);
                 }
             }
     }
