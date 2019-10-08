@@ -35,18 +35,23 @@ public class LambdaMap extends javax.swing.JFrame {
     private double[][] afrTable;
     private double[][] injectorTimingTable;
     
+    // Contains the amount of columns + 1 for the row headers
+    private int columnSize = 24 + 1;
+    // Containt the amount of rows
+    private int rowSize = 25;
+    
     /**
      * Creates new form LambdaMap
      */
     public LambdaMap() {
-        initTableModel(12500, 520, 100, 4);
+        initTableModel(12500, 100);
         initComponents();
     }
     
     public LambdaMap(CategoricalHashMap dataMap){
         this.dataMap = dataMap;
         
-        initTableModel(12500, 520, 100, 4);
+        initTableModel(12500, 100);
         
         afrTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
@@ -63,28 +68,12 @@ public class LambdaMap extends javax.swing.JFrame {
     /**
      * Initializes the classes DefaultTableModel attribute with row and column headers based on parameters
      * @param columnLimit The last/largest value in the column header sequence
-     * @param columnInterval The interval value each column header is incremented by
      * @param rowLimit The last/largest value in the row header sequence
-     * @param rowInterval The interval value each row header is incremented by
      */
-    public void initTableModel(int columnLimit, int columnInterval, int rowLimit, int rowInterval) {
+    public void initTableModel(int columnLimit, int rowLimit) {
         //Stores table models column and row size
-        int colSize;
-        int rowSize;
-
-        //Determines the row and column size of the table
-        if (columnLimit % columnInterval == 0) {
-            colSize = columnLimit / columnInterval + 1;
-        }
-        else {
-            colSize = columnLimit / columnInterval + 2;
-        }
-        if (rowLimit % rowInterval == 0) {
-            rowSize = rowLimit / rowInterval;
-        }
-        else {
-            rowSize = rowLimit / rowInterval + 1;
-        }
+        int colSize = this.columnSize;
+        int rowSize = this.rowSize;
 
         //Creates 2D array for table data (first column contains row headers, not table data)
         Object[][] dataTable = new Object[rowSize][colSize];
@@ -100,33 +89,32 @@ public class LambdaMap extends javax.swing.JFrame {
         }
 
         //Initializes row headers based on parameter values
-        int i = 1;
-        while (rowInterval * i < rowLimit) {
-            dataTable[i - 1][0] = (rowInterval * i) + "%";
-            i++;
+        for(int i = 0; i < rowSize-1; i++){
+            if(rowLimit % (rowSize-1) == 0){
+                dataTable[i][0] = (rowLimit / (rowSize+1)) * (i+1);
+            } else {
+                dataTable[i][0] = (rowLimit / (rowSize)) * (i+1);
+            }
         }
-        dataTable[rowSize - 1][0] = rowLimit + "%";
+        dataTable[rowSize-1][0] = rowLimit;
 
         //Initializes column headers based on parameter values
-        int j = 1;
         columnHeader[0] = "";
-        while (columnInterval * j < columnLimit) {
-            columnHeader[j] = columnInterval * j;
-            j++;
+        for(int i = 1; i < columnSize-1; i++){
+            if(columnLimit % (columnSize-2) == 0){
+                columnHeader[i] = (columnLimit / (colSize)) * i;
+            } else {
+                columnHeader[i] = (columnLimit / (colSize-1)) * i;
+            }
         }
         columnHeader[colSize - 1] = columnLimit;
 
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
         table = new DefaultTableModel(dataTable, columnHeader) {
-            //Makes the first column uneditable and the rest editable
+            //Override isCellEditable to make all cells uneditable
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                if (columnIndex == 0) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
+                return false;
             }
         };
     }
@@ -205,7 +193,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
     }
     
-    //colors each cell of fuel map red if value is 1.5 away from desired value
+    /*//colors each cell of fuel map red if value is 1.5 away from desired value
     public void highlightCells(desiredValue) {
         int maxLim = (desiredValue + 1.5);
         int minLim = (desiredValue - 1.5);
@@ -223,7 +211,7 @@ public class LambdaMap extends javax.swing.JFrame {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * This method is called from within the constructor to initialize the form.
