@@ -59,6 +59,9 @@ public class LambdaMap extends javax.swing.JFrame {
         initComponents();
     }
     
+    /**
+     * Creates new form LambdaMap with data from a catagoricalHashmap
+     */
     public LambdaMap(CategoricalHashMap dataMap){
         this.dataMap = dataMap;
         maxRPM = 12500;
@@ -95,10 +98,25 @@ public class LambdaMap extends javax.swing.JFrame {
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
-        //TODO: Update tables
         updateTables();
-        //updateInjectorTimingTable();
+        populateFuelMap();
         
+        initComponents();
+    }
+    
+    /**
+     * Creates new form LambdaMap with data from a catagoricalHashmap and the maxRPM you desire
+     */
+    public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
+        this.dataMap = dataMap;
+        this.maxRPM = 12500;
+        
+        initTableModel(this.maxRPM, 100);
+        
+        afrTable = new double[table.getColumnCount()][table.getRowCount()];
+        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        updateTables();
         populateFuelMap();
         
         initComponents();
