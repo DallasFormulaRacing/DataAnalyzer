@@ -47,20 +47,46 @@ public class LambdaMap extends javax.swing.JFrame {
     // Containt the amount of rows
     private int rowSize = 25;
     
+    private final int maxRPM;
+    
     /**
      * Creates new form LambdaMap
      */
     public LambdaMap() {
-        initTableModel(12500, 100);
+        maxRPM = 12500;
+        initTableModel(maxRPM, 100);
         initComponents();
     }
     
     public LambdaMap(CategoricalHashMap dataMap){
         this.dataMap = dataMap;
+        maxRPM = 12500;
         
-        initTableModel(12500, 100);
+        initTableModel(maxRPM, 100);
         
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
+        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        //TODO: Update tables
+        updateTables();
+        //updateInjectorTimingTable();
+        
+        populateFuelMap();
+        
+        initComponents();
+    }
+    
+    public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
+        this.dataMap = dataMap;
+        this.maxRPM = maxRPM;
+        
+        initTableModel(maxRPM, 100);
+        
+        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         //TODO: Update tables
