@@ -7,6 +7,7 @@ package dataanalyzer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -32,8 +33,14 @@ public class LambdaMap extends javax.swing.JFrame {
     private CategoricalHashMap dataMap;
     
     //Float 2D arrays that mirror the dataTableModel that store respective quantities
-    private double[][] afrTable;
+    private double[][] afrAvgTable;
+    private double[][] afrMinTable;
+    private double[][] afrMaxTable;
+    
     private double[][] injectorTimingTable;
+    
+    //Decimal Formats for rendering floating point integers in the table
+    DecimalFormat afrFormat = new DecimalFormat("##.##");
     
     // Contains the amount of columns + 1 for the row headers
     private int columnSize = 24 + 1;
@@ -53,7 +60,7 @@ public class LambdaMap extends javax.swing.JFrame {
         
         initTableModel(12500, 100);
         
-        afrTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         //TODO: Update tables
@@ -168,7 +175,7 @@ public class LambdaMap extends javax.swing.JFrame {
             
             //adds the respective value to its slot and increments how many values
             //in that particular slot
-            afrTable[column][row] += lambda;
+            afrAvgTable[column][row] += lambda;
             injectorTimingTable[column][row] += injectorTime;
             avg[column][row] += 1;
         }
@@ -177,7 +184,7 @@ public class LambdaMap extends javax.swing.JFrame {
         for(int y = 0; y<table.getColumnCount()-1; y++){
             for(int x = 0; x<table.getRowCount(); x++){
                 if(avg[y][x] != 0){
-                    afrTable[y][x] = afrTable[y][x] / avg[y][x];
+                    afrAvgTable[y][x] = afrAvgTable[y][x] / avg[y][x];
                     injectorTimingTable[y][x] = injectorTimingTable[y][x] / avg[y][x];
                 }
             }
@@ -188,7 +195,11 @@ public class LambdaMap extends javax.swing.JFrame {
     private void populateFuelMap(){
         for(int y = 0; y<table.getColumnCount()-1; y++){
                 for(int x = 0; x<table.getRowCount(); x++){
-                    table.setValueAt((afrTable[y][x] * 2)+10, x, y+1);
+                    double dec = 0;
+                    if(afrAvgTable[y][x] != 0){
+                        dec = (afrAvgTable[y][x] * 2)+10;
+                    }
+                    table.setValueAt(afrFormat.format(dec), x, y+1);
                 }
             }
     }
