@@ -8,6 +8,7 @@ package dataanalyzer;
 import java.awt.Color;
 import java.awt.Component;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -66,6 +67,11 @@ public class LambdaMap extends javax.swing.JFrame {
         
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        for(int x = 0; x<afrMinTable.length; x++){
+            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
+        }
+        
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
@@ -187,7 +193,7 @@ public class LambdaMap extends javax.swing.JFrame {
                 LogObject lambdaObj = list3.pop();
                 list3.addLast(lambdaObj);
                 lambda = ((SimpleLogObject)lambdaObj).value;
-                
+
                 LogObject injectorObj = list4.pop();
                 list4.addLast(injectorObj);
                 injectorTime = ((SimpleLogObject)injectorObj).value;
@@ -196,7 +202,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
             
             //Finds which column the data should go into
-            int column = squeeze(rpm, 0,12500, 0,25);
+            int column = squeeze(rpm, 0,maxRPM, 0,25);
             int row = squeeze(tps, 0, 100, 0,24);
             
             //adds the respective value to its slot and increments how many values
@@ -204,8 +210,12 @@ public class LambdaMap extends javax.swing.JFrame {
             afrAvgTable[column][row] += lambda;
             injectorTimingTable[column][row] += injectorTime;
             avg[column][row] += 1;
+            
+            //update Min and Max tables
+            afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
+            afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
         }
-        
+      
         //Averages out each slot of the tables
         for(int y = 0; y<table.getColumnCount()-1; y++){
             for(int x = 0; x<table.getRowCount(); x++){
@@ -225,6 +235,12 @@ public class LambdaMap extends javax.swing.JFrame {
                     if(afrAvgTable[y][x] != 0){
                         dec = (afrAvgTable[y][x] * 2)+10;
                     }
+//                    if(afrMinTable[y][x] != Double.MAX_VALUE){
+//                        dec = (afrMinTable[y][x] * 2)+10;
+//                    }
+//                    if(afrMaxTable[y][x] != 0){
+//                        dec = (afrMaxTable[y][x] * 2)+10;
+//                    } 
                     table.setValueAt(afrFormat.format(dec), x, y+1);
                 }
             }
