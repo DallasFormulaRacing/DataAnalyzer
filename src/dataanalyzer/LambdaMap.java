@@ -50,6 +50,9 @@ public class LambdaMap extends javax.swing.JFrame {
     
     private final int maxRPM;
     
+    private static final double MIN_LAMBDA = 0.68;
+    private static final double MAX_LAMBDA = 1.36;
+    
     /**
      * Creates new form LambdaMap
      */
@@ -96,24 +99,6 @@ public class LambdaMap extends javax.swing.JFrame {
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
-        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
-        
-        updateTables();
-        populateFuelMap();
-        
-        initComponents();
-    }
-    
-    /**
-     * Creates new form LambdaMap with data from a catagoricalHashmap and the maxRPM you desire
-     */
-    public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
-        this.dataMap = dataMap;
-        this.maxRPM = 12500;
-        
-        initTableModel(this.maxRPM, 100);
-        
-        afrTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         updateTables();
@@ -178,7 +163,11 @@ public class LambdaMap extends javax.swing.JFrame {
     
     //squeezes a large range into a defined range
     private int squeeze(double value, int min, int max, int floor, int ceil){
-        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + min);
+        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + floor);
+    }
+    
+    private double afr(double lambda){
+        return ((20-10)*(lambda - MIN_LAMBDA)*1.0)/(MAX_LAMBDA - MIN_LAMBDA) + 10;
     }
     
     /**
@@ -251,15 +240,15 @@ public class LambdaMap extends javax.swing.JFrame {
                 for(int x = 0; x<table.getRowCount(); x++){
                     double dec = 0;
                     if(afrAvgTable[y][x] != 0){
-                        dec = (afrAvgTable[y][x] * 2)+10;
+                        dec = afrAvgTable[y][x];
                     }
 //                    if(afrMinTable[y][x] != Double.MAX_VALUE){
-//                        dec = (afrMinTable[y][x] * 2)+10;
+//                        dec = afrMinTable[y][x];
 //                    }
 //                    if(afrMaxTable[y][x] != 0){
-//                        dec = (afrMaxTable[y][x] * 2)+10;
+//                        dec = afrMaxTable[y][x];
 //                    } 
-                    table.setValueAt(afrFormat.format(dec), x, y+1);
+                    table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
                 }
             }
     }
