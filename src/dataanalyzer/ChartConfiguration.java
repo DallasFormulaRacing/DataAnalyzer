@@ -83,7 +83,7 @@ public class ChartConfiguration {
             for(String locationLine : locationLines){
                 String[] tempLocation = new String[5];
                 tempLocation = locationLine.split(" ");
-                ChartLocation tempChartLocation = new ChartLocation(tempLocation[0].split("~"), tempLocation[1], tempLocation[2], tempLocation[3], tempLocation[4]);
+                ChartLocation tempChartLocation = new ChartLocation(tempLocation[0].split("~"), Float.parseFloat(tempLocation[1]), Float.parseFloat(tempLocation[2]), Float.parseFloat(tempLocation[3]), Float.parseFloat(tempLocation[4]));
                 locations.add(tempChartLocation);
             }
             
