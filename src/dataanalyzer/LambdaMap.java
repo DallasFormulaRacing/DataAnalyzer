@@ -7,8 +7,11 @@ package dataanalyzer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -18,7 +21,7 @@ import javax.swing.JLabel;
 
 
 /**
- *
+ * @author Morgan
  * @author Peter
  * @author Preston
  * @author Dante
@@ -34,6 +37,9 @@ public class LambdaMap extends javax.swing.JFrame {
     //Float 2D arrays that mirror the dataTableModel that store respective quantities
     private double[][] afrTable;
     private double[][] injectorTimingTable;
+    
+    //For changing the string to "Morgan"
+    private boolean DEBUG = true;
     
     /**
      * Creates new form LambdaMap
@@ -117,8 +123,7 @@ public class LambdaMap extends javax.swing.JFrame {
         columnHeader[colSize - 1] = columnLimit;
 
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
-        table = new DefaultTableModel(dataTable, columnHeader) {
-            //Makes the first column uneditable and the rest editable
+        final JTable table = new JTable(dataTable, columnHeader) {            //Makes the first column uneditable and the rest editable
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 if (columnIndex == 0) {
@@ -129,6 +134,27 @@ public class LambdaMap extends javax.swing.JFrame {
                 }
             }
         };
+        
+        String[][] dataSave = new String[rowSize][colSize];
+         
+        if (DEBUG) {
+            table.addMouseListener(new MouseAdapter() {
+                @Override 
+                public void mouseClicked(MouseEvent evt) {
+                    JTable target = (JTable)evt.getSource();
+                    int row = target.getSelectedRow();
+                    int col = target.getSelectedColumn();
+                    String current_value = (String) table.getValueAt(row, col);
+                    if (current_value != "Morgan") {
+                        dataSave[row][col] = current_value;
+                        table.setValueAt("Morgan",row,col);
+                    }
+                    else {
+                        table.setValueAt(dataSave[row][col],row,col);
+                    }
+                }
+            });
+        }
     }
     
     //squeezes a large range into a defined range
@@ -331,6 +357,20 @@ public class LambdaMap extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private static void createAndShowGUI() {
+        //Create and set up the window
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //Create and set up the content pane
+        LambdaMap  newContentPane = new LambdaMap ();
+        frame.setContentPane(newContentPane);
+
+        //Display the window
+        frame.pack();
+        frame.setVisible(true);
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -362,6 +402,12 @@ public class LambdaMap extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new LambdaMap().setVisible(true);
+            }
+        });
+        
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                createAndShowGUI();
             }
         });
     }
