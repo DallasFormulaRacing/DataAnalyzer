@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -35,26 +37,55 @@ public class LambdaMap extends javax.swing.JFrame {
     private CategoricalHashMap dataMap;
     
     //Float 2D arrays that mirror the dataTableModel that store respective quantities
-    private double[][] afrTable;
+    private double[][] afrAvgTable;
+    private double[][] afrMinTable;
+    private double[][] afrMaxTable;
+    
     private double[][] injectorTimingTable;
     
+
     //For changing the string to "Morgan"
     private boolean DEBUG = true;
+
+    //Decimal Formats for rendering floating point integers in the table
+    DecimalFormat afrFormat = new DecimalFormat("##.##");
+    
+    // Contains the amount of columns + 1 for the row headers
+    private int columnSize = 24 + 1;
+    // Containt the amount of rows
+    private int rowSize = 25;
+    
+    private final int maxRPM;
+    
+    private static final double MIN_LAMBDA = 0.68;
+    private static final double MAX_LAMBDA = 1.36;
     
     /**
      * Creates new form LambdaMap
      */
     public LambdaMap() {
-        initTableModel(12500, 520, 100, 4);
+        maxRPM = 12500;
+        initTableModel(maxRPM, 100);
         initComponents();
     }
     
+    /**
+     * Creates new form LambdaMap with data from a catagoricalHashmap
+     */
     public LambdaMap(CategoricalHashMap dataMap){
         this.dataMap = dataMap;
+        maxRPM = 12500;
         
-        initTableModel(12500, 520, 100, 4);
+        initTableModel(maxRPM, 100);
         
-        afrTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        for(int x = 0; x<afrMinTable.length; x++){
+            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
+        }
+        
+        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         //TODO: Update tables
@@ -66,31 +97,32 @@ public class LambdaMap extends javax.swing.JFrame {
         initComponents();
     }
     
+    public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
+        this.dataMap = dataMap;
+        this.maxRPM = maxRPM;
+        
+        initTableModel(maxRPM, 100);
+        
+        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
+        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        updateTables();
+        populateFuelMap();
+        
+        initComponents();
+    }
+    
     /**
      * Initializes the classes DefaultTableModel attribute with row and column headers based on parameters
      * @param columnLimit The last/largest value in the column header sequence
-     * @param columnInterval The interval value each column header is incremented by
      * @param rowLimit The last/largest value in the row header sequence
-     * @param rowInterval The interval value each row header is incremented by
      */
-    public void initTableModel(int columnLimit, int columnInterval, int rowLimit, int rowInterval) {
+    public void initTableModel(int columnLimit, int rowLimit) {
         //Stores table models column and row size
-        int colSize;
-        int rowSize;
-
-        //Determines the row and column size of the table
-        if (columnLimit % columnInterval == 0) {
-            colSize = columnLimit / columnInterval + 1;
-        }
-        else {
-            colSize = columnLimit / columnInterval + 2;
-        }
-        if (rowLimit % rowInterval == 0) {
-            rowSize = rowLimit / rowInterval;
-        }
-        else {
-            rowSize = rowLimit / rowInterval + 1;
-        }
+        int colSize = this.columnSize;
+        int rowSize = this.rowSize;
 
         //Creates 2D array for table data (first column contains row headers, not table data)
         Object[][] dataTable = new Object[rowSize][colSize];
@@ -106,32 +138,33 @@ public class LambdaMap extends javax.swing.JFrame {
         }
 
         //Initializes row headers based on parameter values
-        int i = 1;
-        while (rowInterval * i < rowLimit) {
-            dataTable[i - 1][0] = (rowInterval * i) + "%";
-            i++;
+        for(int i = 0; i < rowSize-1; i++){
+            if(rowLimit % (rowSize-1) == 0){
+                dataTable[i][0] = (rowLimit / (rowSize+1)) * (i+1);
+            } else {
+                dataTable[i][0] = (rowLimit / (rowSize)) * (i+1);
+            }
         }
-        dataTable[rowSize - 1][0] = rowLimit + "%";
+        dataTable[rowSize-1][0] = rowLimit;
 
         //Initializes column headers based on parameter values
-        int j = 1;
         columnHeader[0] = "";
-        while (columnInterval * j < columnLimit) {
-            columnHeader[j] = columnInterval * j;
-            j++;
+        for(int i = 1; i < columnSize-1; i++){
+            if(columnLimit % (columnSize-2) == 0){
+                columnHeader[i] = (columnLimit / (colSize)) * i;
+            } else {
+                columnHeader[i] = (columnLimit / (colSize-1)) * i;
+            }
         }
         columnHeader[colSize - 1] = columnLimit;
 
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
         final JTable table = new JTable(dataTable, columnHeader) {            //Makes the first column uneditable and the rest editable
+        table = new DefaultTableModel(dataTable, columnHeader) {
+            //Override isCellEditable to make all cells uneditable
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                if (columnIndex == 0) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
+                return false;
             }
         };
         
@@ -159,7 +192,11 @@ public class LambdaMap extends javax.swing.JFrame {
     
     //squeezes a large range into a defined range
     private int squeeze(double value, int min, int max, int floor, int ceil){
-        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + min);
+        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + floor);
+    }
+    
+    private double afr(double lambda){
+        return ((20-10)*(lambda - MIN_LAMBDA)*1.0)/(MAX_LAMBDA - MIN_LAMBDA) + 10;
     }
     
     /**
@@ -192,7 +229,7 @@ public class LambdaMap extends javax.swing.JFrame {
                 LogObject lambdaObj = list3.pop();
                 list3.addLast(lambdaObj);
                 lambda = ((SimpleLogObject)lambdaObj).value;
-                
+
                 LogObject injectorObj = list4.pop();
                 list4.addLast(injectorObj);
                 injectorTime = ((SimpleLogObject)injectorObj).value;
@@ -201,21 +238,25 @@ public class LambdaMap extends javax.swing.JFrame {
             }
             
             //Finds which column the data should go into
-            int column = squeeze(rpm, 0,12500, 0,25);
+            int column = squeeze(rpm, 0,maxRPM, 0,25);
             int row = squeeze(tps, 0, 100, 0,24);
             
             //adds the respective value to its slot and increments how many values
             //in that particular slot
-            afrTable[column][row] += lambda;
+            afrAvgTable[column][row] += lambda;
             injectorTimingTable[column][row] += injectorTime;
             avg[column][row] += 1;
+            
+            //update Min and Max tables
+            afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
+            afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
         }
-        
+      
         //Averages out each slot of the tables
         for(int y = 0; y<table.getColumnCount()-1; y++){
             for(int x = 0; x<table.getRowCount(); x++){
                 if(avg[y][x] != 0){
-                    afrTable[y][x] = afrTable[y][x] / avg[y][x];
+                    afrAvgTable[y][x] = afrAvgTable[y][x] / avg[y][x];
                     injectorTimingTable[y][x] = injectorTimingTable[y][x] / avg[y][x];
                 }
             }
@@ -226,12 +267,22 @@ public class LambdaMap extends javax.swing.JFrame {
     private void populateFuelMap(){
         for(int y = 0; y<table.getColumnCount()-1; y++){
                 for(int x = 0; x<table.getRowCount(); x++){
-                    table.setValueAt((afrTable[y][x] * 2)+10, x, y+1);
+                    double dec = 0;
+                    if(afrAvgTable[y][x] != 0){
+                        dec = afrAvgTable[y][x];
+                    }
+//                    if(afrMinTable[y][x] != Double.MAX_VALUE){
+//                        dec = afrMinTable[y][x];
+//                    }
+//                    if(afrMaxTable[y][x] != 0){
+//                        dec = afrMaxTable[y][x];
+//                    } 
+                    table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
                 }
             }
     }
     
-    //colors each cell of fuel map red if value is 1.5 away from desired value
+    /*//colors each cell of fuel map red if value is 1.5 away from desired value
     public void highlightCells(desiredValue) {
         int maxLim = (desiredValue + 1.5);
         int minLim = (desiredValue - 1.5);
@@ -249,7 +300,7 @@ public class LambdaMap extends javax.swing.JFrame {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * This method is called from within the constructor to initialize the form.
