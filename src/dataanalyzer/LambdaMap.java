@@ -67,16 +67,19 @@ public class LambdaMap extends javax.swing.JFrame {
         maxRPM = 12500;
         initTableModel(maxRPM, 100);
         initComponents();
+
     }
     
     /**
      * Creates new form LambdaMap with data from a catagoricalHashmap
      */
     public LambdaMap(CategoricalHashMap dataMap){
-        this.dataMap = dataMap;
         maxRPM = 12500;
-        
+
         initTableModel(maxRPM, 100);
+
+        initComponents();
+        this.dataMap = dataMap;
         
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
@@ -94,14 +97,14 @@ public class LambdaMap extends javax.swing.JFrame {
         
         populateFuelMap();
         
-        initComponents();
     }
     
     public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
         this.dataMap = dataMap;
         this.maxRPM = maxRPM;
-        
+                
         initTableModel(maxRPM, 100);
+        initComponents();
         
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
@@ -111,7 +114,6 @@ public class LambdaMap extends javax.swing.JFrame {
         updateTables();
         populateFuelMap();
         
-        initComponents();
     }
     
     /**
@@ -159,7 +161,6 @@ public class LambdaMap extends javax.swing.JFrame {
         columnHeader[colSize - 1] = columnLimit;
 
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
-        final JTable table = new JTable(dataTable, columnHeader) {            //Makes the first column uneditable and the rest editable
         table = new DefaultTableModel(dataTable, columnHeader) {
             //Override isCellEditable to make all cells uneditable
             @Override
@@ -168,26 +169,6 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         };
         
-        String[][] dataSave = new String[rowSize][colSize];
-         
-        if (DEBUG) {
-            table.addMouseListener(new MouseAdapter() {
-                @Override 
-                public void mouseClicked(MouseEvent evt) {
-                    JTable target = (JTable)evt.getSource();
-                    int row = target.getSelectedRow();
-                    int col = target.getSelectedColumn();
-                    String current_value = (String) table.getValueAt(row, col);
-                    if (current_value != "Morgan") {
-                        dataSave[row][col] = current_value;
-                        table.setValueAt("Morgan",row,col);
-                    }
-                    else {
-                        table.setValueAt(dataSave[row][col],row,col);
-                    }
-                }
-            });
-        }
     }
     
     //squeezes a large range into a defined range
@@ -204,7 +185,7 @@ public class LambdaMap extends javax.swing.JFrame {
      * and injectorTimingTable to the averaged value across the data set for that
      * rpm and tps
      */
-    private void updateTables(){
+    private void updateTables() {
         LinkedList<LogObject> list = dataMap.getList("Time,RPM");
         LinkedList<LogObject> list2 = dataMap.getList("Time,TPS");
         LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
@@ -265,19 +246,18 @@ public class LambdaMap extends javax.swing.JFrame {
    
     //populates each cell of the fuel map
     private void populateFuelMap(){
+        populateTable(afrAvgTable);
+    }
+    
+    private void populateTable(double[][] toSet) {
         for(int y = 0; y<table.getColumnCount()-1; y++){
                 for(int x = 0; x<table.getRowCount(); x++){
                     double dec = 0;
-                    if(afrAvgTable[y][x] != 0){
-                        dec = afrAvgTable[y][x];
+                    if(toSet[y][x] != 0){
+                        dec = toSet[y][x];
                     }
-//                    if(afrMinTable[y][x] != Double.MAX_VALUE){
-//                        dec = afrMinTable[y][x];
-//                    }
-//                    if(afrMaxTable[y][x] != 0){
-//                        dec = afrMaxTable[y][x];
-//                    } 
-                    table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
+
+                    //table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
                 }
             }
     }
@@ -301,7 +281,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
     }*/
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -336,6 +316,11 @@ public class LambdaMap extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
+        viewMenu = new javax.swing.JMenu();
+        showLambdaAverageMenuItem = new javax.swing.JMenuItem();
+        showLambdaMinMenuItem = new javax.swing.JMenuItem();
+        showLambdaMaxMenuItem = new javax.swing.JMenuItem();
+        showInjectorTimesMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1350, 675));
@@ -370,6 +355,42 @@ public class LambdaMap extends javax.swing.JFrame {
 
         jMenu2.setText("Edit");
         jMenuBar1.add(jMenu2);
+
+        viewMenu.setText("jMenu3");
+
+        showLambdaAverageMenuItem.setText("Lambda Average");
+        showLambdaAverageMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaAverageMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showLambdaAverageMenuItem);
+
+        showLambdaMinMenuItem.setText("Lambda Min");
+        showLambdaMinMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaMinMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showLambdaMinMenuItem);
+
+        showLambdaMaxMenuItem.setText("Lambda Max");
+        showLambdaMaxMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaMaxMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showLambdaMaxMenuItem);
+
+        showInjectorTimesMenuItem.setText("Injector Times");
+        showInjectorTimesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showInjectorTimesMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showInjectorTimesMenuItem);
+
+        jMenuBar1.add(viewMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -407,6 +428,22 @@ public class LambdaMap extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void showLambdaAverageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaAverageMenuItemActionPerformed
+        populateTable(afrAvgTable);
+    }//GEN-LAST:event_showLambdaAverageMenuItemActionPerformed
+
+    private void showLambdaMinMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMinMenuItemActionPerformed
+        populateTable(afrMinTable);
+    }//GEN-LAST:event_showLambdaMinMenuItemActionPerformed
+
+    private void showLambdaMaxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMaxMenuItemActionPerformed
+        populateTable(afrMaxTable);
+    }//GEN-LAST:event_showLambdaMaxMenuItemActionPerformed
+
+    private void showInjectorTimesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInjectorTimesMenuItemActionPerformed
+        populateTable(injectorTimingTable);
+    }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
 
     private static void createAndShowGUI() {
         //Create and set up the window
@@ -471,6 +508,11 @@ public class LambdaMap extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JMenuItem showInjectorTimesMenuItem;
+    private javax.swing.JMenuItem showLambdaAverageMenuItem;
+    private javax.swing.JMenuItem showLambdaMaxMenuItem;
+    private javax.swing.JMenuItem showLambdaMinMenuItem;
+    private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }
 
