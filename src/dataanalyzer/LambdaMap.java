@@ -234,12 +234,14 @@ public class LambdaMap extends javax.swing.JFrame {
             afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
             afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
         }
-      
+        
         //Averages out each slot of the tables
         for(int y = 0; y<table.getColumnCount()-1; y++){
             for(int x = 0; x<table.getRowCount(); x++){
                 if(avg[y][x] != 0){
-                    afrAvgTable[y][x] = afrAvgTable[y][x] / avg[y][x];
+                    afrMinTable[y][x] = afr(afrMinTable[y][x]);
+                    afrMaxTable[y][x] = afr(afrMaxTable[y][x]);
+                    afrAvgTable[y][x] = afr(afrAvgTable[y][x] / avg[y][x]);
                     injectorTimingTable[y][x] = injectorTimingTable[y][x] / avg[y][x];
                 }
             }
@@ -258,7 +260,7 @@ public class LambdaMap extends javax.swing.JFrame {
                     if(toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE){
                         dec = toSet[y][x];
                     }
-                    table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
+                    table.setValueAt(afrFormat.format(dec), x, y+1);
                 }
             }
     }
