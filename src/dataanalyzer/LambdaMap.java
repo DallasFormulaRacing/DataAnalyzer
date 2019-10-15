@@ -106,6 +106,9 @@ public class LambdaMap extends javax.swing.JFrame {
         
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        for(int x = 0; x<afrMinTable.length; x++){
+            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
+        }
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
