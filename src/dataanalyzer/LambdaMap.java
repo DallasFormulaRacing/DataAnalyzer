@@ -91,9 +91,7 @@ public class LambdaMap extends javax.swing.JFrame {
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
-        //TODO: Update tables
         updateTables();
-        //updateInjectorTimingTable();
         
         populateFuelMap();
         
@@ -256,8 +254,7 @@ public class LambdaMap extends javax.swing.JFrame {
                     if(toSet[y][x] != 0){
                         dec = toSet[y][x];
                     }
-
-                    //table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
+                    table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
                 }
             }
     }
