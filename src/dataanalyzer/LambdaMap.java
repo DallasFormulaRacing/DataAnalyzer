@@ -177,6 +177,7 @@ public class LambdaMap extends javax.swing.JFrame {
         return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + floor);
     }
     
+    //A linear function (The same as squeeze) to expand the data into its proper range
     private double afr(double lambda){
         return ((20-10)*(lambda - MIN_LAMBDA)*1.0)/(MAX_LAMBDA - MIN_LAMBDA) + 10;
     }
@@ -254,7 +255,7 @@ public class LambdaMap extends javax.swing.JFrame {
         for(int y = 0; y<table.getColumnCount()-1; y++){
                 for(int x = 0; x<table.getRowCount(); x++){
                     double dec = 0;
-                    if(toSet[y][x] != 0){
+                    if(toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE){
                         dec = toSet[y][x];
                     }
                     table.setValueAt(afrFormat.format(afr(dec)), x, y+1);
