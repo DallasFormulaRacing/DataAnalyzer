@@ -359,7 +359,7 @@ public class LambdaMap extends javax.swing.JFrame {
         jMenu2.setText("Edit");
         jMenuBar1.add(jMenu2);
 
-        viewMenu.setText("jMenu3");
+        viewMenu.setText("Table");
 
         showLambdaAverageMenuItem.setText("Lambda Average");
         showLambdaAverageMenuItem.addActionListener(new java.awt.event.ActionListener() {
