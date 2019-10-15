@@ -262,25 +262,27 @@ public class LambdaMap extends javax.swing.JFrame {
             }
     }
     
-    /*//colors each cell of fuel map red if value is 1.5 away from desired value
-    public void highlightCells(desiredValue) {
-        int maxLim = (desiredValue + 1.5);
-        int minLim = (desiredValue - 1.5);
-        for (int x = 0; x < table.getRowCount(); x++) {
-            for (int y = 0; y < table.getColumnCount()-1; y++) {
-                int cellValue = table.getValueAt(x,y);
+    // Colors each cell of fuel map red if value is 1.5 away from desired value
+    public void highlightCells(double desiredValue) {
+        double maxLim = (desiredValue + 1.5);
+        double minLim = (desiredValue - 1.5);
+        for (int y = 0; y < table.getColumnCount()-1; y++) {
+            for (int x = 0; x < table.getRowCount(); x++) {
+                double cellValue = table[x][y];
                 if (cellValue > maxLim) {
-                    table(x,y).setBackground(new java.awt.Color(255, 0, 0));
+                    table[x][y].setBackground(new java.awt.Color(255, 0, 0)); 
+                    /*/ Not sure if this works with what we currently have or not but I know how to make it work using
+                    components and renderers if I need to change it to ease compatibility */
                 }
                 else if (cellValue < minLim) {
-                    table(x,y).setBackground(new java.awt.Color(255, 0, 0));
+                    table[x][y].setBackground(new java.awt.Color(255, 0, 0));
                 }
                 else  {
-                    table(x,y).setBackground(new java.awt.Color(0, 0, 0));
+                    table[x][y].setBackground(new java.awt.Color(0, 0, 0));
                 }
             }
         }
-    }*/
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.
