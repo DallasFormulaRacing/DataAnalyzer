@@ -10,14 +10,10 @@ import java.io.*;
  * @author Nolan Davenport
  */
 public class ChartConfiguration {
-    private int numCharts;
-    private ArrayList<ChartAssembly> charts;
-    private ChartManager chartManager;
-    private Util util = new Util();    
-    private String fileDirectory;
+    private static String fileDirectory;
    
     //Holds the data for each chart in the configuration.
-    class ChartLocation{
+    public class ChartLocation{
         public String fileName;
         
         //These are proportions of the dimension and location of the main data analyzer length. These should be >0 and <1.
@@ -34,37 +30,14 @@ public class ChartConfiguration {
             this.width = width;
             this.height = height;
         }
-    };
-    private ArrayList<ChartLocation> locations = new ArrayList<ChartLocation>();
-    
-    /**
-     * Creates a new chart configuration based on the current state of the charts on screen.
-     * @param charts ArrayList of charts that are going to be saved in a chart configuration.
-     * @param dataAnalyzer The instantiated object of the DataAnalyzer class. Used to get the dimensions of the window. 
-     */
-    public ChartConfiguration(ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer, ChartManager chartManager){
-        setFileDirectory();
-        this.charts = charts;
-        this.chartManager = chartManager;
-        numCharts = charts.size();
-        //Fills up locations based on the current state of the charts. 
-        for(ChartAssembly chart : charts){
-            JInternalFrame chartFrame = chart.getChartFrame();
-            
-            float x = (float)chartFrame.getX() / dataAnalyzer.getWidth();
-            float y = (float)chartFrame.getY() / dataAnalyzer.getHeight();
-            float width = (float)chartFrame.getWidth() / dataAnalyzer.getWidth();
-            float height = (float)chartFrame.getHeight() / dataAnalyzer.getHeight();
-            
-            locations.add(new ChartLocation(chart.getSelectedTags(), x, y, width, height));//TODO: figure out how to get file name of a chart.
-        }
     }
     
     /**
      * Opens an existing chart configuration.
      * @param filename File name of the saved chart configuration.
      */
-    public ChartConfiguration(String filename) throws Exception{//The file name should be .dfrchartconfig
+    public static void openChartConfiguration(String filename) throws Exception{
+        ChartLocation[] locations = new ChartLocation[20];
         setFileDirectory();
         
         ArrayList<String> locationLines = new ArrayList<String>();
@@ -79,29 +52,50 @@ public class ChartConfiguration {
             }
             
             br.close();
+            
             //Breaks up each line and creates a new ChartLocation for each line and saves it into locations
-            for(String locationLine : locationLines){
+            for(int i = 0; i < locationLines.size(); i++){
                 String[] tempLocation = new String[5];
-                tempLocation = locationLine.split(" ");
-                ChartLocation tempChartLocation = new ChartLocation(tempLocation[0].split("~"), tempLocation[1], tempLocation[2], tempLocation[3], tempLocation[4]);
-                locations.add(tempChartLocation);
+                tempLocation = locationLines.get(i).split(" ");
+                locations[i].selectedTags = locationLines.get(i).split("~");
+                locations[i].x = Float.parseFloat(tempLocation[1]);
+                locations[i].y = Float.parseFloat(tempLocation[2]);
+                locations[i].width = Float.parseFloat(tempLocation[3]);
+                locations[i].height = Float.parseFloat(tempLocation[4]);
             }
+            
+            //TODO: Figure out how to display the charts onto the screen. 
             
         }else{
             System.err.println("That is not the correct file type");
         }
-        //TODO: Talk with people making an installation process to figure out file directories. 
-
-        //IMPORTANT: engineChartSetupActionPerformed found on line 1019 of DataAnalyzer class
-        //TODO: Create method in DataAnalyzer that displays the chart configuration similar to how "engineChartSetupActionPerformed" does it. 
-        //This needs to take in all of the important information in order to accomplish this. 
     }
     
     /**
      * Saves the current chart configuration to the chart configuration directory with the name specified by the user. 
      * @param filename filename of the file to be saved. Specified by the user during the save process. 
      */
-    public void saveChartConfiguration(String filename) throws Exception{
+    public static void saveChartConfiguration(String filename, ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer, ChartManager chartManager) throws Exception{
+        setFileDirectory();
+        ChartLocation[] locations = new ChartLocation[20];
+        
+        //Fills up locations based on the current state of the charts. 
+        for(int i = 0; i < charts.size(); i++){
+            JInternalFrame chartFrame = charts.get(i).getChartFrame();
+            
+            float x = (float)chartFrame.getX() / dataAnalyzer.getWidth();
+            float y = (float)chartFrame.getY() / dataAnalyzer.getHeight();
+            float width = (float)chartFrame.getWidth() / dataAnalyzer.getWidth();
+            float height = (float)chartFrame.getHeight() / dataAnalyzer.getHeight();
+            
+            locations[i].selectedTags = charts.get(i).getSelectedTags();
+            locations[i].x = x;
+            locations[i].y = y;
+            locations[i].width = width;
+            locations[i].height = height;
+        }
+        
+        //saves chart to file
         File fout = new File(fileDirectory + File.separator + filename + ".dfrchartconfig");
         fout.mkdirs();
         fout.createNewFile();
@@ -124,23 +118,19 @@ public class ChartConfiguration {
             bw.newLine();
         }
      
-        bw.close();
-        //TODO: Figure out format
-        
-        //Possible format for each location per line
-        //[String formatted by showing all data types and separated by tildas, "Time,AFRAveraged~Time,TPS~Time,RPM"] [x] [y] [width] [height]
-        
-        
+        bw.close();    
     }
     
     /**
      * Sets the file directory according to the operating system
      */
-    public void setFileDirectory(){
-        if(util.os == "WINDOWS"){
-            fileDirectory = "C:" + File.separator + "Program Files" + File.separator + "DataAnalyzer" + File.separator +"ChartConfigurations";
-        }else if(util.os == "MAC"){
-            fileDirectory = "C:" + File.separator + "Applications" + File.separator + "DataAnalyzer" + File.separator +"ChartConfigurations";
+    public static void setFileDirectory(){
+        if(Util.getOS() == "WINDOWS"){
+            fileDirectory = "C:" + File.separator + "Program Files" + File.separator + "DataAnalyzer" + File.separator +"Chart Configurations";
+        }else if(Util.getOS() == "MAC"){
+            fileDirectory = "Applications" + File.separator + "DataAnalyzer" + File.separator +"Chart Configurations";
+        }else if(Util.getOS() == "LINUX"){
+            fileDirectory = File.separator + "run" + File.separator + "DataAnalyzer" + File.separator +"Chart Configurations";
         }
     }
     
