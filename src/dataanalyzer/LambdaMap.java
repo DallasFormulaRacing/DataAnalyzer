@@ -214,19 +214,21 @@ public class LambdaMap extends javax.swing.JFrame {
                 System.out.println(e);
             }
             
-            //Finds which column the data should go into
-            int column = squeeze(rpm, 0,maxRPM, 0,25);
-            int row = squeeze(tps, 0, 100, 0,24);
-            
-            //adds the respective value to its slot and increments how many values
-            //in that particular slot
-            afrAvgTable[column][row] += lambda;
-            injectorTimingTable[column][row] += injectorTime;
-            avg[column][row] += 1;
-            
-            //update Min and Max tables
-            afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
-            afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
+            if(rpm <= maxRPM){
+                //Finds which column the data should go into
+                int column = squeeze(rpm, 0,maxRPM, 0,25);
+                int row = squeeze(tps, 0, 100, 0,24);
+
+                //adds the respective value to its slot and increments how many values
+                //in that particular slot
+                afrAvgTable[column][row] += lambda;
+                injectorTimingTable[column][row] += injectorTime;
+                avg[column][row] += 1;
+
+                //update Min and Max tables
+                afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
+                afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
+            } 
         }
         
         //Averages out each slot of the tables
