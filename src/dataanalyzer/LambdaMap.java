@@ -56,7 +56,9 @@ public class LambdaMap extends javax.swing.JFrame {
     // Containt the amount of rows
     private int rowSize = 25;
     
-    private final int maxRPM;
+    private int maxRPM;
+    private double targetAFR;
+    private double afrError;
     
     private static final double MIN_LAMBDA = 0.68;
     private static final double MAX_LAMBDA = 1.36;
@@ -81,17 +83,7 @@ public class LambdaMap extends javax.swing.JFrame {
 
         initComponents();
         this.dataMap = dataMap;
-        
-        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
-        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
-        
-        for(int x = 0; x<afrMinTable.length; x++){
-            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
-        }
-        
-        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
-        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
-        
+
         updateTables();
         
         populateFuelMap();
@@ -104,14 +96,6 @@ public class LambdaMap extends javax.swing.JFrame {
                 
         initTableModel(maxRPM, 100);
         initComponents();
-        
-        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
-        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
-        for(int x = 0; x<afrMinTable.length; x++){
-            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
-        }
-        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
-        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         updateTables();
         populateFuelMap();
@@ -194,6 +178,15 @@ public class LambdaMap extends javax.swing.JFrame {
         LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
         LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime");
         
+        afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        
+        for(int x = 0; x<afrMinTable.length; x++){
+            Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
+        }
+        
+        afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
+        injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
         
         int[][] avg = new int[table.getColumnCount()][table.getRowCount()];
         
@@ -362,7 +355,7 @@ public class LambdaMap extends javax.swing.JFrame {
         jMenuItem1.setText("Lambda Map Settings");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                lambdaMapSettingsCalled(evt);
             }
         });
         jMenu1.add(jMenuItem1);
@@ -461,9 +454,22 @@ public class LambdaMap extends javax.swing.JFrame {
         populateTable(injectorTimingTable);
     }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        new LambdaMapSettings(this, true).setVisible(true);
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
+        LambdaMapSettings settings = new LambdaMapSettings(this, true);
+        settings.setVisible(true);
+        this.maxRPM = settings.getMaxRPM().get();
+        this.targetAFR = settings.getTargetAFR().get();
+        this.afrError = settings.getAcceptedError().get();
+        
+        System.out.println(maxRPM);
+        
+        initTableModel(maxRPM, 100);
+        
+        jTable1.setModel(table);
+        
+        this.updateTables();
+        this.populateFuelMap();
+    }//GEN-LAST:event_lambdaMapSettingsCalled
 
     private static void createAndShowGUI() {
         //Create and set up the window

@@ -14,7 +14,7 @@
                 <Property name="text" type="java.lang.String" value="Lambda Map Settings"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="lambdaMapSettingsCalled"/>
               </Events>
             </MenuItem>
           </SubComponents>
