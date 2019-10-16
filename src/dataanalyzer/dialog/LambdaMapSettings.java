@@ -5,6 +5,8 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.Referencer;
+
 /**
  *
  * @author aribdhuka
@@ -18,6 +20,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
     }
+    
+    private int maxRPM;
+    private double targetAFR;
+    private double acceptedError;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -29,11 +35,11 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        maxRpmField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        targetAfrField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        afrOffsetField = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
@@ -41,15 +47,15 @@ public class LambdaMapSettings extends javax.swing.JDialog {
 
         jLabel1.setText("Max RPM");
 
-        jTextField1.setText("jTextField1");
+        maxRpmField.setToolTipText("Enter the Max RPM setting of the ECU");
 
-        jLabel2.setText("Lambda Value");
+        jLabel2.setText("Target AFR");
 
-        jTextField2.setText("jTextField2");
+        targetAfrField.setToolTipText("Enter the desired AFR value you are looking for");
 
-        jLabel3.setText("Lambda Offset");
+        jLabel3.setText("Acceptable AFR Error");
 
-        jTextField3.setText("jTextField3");
+        afrOffsetField.setToolTipText("Enter the Accepted error for the desired AFR you entered above");
 
         jButton1.setText("Cancel");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -59,6 +65,11 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         });
 
         jButton2.setText("Apply");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                settingsApplied(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -74,9 +85,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                     .addComponent(jLabel3)
                     .addComponent(jLabel2)
                     .addComponent(jLabel1)
-                    .addComponent(jTextField1)
-                    .addComponent(jTextField2)
-                    .addComponent(jTextField3))
+                    .addComponent(maxRpmField)
+                    .addComponent(targetAfrField)
+                    .addComponent(afrOffsetField))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -85,21 +96,23 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addGap(15, 15, 15)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(maxRpmField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(targetAfrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(afrOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
                 .addContainerGap())
         );
+
+        maxRpmField.getAccessibleContext().setAccessibleName("maxRPMLabel");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -108,6 +121,30 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void settingsApplied(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsApplied
+        //TODO: Input sanatizing
+        maxRPM = Integer.parseInt(maxRpmField.getText());
+        targetAFR = Double.parseDouble(targetAfrField.getText());
+        acceptedError = Double.parseDouble(afrOffsetField.getText());
+        this.dispose();
+    }//GEN-LAST:event_settingsApplied
+
+    public Referencer<Integer> getMaxRPM(){
+        return new Referencer(maxRPM);
+    }
+    
+    public Referencer<Double> getTargetAFR(){
+        return new Referencer(targetAFR);
+    }
+    
+    public Referencer<Double> getAcceptedError(){
+        return new Referencer(acceptedError);
+    }
+    
+    public void close(){
+        this.dispose();
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -151,13 +188,13 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField afrOffsetField;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField maxRpmField;
+    private javax.swing.JTextField targetAfrField;
     // End of variables declaration//GEN-END:variables
 }
