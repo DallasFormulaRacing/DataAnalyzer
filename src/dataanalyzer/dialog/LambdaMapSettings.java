@@ -34,33 +34,33 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        maxRPMLabel = new javax.swing.JLabel();
         maxRpmField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        targetAFRLabel = new javax.swing.JLabel();
         targetAfrField = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        afrErrorLabel = new javax.swing.JLabel();
         afrOffsetField = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("Max RPM");
+        maxRPMLabel.setText("Max RPM");
 
         maxRpmField.setToolTipText("Enter the Max RPM setting of the ECU");
 
-        jLabel2.setText("Target AFR");
+        targetAFRLabel.setText("Target AFR");
 
         targetAfrField.setToolTipText("Enter the desired AFR value you are looking for");
 
-        jLabel3.setText("Acceptable AFR Error");
+        afrErrorLabel.setText("Acceptable AFR Error");
 
         afrOffsetField.setToolTipText("Enter the Accepted error for the desired AFR you entered above");
 
-        jButton1.setText("Cancel");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
 
@@ -79,12 +79,12 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(cancelButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                         .addComponent(jButton2))
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
+                    .addComponent(afrErrorLabel)
+                    .addComponent(targetAFRLabel)
+                    .addComponent(maxRPMLabel)
                     .addComponent(maxRpmField)
                     .addComponent(targetAfrField)
                     .addComponent(afrOffsetField))
@@ -94,20 +94,20 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(15, 15, 15)
-                .addComponent(jLabel1)
+                .addComponent(maxRPMLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(maxRpmField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel2)
+                .addComponent(targetAFRLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(targetAfrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel3)
+                .addComponent(afrErrorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(afrOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
+                    .addComponent(cancelButton)
                     .addComponent(jButton2))
                 .addContainerGap())
         );
@@ -117,9 +117,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void settingsApplied(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsApplied
         //TODO: Input sanatizing
@@ -188,13 +188,13 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel afrErrorLabel;
     private javax.swing.JTextField afrOffsetField;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel maxRPMLabel;
     private javax.swing.JTextField maxRpmField;
+    private javax.swing.JLabel targetAFRLabel;
     private javax.swing.JTextField targetAfrField;
     // End of variables declaration//GEN-END:variables
 }
