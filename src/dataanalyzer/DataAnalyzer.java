@@ -184,7 +184,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 //TODO:Fix method call
-                                ChartConfiguration.loadChart(fileEntry.getAbsolutePath());
+                                ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
                             }
                         });
                         chartMenu.add(item);
@@ -210,7 +210,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 //TODO:Fix method call
-                                ChartConfiguration.loadChart(fileEntry.getAbsolutePath());
+                                ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
                             }
                         });
                         chartMenu.add(item);
