@@ -9,22 +9,30 @@ import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
+import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import org.jfree.chart.plot.ValueMarker;
 
@@ -102,6 +110,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
             }
         });
+        
+        //setup charts menu
+        try {
+            setupChartConfigurationsMenu();
+        } catch (IOException e) {
+            Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
+        }
     }
     
     private void clearAllCharts() {
@@ -144,6 +159,66 @@ public class DataAnalyzer extends javax.swing.JFrame {
         bottomChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2 - 22);
 
     }
+    
+    private void setupChartConfigurationsMenu() throws IOException {
+        //get current OS
+        String OS = Util.getCurrentOS();
+        
+        //for Windows
+        if (OS.equals("WINDOWS")) {
+            char sep = '\\';
+            //check for files in this folder
+            final File folder = new File("C:"+sep+"Program Files"+sep+"DataAnalyzer"+sep+"Chart Configurations");
+            //for each object in this directory
+            for (final File fileEntry : folder.listFiles()) {
+                //check if its a file
+                if (fileEntry.isFile()) {
+                    //get the extension
+                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(sep), fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    String extension = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    //if its the right extension
+                    if(extension.equals(".dfrchartconfig")) {
+                        //add menu item
+                        JMenuItem item = new JMenuItem(filename);
+                        item.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                //TODO:Fix method call
+                                ChartConfiguration.loadChart(fileEntry.getAbsolutePath());
+                            }
+                        });
+                        chartMenu.add(item);
+                    }
+                }
+            }
+        } else if (OS.equals("LINUX") || OS.equals("MAC")) {
+            char sep = '/';
+            //check for files in this folder
+            final File folder = new File(sep+"Applications"+sep+"DataAnalyzer"+sep+"Chart Configurations");
+            //for each object in this directory
+            for (final File fileEntry : folder.listFiles()) {
+                //check if its a file
+                if (fileEntry.isFile()) {
+                    //get the extension
+                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(sep), fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    String extension = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    //if its the right extension
+                    if(extension.equals(".dfrchartconfig")) {
+                        //add menu item
+                        JMenuItem item = new JMenuItem(filename);
+                        item.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                //TODO:Fix method call
+                                ChartConfiguration.loadChart(fileEntry.getAbsolutePath());
+                            }
+                        });
+                        chartMenu.add(item);
+                    }
+                }
+            }
+        }
+    }
  
     /**
      * This method is called from within the constructor to initialize the form.
@@ -174,16 +249,18 @@ public class DataAnalyzer extends javax.swing.JFrame {
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
-        singleViewMenuItem = new javax.swing.JMenuItem();
-        twoVerticalMenuItem = new javax.swing.JMenuItem();
-        twoHorizontalMenuItem = new javax.swing.JMenuItem();
-        swapChartsMenuItem = new javax.swing.JMenuItem();
-        addChartMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
         importVehicleMenuItem = new javax.swing.JMenuItem();
         editVehicleMenuItem = new javax.swing.JMenuItem();
+        chartMenu = new javax.swing.JMenu();
+        addChartMenuItem = new javax.swing.JMenuItem();
+        saveCurrentChartSetupMenuItem = new javax.swing.JMenuItem();
+        singleViewMenuItem = new javax.swing.JMenuItem();
+        twoVerticalMenuItem = new javax.swing.JMenuItem();
+        twoHorizontalMenuItem = new javax.swing.JMenuItem();
+        swapChartsMenuItem = new javax.swing.JMenuItem();
         engineMenu = new javax.swing.JMenu();
         engineChartSetup = new javax.swing.JMenuItem();
         showLambdaMap = new javax.swing.JMenuItem();
@@ -325,47 +402,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(showRangeMarkersMenuItem);
 
-        singleViewMenuItem.setText("Single View");
-        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                singleViewMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(singleViewMenuItem);
-
-        twoVerticalMenuItem.setText("Two Vertical");
-        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                twoVerticalMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(twoVerticalMenuItem);
-
-        twoHorizontalMenuItem.setText("Two Horizontal");
-        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                twoHorizontalMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(twoHorizontalMenuItem);
-
-        swapChartsMenuItem.setText("Swap Charts");
-        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                swapChartsMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(swapChartsMenuItem);
-
-        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-        addChartMenuItem.setText("Add Chart");
-        addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addChartMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(addChartMenuItem);
-
         menuBar.add(viewMenu);
 
         vehicleMenu.setText("Vehicle");
@@ -403,6 +439,59 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(editVehicleMenuItem);
 
         menuBar.add(vehicleMenu);
+
+        chartMenu.setText("Charts");
+
+        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        addChartMenuItem.setText("Add Chart");
+        addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addChartMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(addChartMenuItem);
+
+        saveCurrentChartSetupMenuItem.setText("Save Current Setup");
+        saveCurrentChartSetupMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveCurrentChartSetupMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(saveCurrentChartSetupMenuItem);
+
+        singleViewMenuItem.setText("Single View");
+        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleViewMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(singleViewMenuItem);
+
+        twoVerticalMenuItem.setText("Two Vertical");
+        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                twoVerticalMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(twoVerticalMenuItem);
+
+        twoHorizontalMenuItem.setText("Two Horizontal");
+        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                twoHorizontalMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(twoHorizontalMenuItem);
+
+        swapChartsMenuItem.setText("Swap Charts");
+        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                swapChartsMenuItemActionPerformed(evt);
+            }
+        });
+        chartMenu.add(swapChartsMenuItem);
+
+        menuBar.add(chartMenu);
 
         engineMenu.setText("Engine");
 
@@ -1097,6 +1186,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_showLambdaMapActionPerformed
+
+    private void saveCurrentChartSetupMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveCurrentChartSetupMenuItemActionPerformed
+        String name = "";
+        Referencer<String> ref = new Referencer<>(name);
+        new FileNameDialog(this, true, ref).setVisible(true);
+        //TODO:pass filename
+        ChartConfiguration.saveChartConfiguration(chartManager.getCharts(), this, chartManager);
+    }//GEN-LAST:event_saveCurrentChartSetupMenuItemActionPerformed
   
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1917,6 +2014,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
@@ -1936,6 +2034,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem openBtn;
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JMenuItem saveCurrentChartSetupMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem saveVehicleMenuItem;
     private javax.swing.JMenuItem showLambdaMap;
