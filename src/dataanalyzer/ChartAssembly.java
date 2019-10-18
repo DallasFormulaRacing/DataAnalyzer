@@ -969,6 +969,7 @@ public class ChartAssembly implements ChartMouseListener {
     private SimpleHistogramDataset getHistogramDataCollection(String[] tags, int[] laps) {
         //collection to return
         SimpleHistogramDataset dataset = new SimpleHistogramDataset("time");
+        dataset.setAdjustForBinSize(false);
 
         
         for(String tag : tags) {
@@ -1010,12 +1011,12 @@ public class ChartAssembly implements ChartMouseListener {
                                     //if the value of the current object is between the interval we are searching for
                                     if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                         //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 1);
+                                        bin.setItemCount(bin.getItemCount() + 50);
                                     }
                                 } else if(lo instanceof FunctionOfLogObject) {
                                     if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                         //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 1);
+                                        bin.setItemCount(bin.getItemCount() + 50);
                                     }
                                 }
                             }
@@ -1063,18 +1064,16 @@ public class ChartAssembly implements ChartMouseListener {
                             //if the value of the current object is between the interval we are searching for
                             if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                    bin.setItemCount(bin.getItemCount() + 1);
+                                    bin.setItemCount(bin.getItemCount() + 50);
                             }
                         } else if(lo instanceof FunctionOfLogObject) {
                             if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                    bin.setItemCount(bin.getItemCount() + 1);
+                                    bin.setItemCount(bin.getItemCount() + 50);
                             }
                         }
                     }
                     //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-                    if(counter != 0)
-                        series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
                     dataset.addBin(bin);
 
                 }
