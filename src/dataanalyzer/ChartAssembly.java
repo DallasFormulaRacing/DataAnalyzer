@@ -1019,10 +1019,8 @@ public class ChartAssembly implements ChartMouseListener {
                                     }
                                 }
                             }
-                            
-                            dataset.addBin(bin);
-
                         }
+                        dataset.addBin(bin);
                     }
 
 
@@ -1052,6 +1050,9 @@ public class ChartAssembly implements ChartMouseListener {
 
                 //for each of the 50 intervals
                 for(int i = 1; i < 51; i++) {
+                    //A bin for this section
+                    SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - 1);
+
                     //start with 0 count
                     counter = 0;
 
@@ -1062,18 +1063,20 @@ public class ChartAssembly implements ChartMouseListener {
                             //if the value of the current object is between the interval we are searching for
                             if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                counter++;
+                                    bin.setItemCount(bin.getItemCount() + 1);
                             }
                         } else if(lo instanceof FunctionOfLogObject) {
                             if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                counter++;
+                                    bin.setItemCount(bin.getItemCount() + 1);
                             }
                         }
                     }
                     //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
                     if(counter != 0)
                         series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
+                    dataset.addBin(bin);
+
                 }
 
 
