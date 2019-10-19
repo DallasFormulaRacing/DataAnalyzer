@@ -25,7 +25,6 @@ public class Installer {
     }
     
     private static void runWindowsInstaller() {
-        //TODO: Shadman's code
         String home = System.getProperty("user.home");
         File dataAnalyzer = new File(home + "\\AppData\\Local\\DataAnalyzer\\");
         File vehicleData = new File(home + "\\AppData\\Local\\DataAnalyzer\\VehicleData\\");
