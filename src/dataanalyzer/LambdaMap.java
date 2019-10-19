@@ -41,9 +41,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private double[][] afrAvgTable;
     private double[][] afrMinTable;
     private double[][] afrMaxTable;
-    
     private double[][] injectorTimingTable;
-    
 
     //For changing the string to "Morgan"
     private boolean DEBUG = true;
@@ -145,7 +143,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
         columnHeader[colSize - 1] = columnLimit;
-
+        
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
         table = new DefaultTableModel(dataTable, columnHeader) {
             //Override isCellEditable to make all cells uneditable
@@ -154,7 +152,6 @@ public class LambdaMap extends javax.swing.JFrame {
                 return false;
             }
         };
-        
     }
     
     //squeezes a large range into a defined range
@@ -300,7 +297,7 @@ public class LambdaMap extends javax.swing.JFrame {
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col)
             {
-                //JComponent component = (JComponent) super.prepareRenderer(renderer, row, col);
+                //Component component = super.prepareRenderer(renderer, row, col);
 
                 if (col == 0)
                 {
@@ -457,17 +454,22 @@ public class LambdaMap extends javax.swing.JFrame {
     }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
-        LambdaMapSettings settings = new LambdaMapSettings(this, true);
+        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError);
         settings.setVisible(true);
         this.maxRPM = settings.getMaxRPM().get();
         this.targetAFR = settings.getTargetAFR().get();
         this.afrError = settings.getAcceptedError().get();
         
-        System.out.println(maxRPM);
-        
         initTableModel(maxRPM, 100);
         
         jTable1.setModel(table);
+        
+        //Centers all of the cells in the data table
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment( JLabel.CENTER );
+        for(int i = 0; i < jTable1.getModel().getColumnCount(); i++){
+            jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
         
         this.updateTables();
         this.populateFuelMap();

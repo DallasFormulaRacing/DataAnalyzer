@@ -13,17 +13,20 @@ import dataanalyzer.Referencer;
  */
 public class LambdaMapSettings extends javax.swing.JDialog {
 
+    private static int maxRPM;
+    private static double targetAFR;
+    private static double acceptedError;
+
     /**
      * Creates new form LambdaMapSettings
      */
-    public LambdaMapSettings(java.awt.Frame parent, boolean modal) {
+    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError) {
         super(parent, modal);
+        this.maxRPM = maxRPM;
+        this.targetAFR = targetAFR;
+        this.acceptedError = acceptedError;
         initComponents();
     }
-    
-    private int maxRPM;
-    private double targetAFR;
-    private double acceptedError;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -47,14 +50,17 @@ public class LambdaMapSettings extends javax.swing.JDialog {
 
         maxRPMLabel.setText("Max RPM");
 
+        maxRpmField.setText(String.valueOf(maxRPM));
         maxRpmField.setToolTipText("Enter the Max RPM setting of the ECU");
 
         targetAFRLabel.setText("Target AFR");
 
+        targetAfrField.setText(String.valueOf(targetAFR));
         targetAfrField.setToolTipText("Enter the desired AFR value you are looking for");
 
         afrErrorLabel.setText("Acceptable AFR Error");
 
+        afrOffsetField.setText(String.valueOf(acceptedError));
         afrOffsetField.setToolTipText("Enter the Accepted error for the desired AFR you entered above");
 
         cancelButton.setText("Cancel");
@@ -112,7 +118,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        maxRpmField.getAccessibleContext().setAccessibleName("maxRPMLabel");
+        maxRpmField.getAccessibleContext().setAccessibleName("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -129,22 +135,22 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         this.dispose();
     }//GEN-LAST:event_settingsApplied
 
-    public Referencer<Integer> getMaxRPM(){
+    public Referencer<Integer> getMaxRPM() {
         return new Referencer(maxRPM);
     }
-    
-    public Referencer<Double> getTargetAFR(){
+
+    public Referencer<Double> getTargetAFR() {
         return new Referencer(targetAFR);
     }
-    
-    public Referencer<Double> getAcceptedError(){
+
+    public Referencer<Double> getAcceptedError() {
         return new Referencer(acceptedError);
     }
-    
-    public void close(){
+
+    public void close() {
         this.dispose();
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -175,7 +181,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true);
+                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

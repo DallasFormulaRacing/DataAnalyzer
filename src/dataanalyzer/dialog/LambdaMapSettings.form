@@ -75,10 +75,13 @@
     </Component>
     <Component class="javax.swing.JTextField" name="maxRpmField">
       <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="String.valueOf(maxRPM)" type="code"/>
+        </Property>
         <Property name="toolTipText" type="java.lang.String" value="Enter the Max RPM setting of the ECU"/>
       </Properties>
       <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="maxRPMLabel"/>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="targetAFRLabel">
@@ -88,6 +91,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="targetAfrField">
       <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="String.valueOf(targetAFR)" type="code"/>
+        </Property>
         <Property name="toolTipText" type="java.lang.String" value="Enter the desired AFR value you are looking for"/>
       </Properties>
     </Component>
@@ -98,6 +104,9 @@
     </Component>
     <Component class="javax.swing.JTextField" name="afrOffsetField">
       <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="String.valueOf(acceptedError)" type="code"/>
+        </Property>
         <Property name="toolTipText" type="java.lang.String" value="Enter the Accepted error for the desired AFR you entered above"/>
       </Properties>
     </Component>
