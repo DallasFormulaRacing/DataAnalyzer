@@ -26,6 +26,28 @@ public class Installer {
     
     private static void runWindowsInstaller() {
         //TODO: Shadman's code
+        String home = System.getProperty("user.home");
+        File dataAnalyzer = new File(home + "\\AppData\\Local\\DataAnalyzer\\");
+        File vehicleData = new File(home + "\\AppData\\Local\\DataAnalyzer\\VehicleData\\");
+        File chartConfig = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
+        File settings = new File(home + "\\AppData\\Local\\DataAnalyzer\\Settings\\");
+        
+        if (!dataAnalyzer.isDirectory()) {
+           dataAnalyzer.mkdirs();
+
+        }   
+        if (!vehicleData.isDirectory()){
+             vehicleData.mkdirs();
+
+        }
+        if (!chartConfig.isDirectory()){
+            chartConfig.mkdirs();
+
+        }
+        if (!settings.isDirectory()){
+            settings.mkdirs();
+        }
+        
     }
     
     private static void runLinuxInstaller() {
