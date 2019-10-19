@@ -51,10 +51,10 @@ public class Installer {
     
     private static void runLinuxInstaller() {
         String home = System.getProperty("user.home");
-        File dataAnalyzer = new File(home + "/Applications/DataAnalyzer/");
-        File vehicleData = new File(home + "/Applications/DataAnalyzer/VehicleData/");
-        File chartConfig = new File(home + "/Applications/DataAnalyzer/ChartConfigurations/");
-        File settings = new File(home + "/Applications/DataAnalyzer/Settings/");
+        File dataAnalyzer = new File("/Applications/DataAnalyzer/");
+        File vehicleData = new File("/Applications/DataAnalyzer/VehicleData/");
+        File chartConfig = new File("/Applications/DataAnalyzer/ChartConfigurations/");
+        File settings = new File("/Applications/DataAnalyzer/Settings/");
 
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdir();
