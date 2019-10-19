@@ -5,19 +5,23 @@
  */
 package dataanalyzer;
 
+import java.io.File;
+
 /**
  *
  * @author aribdhuka
  */
 public class Installer {
-    
+           
     public static void runInstaller() {
-        //check os
+        String OS = System.getProperty("os.name");
         
-        //if Windows
+        if(OS.startsWith("Windows")){
             runWindowsInstaller();
-        //else if Linux
+        }
+        if(OS.startsWith("Mac")){
             runLinuxInstaller();
+        }
     }
     
     private static void runWindowsInstaller() {
@@ -25,7 +29,28 @@ public class Installer {
     }
     
     private static void runLinuxInstaller() {
-        //TODO: Angela's code
+        String home = System.getProperty("user.home");
+        File dataAnalyzer = new File(home + "/Applications/DataAnalyzer/");
+        File vehicleData = new File(home + "/Applications/DataAnalyzer/VehicleData/");
+        File chartConfig = new File(home + "/Applications/DataAnalyzer/ChartConfigurations/");
+        File settings = new File(home + "/Applications/DataAnalyzer/Settings/");
+
+        if (!dataAnalyzer.isDirectory()) {
+           dataAnalyzer.mkdir();
+
+        }   
+        if (!vehicleData.isDirectory()){
+             vehicleData.mkdir();
+
+        }
+        if (!chartConfig.isDirectory()){
+            chartConfig.mkdir();
+
+        }
+        if (!settings.isDirectory()){
+            settings.mkdir();
+        }
+        
     }
     
 }
