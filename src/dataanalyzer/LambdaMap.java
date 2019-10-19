@@ -213,8 +213,8 @@ public class LambdaMap extends javax.swing.JFrame {
             
             if(rpm <= maxRPM){
                 //Finds which column the data should go into
-                int column = squeeze(rpm, 0,maxRPM, 0,25);
-                int row = squeeze(tps, 0, 100, 0,24);
+                int column = squeeze(rpm, 0,maxRPM, 1,table.getColumnCount()-1);
+                int row = squeeze(tps, 0, 100, 0,table.getRowCount()-1);
 
                 //adds the respective value to its slot and increments how many values
                 //in that particular slot
