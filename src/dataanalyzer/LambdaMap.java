@@ -322,8 +322,8 @@ public class LambdaMap extends javax.swing.JFrame {
         showInjectorTimesMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1350, 675));
-        setPreferredSize(new java.awt.Dimension(1350, 675));
+        setMinimumSize(new java.awt.Dimension(1350, 682));
+        setPreferredSize(new java.awt.Dimension(1350, 682));
 
         //Renders the row headers
         final JTableHeader header = jTable1.getTableHeader();
