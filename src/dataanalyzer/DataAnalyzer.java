@@ -57,6 +57,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public DataAnalyzer() {
         initComponents();
         
+        //Setup directories
+        Installer.runInstaller();
+        
         //to prevent nulls, start as blank
         fileNotes = "";
         
