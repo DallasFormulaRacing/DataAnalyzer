@@ -165,19 +165,19 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     private void setupChartConfigurationsMenu() throws IOException {
         //get current OS
-        String OS = Util.getCurrentOS();
+        String OS = Util.getOS();
         
         //for Windows
         if (OS.equals("WINDOWS")) {
-            char sep = '\\';
+            String home = System.getProperty("user.home");
             //check for files in this folder
-            final File folder = new File("C:"+sep+"Program Files"+sep+"DataAnalyzer"+sep+"Chart Configurations");
+            final File folder = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
             //for each object in this directory
             for (final File fileEntry : folder.listFiles()) {
                 //check if its a file
                 if (fileEntry.isFile()) {
                     //get the extension
-                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(sep), fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(File.separator), fileEntry.getAbsolutePath().lastIndexOf('.'));
                     String extension = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf('.'));
                     //if its the right extension
                     if(extension.equals(".dfrchartconfig")) {
@@ -186,8 +186,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         item.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                //TODO:Fix method call
-                                ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                try {
+                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                } catch (FileNotFoundException fnfe) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (IOException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                }
                             }
                         });
                         chartMenu.add(item);
@@ -197,7 +202,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } else if (OS.equals("LINUX") || OS.equals("MAC")) {
             char sep = '/';
             //check for files in this folder
-            final File folder = new File(sep+"Applications"+sep+"DataAnalyzer"+sep+"Chart Configurations");
+            final File folder = new File(sep+"Applications"+sep+"DataAnalyzer"+sep+"ChartConfigurations");
             //for each object in this directory
             for (final File fileEntry : folder.listFiles()) {
                 //check if its a file
@@ -212,8 +217,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         item.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                //TODO:Fix method call
-                                ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                try {
+                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                } catch (FileNotFoundException fnfe) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (IOException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                }
                             }
                         });
                         chartMenu.add(item);
@@ -1194,8 +1204,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String name = "";
         Referencer<String> ref = new Referencer<>(name);
         new FileNameDialog(this, true, ref).setVisible(true);
-        //TODO:pass filename
-        ChartConfiguration.saveChartConfiguration(chartManager.getCharts(), this, chartManager);
+        name = ref.get();
+        try {
+            //TODO:pass filename
+            ChartConfiguration.saveChartConfiguration(name, chartManager.getCharts(), this, chartManager);
+        } catch (IOException ex) {
+            Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+        }
     }//GEN-LAST:event_saveCurrentChartSetupMenuItemActionPerformed
   
     public void invertRangeMarkersActive() {
