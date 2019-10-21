@@ -244,7 +244,7 @@ public class LambdaMap extends javax.swing.JFrame {
     //populates each cell of the fuel map
     private void populateFuelMap(){
         populateTable(afrAvgTable);
-        highlightCells(12, 1.5);
+        highlightCells(targetAFR, afrError);
     }
     
     private void populateTable(double[][] toSet) {
