@@ -244,6 +244,7 @@ public class LambdaMap extends javax.swing.JFrame {
     //populates each cell of the fuel map
     private void populateFuelMap(){
         populateTable(afrAvgTable);
+        highlightCells(12, 1.5);
     }
     
     private void populateTable(double[][] toSet) {
@@ -258,27 +259,22 @@ public class LambdaMap extends javax.swing.JFrame {
             }
     }
     
-    // Colors each cell of fuel map red if value is 1.5 away from desired value
-//    public void highlightCells(double desiredValue) {
-//        double maxLim = (desiredValue + 1.5);
-//        double minLim = (desiredValue - 1.5);
-//        for (int y = 0; y < table.getColumnCount()-1; y++) {
-//            for (int x = 0; x < table.getRowCount(); x++) {
-//                double cellValue = table[x][y];
-//                if (cellValue > maxLim) {
-//                    table[x][y].setBackground(new java.awt.Color(255, 0, 0)); 
-//                    /*/ Not sure if this works with what we currently have or not but I know how to make it work using
-//                    components and renderers if I need to change it to ease compatibility */
-//                }
-//                else if (cellValue < minLim) {
-//                    table[x][y].setBackground(new java.awt.Color(255, 0, 0));
-//                }
-//                else  {
-//                    table[x][y].setBackground(new java.awt.Color(0, 0, 0));
-//                }
-//            }
-//        }
-//    }
+    // Colors each cell of fuel map red if value is withing a range of allowable error (which is chosen by the user) away from desired value
+    public void highlightCells(double desiredValue, double allowableError) {
+        double maxLim = (desiredValue + allowableError);
+        double minLim = (desiredValue - allowableError);
+        for (int y = 0; y < table.getColumnCount()-1; y++) {
+            for (int x = 0; x < table.getRowCount(); x++) {
+                double cellValue = table[x][y];
+                if (cellValue > maxLim) {
+                    jTable1.getCellRenderer(x, y+1).getTableCellRendererComponent(jTable1, table.getValueAt(x, y+1), false, false, x, y+1).setBackground(Color.red);
+                }
+                else if (cellValue < minLim) {
+                    jTable1.getCellRenderer(x, y+1).getTableCellRendererComponent(jTable1, table.getValueAt(x, y+1), false, false, x, y+1).setBackground(Color.red);
+                }
+            }
+        }
+    }
     
     /**
      * This method is called from within the constructor to initialize the form.
