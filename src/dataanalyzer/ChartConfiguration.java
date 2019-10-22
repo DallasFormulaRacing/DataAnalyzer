@@ -64,6 +64,8 @@ public class ChartConfiguration {
                 temp.getChartFrame().setLocation(x, y);
                 temp.getChartFrame().setSize(width,height);
                 temp.selectedTags = location.selectedTags;//TODO: Figure out stuff with selectedLaps
+                temp.selectedLaps = new int[0];
+                temp.setChart(temp.selectedTags, temp.selectedLaps);
             }
             
         }else{
