@@ -122,7 +122,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
-    private void clearAllCharts() {
+    public void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
             chart.getChartFrame().dispose();
@@ -187,7 +187,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 try {
-                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
                                 } catch (FileNotFoundException fnfe) {
                                     Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
                                 } catch (IOException ex) {
@@ -218,7 +218,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 try {
-                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath());
+                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
                                 } catch (FileNotFoundException fnfe) {
                                     Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
                                 } catch (IOException ex) {

@@ -2,6 +2,7 @@ package dataanalyzer;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.io.*;
+import java.awt.Dimension;
 
 
 /**
@@ -16,7 +17,7 @@ public class ChartConfiguration {
      * Opens an existing chart configuration.
      * @param filename File name of the saved chart configuration.
      */
-    public static void openChartConfiguration(String filename) throws FileNotFoundException, IOException{
+    public static void openChartConfiguration(String filename, DataAnalyzer dataAnalyzer, ChartManager chartManager) throws FileNotFoundException, IOException{
         ArrayList<ChartLocation> locations = new ArrayList<>();
         setFileDirectory();
         
@@ -50,7 +51,20 @@ public class ChartConfiguration {
                 locations.add(location);
             }
             
-            //TODO: Figure out how to display the charts onto the screen. 
+            //Displaying the configuration windows on the screen - found on 1121
+            dataAnalyzer.clearAllCharts();
+            Dimension frameSize = dataAnalyzer.getSize();
+            ArrayList<ChartAssembly> assemblies = new ArrayList<ChartAssembly>();
+            for(ChartLocation location : locations){
+                ChartAssembly temp = chartManager.addChart();
+                int x = (int)((float)frameSize.width * location.x);
+                int y = (int)((float)frameSize.height * location.y);
+                int width = (int)((float)frameSize.width * location.width);
+                int height = (int)((float)frameSize.height * location.height);
+                temp.getChartFrame().setLocation(x, y);
+                temp.getChartFrame().setSize(width,height);
+                temp.selectedTags = location.selectedTags;//TODO: Figure out stuff with selectedLaps
+            }
             
         }else{
             System.err.println("That is not the correct file type");
