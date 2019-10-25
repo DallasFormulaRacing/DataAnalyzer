@@ -1000,7 +1000,7 @@ public class ChartAssembly implements ChartMouseListener {
 
                     //for each of the 50 intervals
                     for(int i = 1; i < 51; i++) {
-                        SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1), interval*(i+1));
+                        SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
 
 
                         //for each data element
@@ -1028,8 +1028,6 @@ public class ChartAssembly implements ChartMouseListener {
 
                 }
             } else {
-                //series that will hold the data
-                XYSeries series = new XYSeries(tag.split(",")[1]);
                 //calculate min and max value of the data 
                 double min = Double.MAX_VALUE;
                 double max = Double.MIN_VALUE;
@@ -1046,16 +1044,10 @@ public class ChartAssembly implements ChartMouseListener {
                 double interval = max - min;
                 interval /= 50;
 
-                //holds how many instances occured within this interval
-                int counter;
-
                 //for each of the 50 intervals
                 for(int i = 1; i < 51; i++) {
                     //A bin for this section
-                    SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - 1);
-
-                    //start with 0 count
-                    counter = 0;
+                    SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
 
                     //for each data element
                     for(LogObject lo : data) {
