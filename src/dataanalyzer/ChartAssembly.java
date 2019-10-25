@@ -966,6 +966,12 @@ public class ChartAssembly implements ChartMouseListener {
         return graphData;
     }
     
+    /**
+     * 
+     * @param tags
+     * @param laps
+     * @return 
+     */
     private SimpleHistogramDataset getHistogramDataCollection(String[] tags, int[] laps) {
         //collection to return
         SimpleHistogramDataset dataset = new SimpleHistogramDataset("time");
