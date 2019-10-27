@@ -8,12 +8,9 @@ package dataanalyzer;
 import dataanalyzer.dialog.LambdaMapSettings;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -21,7 +18,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.JLabel;
-
 
 /**
  * @author Morgan
@@ -31,190 +27,214 @@ import javax.swing.JLabel;
  */
 public class LambdaMap extends javax.swing.JFrame {
 
-    //Stores table data and table column/row headers 
+    //Contains the table data and column/row headers 
     private DefaultTableModel table;
-    
+
     //Contains the information from the char manager
     private CategoricalHashMap dataMap;
-    
-    //Float 2D arrays that mirror the dataTableModel that store respective quantities
+
+    //2D arrays that mirror the dataTableModel that store respective data sets
     private double[][] afrAvgTable;
     private double[][] afrMinTable;
     private double[][] afrMaxTable;
     private double[][] injectorTimingTable;
 
-    //For changing the string to "Morgan"
-    private boolean DEBUG = true;
-
     //Decimal Formats for rendering floating point integers in the table
     DecimalFormat afrFormat = new DecimalFormat("##.##");
+
+    //Contains the amount of columns + 1 for the row headers
+    private final int columnSize = 24 + 1;
     
-    // Contains the amount of columns + 1 for the row headers
-    private int columnSize = 24 + 1;
-    // Containt the amount of rows
-    private int rowSize = 25;
-    
+    //Containt the amount of rows
+    private final int rowSize = 25;
+
+    //Setting values for JTable
     private int maxRPM;
     private double targetAFR;
     private double afrError;
-    
+
+    //Lambda constant values
     private static final double MIN_LAMBDA = 0.68;
     private static final double MAX_LAMBDA = 1.36;
-    
+
     /**
      * Creates new form LambdaMap
      */
     public LambdaMap() {
-        maxRPM = 12500;
+        //Sets default table setting values
+        this.maxRPM = 12500;
+        this.targetAFR = 12;
+        this.afrError = 2; 
+        
+        //Initializes table application
         initTableModel(maxRPM, 100);
         initComponents();
-
     }
-    
+
     /**
      * Creates new form LambdaMap with data from a catagoricalHashmap
+     * 
+     * @param dataMap Log data for the car's ECU stored in a CategoricalHashMap
      */
-    public LambdaMap(CategoricalHashMap dataMap){
-        maxRPM = 12500;
-
-        initTableModel(maxRPM, 100);
-
-        initComponents();
+    public LambdaMap(CategoricalHashMap dataMap) {
+        //Passes through table data
         this.dataMap = dataMap;
-
-        updateTables();
         
-        populateFuelMap();
+        //Sets default table setting values
+        this.maxRPM = 12500;
+        this.targetAFR = 12;
+        this.afrError = 2; 
         
-    }
-    
-    public LambdaMap(CategoricalHashMap dataMap, int maxRPM){
-        this.dataMap = dataMap;
-        this.maxRPM = maxRPM;
-                
+        //Initializes table application
         initTableModel(maxRPM, 100);
         initComponents();
         
+        //Populates table with passed in data
         updateTables();
         populateFuelMap();
-        
     }
     
     /**
-     * Initializes the classes DefaultTableModel attribute with row and column headers based on parameters
+     * Creates new form LambdaMap with data from a catagoricalHashmap and sets 
+     * a new max RPM value, target AFR value and AFR error value.
+     * 
+     * @param dataMap Log data for the car's ECU stored in a CategoricalHashMap
+     * @param maxRPM The maximum RPM value in the tables column header
+     * @param targetAFR The desired AFR value
+     * @param afrError The tolerance values for target values
+     */
+    public LambdaMap(CategoricalHashMap dataMap, int maxRPM, int targetAFR, int afrError) {
+        //Passes through table data
+        this.dataMap = dataMap;
+        
+        //Sets default table setting values
+        this.maxRPM = maxRPM;
+        this.targetAFR = targetAFR;
+        this.afrError = afrError; 
+        
+        //Initializes table application
+        initTableModel(maxRPM, 100);
+        initComponents();
+        
+        //Populates table with passed in data
+        updateTables();
+        populateFuelMap();
+    }
+
+    /**
+     * Initializes the classes DefaultTableModel attribute with row and column
+     * headers based on parameters
+     *
      * @param columnLimit The last/largest value in the column header sequence
      * @param rowLimit The last/largest value in the row header sequence
      */
     public void initTableModel(int columnLimit, int rowLimit) {
-        //Stores table models column and row size
-        int colSize = this.columnSize;
-        int rowSize = this.rowSize;
+        //Creates 2D array for table model need for the JTable
+        //Note: First column contains row headers, not table data
+        Object[][] dataTable = new Object[rowSize][columnSize];
 
-        //Creates 2D array for table data (first column contains row headers, not table data)
-        Object[][] dataTable = new Object[rowSize][colSize];
-
-        //Creates 2D array for column headers
-        Object columnHeader[] = new Object[colSize];
+        //Creates 2D array for just the column headers
+        Object columnHeader[] = new Object[columnSize];
 
         //Initializes all table data to zero
         for (int row = 0; row < rowSize; row++) {
-            for (int col = 1; col < colSize; col++) {
+            for (int col = 1; col < columnSize; col++) {
                 dataTable[row][col] = 0;
             }
         }
 
         //Initializes row headers based on parameter values
-        for(int i = 0; i < rowSize-1; i++){
-            if(rowLimit % (rowSize-1) == 0){
-                dataTable[i][0] = (rowLimit / (rowSize+1)) * (i+1);
+        for (int i = 0; i < rowSize - 1; i++) {
+            if (rowLimit % (rowSize - 1) == 0) {
+                dataTable[i][0] = (rowLimit / (rowSize + 1)) * (i + 1);
             } else {
-                dataTable[i][0] = (rowLimit / (rowSize)) * (i+1);
+                dataTable[i][0] = (rowLimit / (rowSize)) * (i + 1);
             }
         }
-        dataTable[rowSize-1][0] = rowLimit;
+        dataTable[rowSize - 1][0] = rowLimit;
 
         //Initializes column headers based on parameter values
         columnHeader[0] = "";
-        for(int i = 1; i < columnSize-1; i++){
-            if(columnLimit % (columnSize-2) == 0){
-                columnHeader[i] = (columnLimit / (colSize)) * i;
+        for (int i = 1; i < columnSize - 1; i++) {
+            if (columnLimit % (columnSize - 2) == 0) {
+                columnHeader[i] = (columnLimit / (columnSize)) * i;
             } else {
-                columnHeader[i] = (columnLimit / (colSize-1)) * i;
+                columnHeader[i] = (columnLimit / (columnSize - 1)) * i;
             }
         }
-        columnHeader[colSize - 1] = columnLimit;
-        
+        columnHeader[columnSize - 1] = columnLimit;
+
         //Sets table equal to a new DefaultTableModel created from dataTable and columnHeader
         table = new DefaultTableModel(dataTable, columnHeader) {
-            //Override isCellEditable to make all cells uneditable
+            //Overrides isCellEditable to make all cells uneditable
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return false;
             }
         };
     }
-    
-    //squeezes a large range into a defined range
-    private int squeeze(double value, int min, int max, int floor, int ceil){
-        return (int)Math.floor(((ceil-floor)*(value - min)*1.0)/(max-min) + floor);
+
+    //Squeezes a large range into a defined range
+    private int squeeze(double value, int min, int max, int floor, int ceil) {
+        return (int) Math.floor(((ceil - floor) * (value - min) * 1.0) / (max - min) + floor);
     }
-    
+
     //A linear function (The same as squeeze) to expand the data into its proper range
-    private double afr(double lambda){
-        return ((20-10)*(lambda - MIN_LAMBDA)*1.0)/(MAX_LAMBDA - MIN_LAMBDA) + 10;
+    private double afr(double lambda) {
+        return ((20 - 10) * (lambda - MIN_LAMBDA) * 1.0) / (MAX_LAMBDA - MIN_LAMBDA) + 10;
     }
-    
+
     /**
-     * Runs through the RPM, TPS, Lambda, and FuelOpenTime to update the afrTable
-     * and injectorTimingTable to the averaged value across the data set for that
-     * rpm and tps
+     * Runs through the RPM, TPS, Lambda, and FuelOpenTime to update the
+     * afrTable and injectorTimingTable to the averaged value across the data
+     * set for that rpm and tps
      */
     private void updateTables() {
         LinkedList<LogObject> list = dataMap.getList("Time,RPM");
         LinkedList<LogObject> list2 = dataMap.getList("Time,TPS");
         LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
         LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime");
-        
+
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
-        
-        for(int x = 0; x<afrMinTable.length; x++){
+
+        for (int x = 0; x < afrMinTable.length; x++) {
             Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
         }
-        
+
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
-        
+
         int[][] avg = new int[table.getColumnCount()][table.getRowCount()];
-        
-        for(int i = 0; i<list.size(); i++){
+
+        for (int i = 0; i < list.size(); i++) {
             double rpm = 0, tps = 0, lambda = 0, injectorTime = 0;
-            
+
             //to make sure the LogObject has a value
-            try{
+            try {
                 LogObject rpmObj = list.pop();
                 list.addLast(rpmObj);
-                rpm = ((SimpleLogObject)rpmObj).value;
-                
+                rpm = ((SimpleLogObject) rpmObj).value;
+
                 LogObject tpsObj = list2.pop();
                 list2.addLast(tpsObj);
-                tps = ((SimpleLogObject)tpsObj).value;
-                
+                tps = ((SimpleLogObject) tpsObj).value;
+
                 LogObject lambdaObj = list3.pop();
                 list3.addLast(lambdaObj);
-                lambda = ((SimpleLogObject)lambdaObj).value;
+                lambda = ((SimpleLogObject) lambdaObj).value;
 
                 LogObject injectorObj = list4.pop();
                 list4.addLast(injectorObj);
-                injectorTime = ((SimpleLogObject)injectorObj).value;
-            }catch(Exception e){
+                injectorTime = ((SimpleLogObject) injectorObj).value;
+            } catch (Exception e) {
                 System.out.println(e);
             }
-            
-            if(rpm <= maxRPM){
+
+            if (rpm <= maxRPM) {
                 //Finds which column the data should go into
-                int column = squeeze(rpm, 0, maxRPM, 0, table.getColumnCount()-1);
-                int row = squeeze(tps, 0, 100, 0, table.getRowCount()-1);
+                int column = squeeze(rpm, 0, maxRPM, 0, table.getColumnCount() - 1);
+                int row = squeeze(tps, 0, 100, 0, table.getRowCount() - 1);
 
                 //adds the respective value to its slot and increments how many values
                 //in that particular slot
@@ -225,13 +245,13 @@ public class LambdaMap extends javax.swing.JFrame {
                 //update Min and Max tables
                 afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
                 afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
-            } 
+            }
         }
-        
+
         //Averages out each slot of the tables
-        for(int y = 0; y<table.getColumnCount()-1; y++){
-            for(int x = 0; x<table.getRowCount(); x++){
-                if(avg[y][x] != 0){
+        for (int y = 0; y < table.getColumnCount() - 1; y++) {
+            for (int x = 0; x < table.getRowCount(); x++) {
+                if (avg[y][x] != 0) {
                     afrMinTable[y][x] = afr(afrMinTable[y][x]);
                     afrMaxTable[y][x] = afr(afrMaxTable[y][x]);
                     afrAvgTable[y][x] = afr(afrAvgTable[y][x] / avg[y][x]);
@@ -240,42 +260,41 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
     }
-   
+
     //populates each cell of the fuel map
-    private void populateFuelMap(){
+    private void populateFuelMap() {
         populateTable(afrAvgTable);
         highlightCells(targetAFR, afrError);
     }
-    
+
     private void populateTable(double[][] toSet) {
-        for(int y = 0; y<table.getColumnCount()-1; y++){
-                for(int x = 0; x<table.getRowCount(); x++){
-                    double dec = 0;
-                    if(toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE){
-                        dec = toSet[y][x];
-                    }
-                    table.setValueAt(afrFormat.format(dec), x, y+1);
+        for (int y = 0; y < table.getColumnCount() - 1; y++) {
+            for (int x = 0; x < table.getRowCount(); x++) {
+                double dec = 0;
+                if (toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE) {
+                    dec = toSet[y][x];
                 }
+                table.setValueAt(afrFormat.format(dec), x, y + 1);
             }
+        }
     }
-    
+
     // Colors each cell of fuel map red if value is withing a range of allowable error (which is chosen by the user) away from desired value
     public void highlightCells(double desiredValue, double allowableError) {
         double maxLim = (desiredValue + allowableError);
         double minLim = (desiredValue - allowableError);
-        for (int y = 0; y < table.getColumnCount()-1; y++) {
+        for (int y = 0; y < table.getColumnCount() - 1; y++) {
             for (int x = 0; x < table.getRowCount(); x++) {
-                double cellValue = table[x][y];
+                double cellValue = Double.valueOf(table.getValueAt(x, y).toString());
                 if (cellValue > maxLim) {
-                    jTable1.getCellRenderer(x, y+1).getTableCellRendererComponent(jTable1, table.getValueAt(x, y+1), false, false, x, y+1).setBackground(Color.red);
-                }
-                else if (cellValue < minLim) {
-                    jTable1.getCellRenderer(x, y+1).getTableCellRendererComponent(jTable1, table.getValueAt(x, y+1), false, false, x, y+1).setBackground(Color.red);
+                    jTable.getCellRenderer(x, y + 1).getTableCellRendererComponent(jTable, table.getValueAt(x, y + 1), false, false, x, y + 1).setBackground(Color.red);
+                } else if (cellValue < minLim) {
+                    jTable.getCellRenderer(x, y + 1).getTableCellRendererComponent(jTable, table.getValueAt(x, y + 1), false, false, x, y + 1).setBackground(Color.red);
                 }
             }
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -285,9 +304,9 @@ public class LambdaMap extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jScrollPane = new javax.swing.JScrollPane();
         //Custom initialization of jTable
-        jTable1 = new javax.swing.JTable()
+        jTable = new javax.swing.JTable()
         {
             //Overrides prepareRenderer so that the jTable can be formated
             @Override
@@ -305,12 +324,11 @@ public class LambdaMap extends javax.swing.JFrame {
                 }
             }
         };
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        RPMLabel = new javax.swing.JLabel();
+        TPSLabel = new javax.swing.JLabel();
+        jMenuBar = new javax.swing.JMenuBar();
+        tableMenu = new javax.swing.JMenu();
+        tableSettingsMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         showLambdaAverageMenuItem = new javax.swing.JMenuItem();
         showLambdaMinMenuItem = new javax.swing.JMenuItem();
@@ -322,45 +340,42 @@ public class LambdaMap extends javax.swing.JFrame {
         setPreferredSize(new java.awt.Dimension(1350, 682));
 
         //Renders the row headers
-        final JTableHeader header = jTable1.getTableHeader();
-        header.setDefaultRenderer(new HeaderRenderer(jTable1));
+        final JTableHeader header = jTable.getTableHeader();
+        header.setDefaultRenderer(new HeaderRenderer(jTable));
 
         //Sets the jTable model to table
-        jTable1.setModel(table);
+        jTable.setModel(table);
         //Centers all of the cells in the data table
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment( JLabel.CENTER );
-        for(int i = 0; i < jTable1.getModel().getColumnCount(); i++){
-            jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        for(int i = 0; i < jTable.getModel().getColumnCount(); i++){
+            jTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-        jTable1.setShowVerticalLines(true);
-        jTable1.setShowHorizontalLines(true);
-        jTable1.setGridColor(Color.GRAY);
-        jTable1.setCellSelectionEnabled(true);
-        jTable1.setRowHeight(22);
-        jTable1.getTableHeader().setReorderingAllowed(false);
-        jScrollPane1.setViewportView(jTable1);
+        jTable.setShowVerticalLines(true);
+        jTable.setShowHorizontalLines(true);
+        jTable.setGridColor(Color.GRAY);
+        jTable.setCellSelectionEnabled(true);
+        jTable.setRowHeight(22);
+        jTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane.setViewportView(jTable);
 
-        jLabel1.setText("RPM");
+        RPMLabel.setText("RPM");
 
-        jLabel3.setText("TPS");
+        TPSLabel.setText("TPS");
 
-        jMenu1.setText("File");
+        tableMenu.setText("Table");
 
-        jMenuItem1.setText("Lambda Map Settings");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        tableSettingsMenuItem.setText("Table Settings");
+        tableSettingsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 lambdaMapSettingsCalled(evt);
             }
         });
-        jMenu1.add(jMenuItem1);
+        tableMenu.add(tableSettingsMenuItem);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar.add(tableMenu);
 
-        jMenu2.setText("Edit");
-        jMenuBar1.add(jMenu2);
-
-        viewMenu.setText("Table");
+        viewMenu.setText("View");
 
         showLambdaAverageMenuItem.setText("Lambda Average");
         showLambdaAverageMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -394,9 +409,9 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showInjectorTimesMenuItem);
 
-        jMenuBar1.add(viewMenu);
+        jMenuBar.add(viewMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(jMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -406,12 +421,12 @@ public class LambdaMap extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(7, 7, 7)
-                        .addComponent(jLabel3)
+                        .addComponent(TPSLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE))
+                        .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel1)
+                        .addComponent(RPMLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -419,13 +434,13 @@ public class LambdaMap extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(RPMLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
+                        .addComponent(TPSLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -450,23 +465,29 @@ public class LambdaMap extends javax.swing.JFrame {
     }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
+        //Creates a lambda map settings dialog box
         LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError);
         settings.setVisible(true);
+        
+        //Sets table setting values equal to user updated dialog setting values
         this.maxRPM = settings.getMaxRPM().get();
         this.targetAFR = settings.getTargetAFR().get();
         this.afrError = settings.getAcceptedError().get();
         
+        //Initializes new table model with new max RPM
         initTableModel(maxRPM, 100);
         
-        jTable1.setModel(table);
-        
+        //Links updated table model to JTable
+        jTable.setModel(table);
+
         //Centers all of the cells in the data table
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment( JLabel.CENTER );
-        for(int i = 0; i < jTable1.getModel().getColumnCount(); i++){
-            jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 0; i < jTable.getModel().getColumnCount(); i++) {
+            jTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
         
+        //Populates table with passed in data
         this.updateTables();
         this.populateFuelMap();
     }//GEN-LAST:event_lambdaMapSettingsCalled
@@ -477,14 +498,14 @@ public class LambdaMap extends javax.swing.JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Create and set up the content pane
-        LambdaMap  newContentPane = new LambdaMap ();
+        LambdaMap newContentPane = new LambdaMap();
         frame.setContentPane(newContentPane);
 
         //Display the window
         frame.pack();
         frame.setVisible(true);
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -508,7 +529,7 @@ public class LambdaMap extends javax.swing.JFrame {
         } catch (IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex); 
+            java.util.logging.Logger.getLogger(LambdaMap.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -518,7 +539,7 @@ public class LambdaMap extends javax.swing.JFrame {
                 new LambdaMap().setVisible(true);
             }
         });
-        
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
@@ -527,25 +548,24 @@ public class LambdaMap extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JLabel RPMLabel;
+    private javax.swing.JLabel TPSLabel;
+    private javax.swing.JMenuBar jMenuBar;
+    private javax.swing.JScrollPane jScrollPane;
+    private javax.swing.JTable jTable;
     private javax.swing.JMenuItem showInjectorTimesMenuItem;
     private javax.swing.JMenuItem showLambdaAverageMenuItem;
     private javax.swing.JMenuItem showLambdaMaxMenuItem;
     private javax.swing.JMenuItem showLambdaMinMenuItem;
+    private javax.swing.JMenu tableMenu;
+    private javax.swing.JMenuItem tableSettingsMenuItem;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }
 
-
 /**
- * Table header renderer class for row headers (since row headers aren't natively supported by jTable)
+ * Table header renderer class for row headers (since row headers aren't
+ * natively supported by jTable)
  */
 class HeaderRenderer implements TableCellRenderer {
 

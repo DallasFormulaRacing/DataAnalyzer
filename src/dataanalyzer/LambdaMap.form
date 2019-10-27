@@ -2,16 +2,16 @@
 
 <Form version="1.6" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
-    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+    <Menu class="javax.swing.JMenuBar" name="jMenuBar">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="tableMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="File"/>
+            <Property name="text" type="java.lang.String" value="Table"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+            <MenuItem class="javax.swing.JMenuItem" name="tableSettingsMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Lambda Map Settings"/>
+                <Property name="text" type="java.lang.String" value="Table Settings"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="lambdaMapSettingsCalled"/>
@@ -19,14 +19,9 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu2">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Edit"/>
-          </Properties>
-        </Menu>
         <Menu class="javax.swing.JMenu" name="viewMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Table"/>
+            <Property name="text" type="java.lang.String" value="View"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="showLambdaAverageMenuItem">
@@ -76,7 +71,7 @@
     </Property>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
@@ -99,13 +94,13 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="999" max="32767" attributes="0"/>
+                      <Component id="jScrollPane" pref="999" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -117,13 +112,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+              <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" pref="578" max="32767" attributes="0"/>
+                  <Component id="jScrollPane" pref="578" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                      <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -133,16 +128,16 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Container class="javax.swing.JScrollPane" name="jScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTable" name="jTable1">
+        <Component class="javax.swing.JTable" name="jTable">
           <Properties>
-            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" postCode="//Centers all of the cells in the data table&#xa;DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();&#xa;centerRenderer.setHorizontalAlignment( JLabel.CENTER );&#xa;for(int i = 0; i &lt; jTable1.getModel().getColumnCount(); i++){&#xa;    jTable1.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);&#xa;}&#xa;jTable1.setShowVerticalLines(true);&#xa;jTable1.setShowHorizontalLines(true);&#xa;jTable1.setGridColor(Color.GRAY);">
+            <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor" postCode="//Centers all of the cells in the data table&#xa;DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();&#xa;centerRenderer.setHorizontalAlignment( JLabel.CENTER );&#xa;for(int i = 0; i &lt; jTable.getModel().getColumnCount(); i++){&#xa;    jTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);&#xa;}&#xa;jTable.setShowVerticalLines(true);&#xa;jTable.setShowHorizontalLines(true);&#xa;jTable.setGridColor(Color.GRAY);">
               <Connection code="table" type="code"/>
             </Property>
             <Property name="cellSelectionEnabled" type="boolean" value="true"/>
@@ -157,17 +152,17 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTable()&#xa;{&#xa;    //Overrides prepareRenderer so that the jTable can be formated&#xa;    @Override&#xa;    public Component prepareRenderer(TableCellRenderer renderer, int row, int col)&#xa;    {&#xa;        //Component component = super.prepareRenderer(renderer, row, col);&#xa;&#xa;        if (col == 0)&#xa;        {&#xa;            return this.getTableHeader().getDefaultRenderer()&#xa;            .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);&#xa;        } else&#xa;        {&#xa;            return super.prepareRenderer(renderer, row, col);&#xa;        }&#xa;    }&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="//Custom initialization of jTable"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="//Renders the row headers&#xa;final JTableHeader header = jTable1.getTableHeader();&#xa;header.setDefaultRenderer(new HeaderRenderer(jTable1));&#xa;&#xa;//Sets the jTable model to table"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="//Renders the row headers&#xa;final JTableHeader header = jTable.getTableHeader();&#xa;header.setDefaultRenderer(new HeaderRenderer(jTable));&#xa;&#xa;//Sets the jTable model to table"/>
           </AuxValues>
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="javax.swing.JLabel" name="RPMLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="RPM"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel3">
+    <Component class="javax.swing.JLabel" name="TPSLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="TPS"/>
       </Properties>
