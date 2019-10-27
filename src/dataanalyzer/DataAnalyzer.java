@@ -41,6 +41,8 @@ import org.jfree.chart.plot.ValueMarker;
  * @author aribdhuka
  */
 public class DataAnalyzer extends javax.swing.JFrame {
+    
+    public boolean fileOpen = false;
 
     //Stores the current filepath
     private String openedFilePath;
@@ -697,6 +699,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 windowCount++;
             }
         
+        }
+        
+        if(!(chartManager.getVehicleData().getStringOfData() == null)){
+            fileOpen = true;
         }
     }//GEN-LAST:event_openBtnClicked
 
