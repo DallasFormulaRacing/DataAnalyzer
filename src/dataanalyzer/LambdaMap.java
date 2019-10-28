@@ -492,20 +492,6 @@ public class LambdaMap extends javax.swing.JFrame {
         this.populateFuelMap();
     }//GEN-LAST:event_lambdaMapSettingsCalled
 
-    private static void createAndShowGUI() {
-        //Create and set up the window
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //Create and set up the content pane
-        LambdaMap newContentPane = new LambdaMap();
-        frame.setContentPane(newContentPane);
-
-        //Display the window
-        frame.pack();
-        frame.setVisible(true);
-    }
-
     /**
      * @param args the command line arguments
      */
@@ -537,12 +523,6 @@ public class LambdaMap extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new LambdaMap().setVisible(true);
-            }
-        });
-
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
             }
         });
     }
