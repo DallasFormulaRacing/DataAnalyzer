@@ -63,8 +63,8 @@ public class LambdaMap extends javax.swing.JFrame {
     public LambdaMap() {
         //Sets default table setting values
         this.maxRPM = 12500;
-        this.targetAFR = 12;
-        this.afrError = 2; 
+        this.targetAFR = 14;
+        this.afrError = 1.5; 
         
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -82,8 +82,8 @@ public class LambdaMap extends javax.swing.JFrame {
         
         //Sets default table setting values
         this.maxRPM = 12500;
-        this.targetAFR = 12;
-        this.afrError = 2; 
+        this.targetAFR = 14;
+        this.afrError = 1.5; 
         
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -264,7 +264,7 @@ public class LambdaMap extends javax.swing.JFrame {
     //populates each cell of the fuel map
     private void populateFuelMap() {
         populateTable(afrAvgTable);
-        highlightCells(targetAFR, afrError);
+        //highlightCells(targetAFR, afrError);
     }
 
     private void populateTable(double[][] toSet) {
@@ -278,7 +278,35 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
     }
-
+    
+    public Color getColorVal(Object valO, double targetAFR, double afrError){
+        double val = Double.valueOf(valO.toString());
+        float saturation = 0.85f;
+        float brightness = 0.75f;
+        double min = 2.5;
+        double max = 2.5;
+        if(val == 0){
+            return Color.LIGHT_GRAY;
+        }
+        else if(val > targetAFR-afrError && val < targetAFR+afrError){
+            return Color.getHSBColor(0.35f, saturation, brightness+0.05f);
+        }
+        else if (val > targetAFR+afrError){
+            double offset = ((val-(targetAFR+afrError))/max);
+            if(offset > 1 ){
+                offset = 1;
+            }
+            return Color.getHSBColor(0.29f - (0.29f * (float)offset), saturation, brightness);
+        }
+        else{
+            double offset = (((targetAFR-afrError)-val)/min);
+            if(offset > 1){
+                offset = 1;
+            }
+            return Color.getHSBColor(0.41f + (0.215f * (float)offset), saturation, brightness);
+        }
+    }
+    
     // Colors each cell of fuel map red if value is withing a range of allowable error (which is chosen by the user) away from desired value
     public void highlightCells(double desiredValue, double allowableError) {
         double maxLim = (desiredValue + allowableError);
@@ -312,7 +340,7 @@ public class LambdaMap extends javax.swing.JFrame {
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int col)
             {
-                //Component component = super.prepareRenderer(renderer, row, col);
+                Component component = super.prepareRenderer(renderer, row, col);
 
                 if (col == 0)
                 {
@@ -320,7 +348,9 @@ public class LambdaMap extends javax.swing.JFrame {
                     .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);
                 } else
                 {
-                    return super.prepareRenderer(renderer, row, col);
+                    component.setBackground(getColorVal(this.getValueAt(row, col), targetAFR, afrError));
+                    return component;
+                    //return super.prepareRenderer(renderer, row, col);
                 }
             }
         };
