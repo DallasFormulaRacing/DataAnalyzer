@@ -5,10 +5,11 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.MessageBox;
 import dataanalyzer.Referencer;
 
 /**
- *
+ * @author Morgan
  * @author aribdhuka
  */
 public class LambdaMapSettings extends javax.swing.JDialog {
@@ -128,11 +129,26 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void settingsApplied(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsApplied
-        //TODO: Input sanatizing
-        maxRPM = Integer.parseInt(maxRpmField.getText());
-        targetAFR = Double.parseDouble(targetAfrField.getText());
-        acceptedError = Double.parseDouble(afrOffsetField.getText());
-        this.dispose();
+        //checks for valid data in table settings
+        try {
+            maxRPM = Integer.parseInt(maxRpmField.getText());
+            if (maxRPM <= 25) {
+                throw new NumberFormatException();
+            }
+            
+            targetAFR = Double.parseDouble(targetAfrField.getText());
+            if (targetAFR <= 10 || targetAFR >= 21) {
+                throw new NumberFormatException();
+            }
+            
+            acceptedError = Double.parseDouble(afrOffsetField.getText());
+            acceptedError = Math.abs(acceptedError);
+            this.dispose();
+        }
+        //displays a message box with an error when exceptions are thrown
+        catch (NumberFormatException e) {
+            new MessageBox("Error validating your settings." + "\n" + "Please make sure your numbers are correct.").setVisible(true);
+        }
     }//GEN-LAST:event_settingsApplied
 
     public Referencer<Integer> getMaxRPM() {

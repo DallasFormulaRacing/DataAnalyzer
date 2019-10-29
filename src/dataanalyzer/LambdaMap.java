@@ -11,7 +11,6 @@ import java.awt.Component;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.LinkedList;
-import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
