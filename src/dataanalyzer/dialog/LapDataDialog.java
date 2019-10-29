@@ -6,7 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.Lap;
-import dataanalyzer.MessageBox;
+import dataanalyzer.dialog.MessageBox;
 import java.awt.Dialog;
 import java.util.ArrayList;
 
@@ -197,10 +197,10 @@ public class LapDataDialog extends javax.swing.JDialog {
                 if(attemptParse >= 0) {
                     toEdit.setStart(attemptParse);
                 } else {
-                    new MessageBox("How can the start of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.").setVisible(true);
+                    new MessageBox(this, "How can the start of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.", true).setVisible(true);
                 }
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a integer to you? Please enter an integer.").setVisible(true);
+                new MessageBox(this, "Does that look like a integer to you? Please enter an integer.", true).setVisible(true);
             }
         }
     }//GEN-LAST:event_startTextFieldFocusLost
@@ -213,10 +213,10 @@ public class LapDataDialog extends javax.swing.JDialog {
                 if(attemptParse >= 0) {
                     toEdit.setStop(attemptParse);
                 } else {
-                    new MessageBox("How can the stop of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.").setVisible(true);
+                    new MessageBox(this, "How can the stop of the lap occcur before time. Bloody time travelers. Enter an integer greater than or equal to 0.", true).setVisible(true);
                 }
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a integer to you? Please enter an integer.").setVisible(true);
+                new MessageBox(this, "Does that look like a integer to you? Please enter an integer.", true).setVisible(true);
             }
         }
     }//GEN-LAST:event_stopTextFieldFocusLost
@@ -228,7 +228,7 @@ public class LapDataDialog extends javax.swing.JDialog {
                 attemptParse = Integer.parseInt(lapNumberTextField.getText());
                 toEdit.setLapNumber(attemptParse);
             } catch(NumberFormatException e) {
-                new MessageBox("Does that look like a integer to you? Please enter an integer.").setVisible(true);
+                new MessageBox(this, "Does that look like a integer to you? Please enter an integer.", true).setVisible(true);
             }
         }
     }//GEN-LAST:event_lapNumberTextFieldFocusLost
@@ -246,22 +246,22 @@ public class LapDataDialog extends javax.swing.JDialog {
 
     private boolean verifyData() {
         if(startTextField.getText().isEmpty() || stopTextField.getText().isEmpty()) {
-            new MessageBox("Please enter when the lap starts and stops. C'mon man.").setVisible(true);
+            new MessageBox(this, "Please enter when the lap starts and stops. C'mon man.", true).setVisible(true);
             return false;
         }
         
         if(toEdit.getStart() >= toEdit.getStop()) {
-            new MessageBox("How can the lap stop before it starts? \nPlease enter an integer for stop time that is larger than the start integer.").setVisible(true);
+            new MessageBox(this, "How can the lap stop before it starts? \nPlease enter an integer for stop time that is larger than the start integer.", true).setVisible(true);
             return false;
         }
                 
         if(lapNumberTextField.getText().isEmpty()) {
-            new MessageBox("Please enter a lap number that isn't already used.").setVisible(true);
+            new MessageBox(this, "Please enter a lap number that isn't already used.", true).setVisible(true);
             return false;
         }
         
         if(usedLaps != null && usedLaps.contains(toEdit.getLapNumber())) {
-            new MessageBox("That lap number is already being used.").setVisible(true);
+            new MessageBox(this, "That lap number is already being used.", true).setVisible(true);
             return false;
         }
         

@@ -135,7 +135,8 @@ public class TXTParser {
         try {
             scanner = new Scanner(new File(filepath));
         } catch (Exception e) {
-            new MessageBox("TXTParser: Error opening file.").setVisible(true);
+            //TODO: Need to implement error display
+//            new MessageBox("TXTParser: Error opening file.").setVisible(true);
             return;
         }
         //holds if first iteration

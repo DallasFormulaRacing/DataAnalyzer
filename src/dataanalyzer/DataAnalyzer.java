@@ -10,6 +10,7 @@ import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import dataanalyzer.dialog.FileNotesDialog;
+import dataanalyzer.dialog.MessageBox;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -506,7 +507,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         if (!(fileExtension.equals(".dfr") || fileExtension.equals(".csv") || fileExtension.equals(".txt"))) {
                             toApprove = false;
                             // display error message - that selection should not be approve
-                            new MessageBox("Error: Selection could not be approved").setVisible(true);
+                            new MessageBox(DataAnalyzer.this, "Error: Selection could not be approved", true).setVisible(true);
                             this.cancelSelection();
                         }
                     } else {
@@ -714,7 +715,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else {
                             toApprove = false;
                             // display error message - that selection should not be approved
-                            new MessageBox("Error: Wrong File Type").setVisible(true);
+                            new MessageBox(DataAnalyzer.this, "Error: Wrong File Type", true).setVisible(true);
                             this.cancelSelection();
                         }
 
@@ -898,7 +899,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     fw.close();
                 //exception handling
                 } catch (IOException e) {
-                    new MessageBox(e.toString()).setVisible(true);
+                    new MessageBox(this, e.toString(), true).setVisible(true);
                 }
              //if its not a csv file
             } else {
@@ -910,7 +911,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     fw.close();
                 //exception handling
                 } catch (IOException e) {
-                    new MessageBox(e.toString()).setVisible(true);
+                    new MessageBox(this, e.toString(), true).setVisible(true);
                 }
             }
             
@@ -925,10 +926,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //set the lapBreaker to active, this changes the functionality of clicking on the chart
             chartManager.setLapBreakerActive(0);
             //Display message box with instructions
-            new MessageBox("Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.").setVisible(true);
+            new MessageBox(this, "Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.", false).setVisible(true);
         } else {
-            //replace with toast
-            new MessageBox("Adding of Lap cancelled.").setVisible(true);
+            //display message.
+            Toast.makeToast(this, "Adding of Lap cancelled.", Toast.DURATION_MEDIUM);
             chartManager.setLapBreakerActive(-1);
         }
     }//GEN-LAST:event_addLapConditionMenuItemActionPerformed
@@ -1177,7 +1178,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
             // error message displayed
-            new MessageBox("Error: File not found").setVisible(true);
+            new MessageBox(this, "Error: File not found", true).setVisible(true);
         }
         
         //if failed to load, leave method
@@ -1327,7 +1328,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         } catch (FileNotFoundException x) {
             // Error message displayed
-            new MessageBox("Error: File not found").setVisible(true);
+            new MessageBox(this, "Error: File not found", true).setVisible(true);
         }
         
         
@@ -1570,7 +1571,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
-                        new MessageBox("Error: FileWriter could not be opened").setVisible(true);
+                        new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
                     }
                 }
                 else {
@@ -1586,12 +1587,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
-                        new MessageBox("Error: FileWriter could not be opened ").setVisible(true);
+                        new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
                     }
                 }
             } else {
                 //error message displayed
-                new MessageBox("Error: File could not be approved").setVisible(true);
+                new MessageBox(this, "Error: File could not be approved", true).setVisible(true);
             }
             
         } else { //if a filename was already provided
@@ -1604,7 +1605,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 this.setTitle("DataAnalyzer - " + filename);
             } catch (IOException e) {
                 //error message displayed
-                new MessageBox("Error: File could not be written to").setVisible(true);
+                new MessageBox(this, "Error: File could not be written to", true).setVisible(true);
             }
         }
     }
@@ -1627,7 +1628,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     scanner = new Scanner(new File(filepath));
                 } catch(FileNotFoundException e) {
                     //error message displayed
-                    new MessageBox("Error: File could not be opened").setVisible(true);
+                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
                 }
 
                 //if we failed to open the file exit
@@ -1739,7 +1740,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     scanner = new Scanner(new File(filepath));
                 } catch(FileNotFoundException e) {
                     //error message displayed
-                    new MessageBox("Error: File could not be opened").setVisible(true);
+                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
                 }
 
                 //if we failed to open the file exit

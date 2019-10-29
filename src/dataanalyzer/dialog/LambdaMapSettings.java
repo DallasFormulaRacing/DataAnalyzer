@@ -5,7 +5,7 @@
  */
 package dataanalyzer.dialog;
 
-import dataanalyzer.MessageBox;
+import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.Referencer;
 
 /**
@@ -133,12 +133,12 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         try {
             maxRPM = Integer.parseInt(maxRpmField.getText());
             if (maxRPM <= 25) {
-                throw new NumberFormatException();
+                throw new NumberFormatException("Max RPM is less than 25!");
             }
             
             targetAFR = Double.parseDouble(targetAfrField.getText());
             if (targetAFR <= 10 || targetAFR >= 21) {
-                throw new NumberFormatException();
+                throw new NumberFormatException("Target AFR must be between 10 and 21 (inclusive)!");
             }
             
             acceptedError = Double.parseDouble(afrOffsetField.getText());
@@ -147,7 +147,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         }
         //displays a message box with an error when exceptions are thrown
         catch (NumberFormatException e) {
-            new MessageBox("Error validating your settings." + "\n" + "Please make sure your numbers are correct.").setVisible(true);
+            new MessageBox(this, "Error validating your settings." + "\n" + "Please make sure your numbers are correct.\n" + e.getMessage(), true).setVisible(true);
         }
     }//GEN-LAST:event_settingsApplied
 
