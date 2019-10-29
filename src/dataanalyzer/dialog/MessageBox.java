@@ -3,25 +3,38 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package dataanalyzer;
 
-public class MessageBox extends javax.swing.JFrame {
+package dataanalyzer.dialog;
+
+public class MessageBox extends javax.swing.JDialog {
 
     /**
      * Creates new form MessageBox
      */
-    public MessageBox() {
+    public MessageBox(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         initComponents();
     }
     
     //Mostly used to display specific error message
-    public MessageBox(String text){
+    public MessageBox( java.awt.Frame parent, String text, boolean modal){
+        super(parent, modal);
+
         initComponents();
         //Sets textArea to string
+        
         messageArea.setText(text);
-        this.setVisible(true);
     }
 
+    public MessageBox( java.awt.Dialog parent, String text, boolean modal){
+       super(parent, modal);
+
+        initComponents();
+        //Sets textArea to string
+        
+        messageArea.setText(text);
+        setVisible(true);
+    }    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -46,7 +59,7 @@ public class MessageBox extends javax.swing.JFrame {
 
         messageArea.setEditable(false);
         messageArea.setColumns(20);
-        messageArea.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        messageArea.setFont(new java.awt.Font("Dialog", 0, 18)); // NOI18N
         messageArea.setRows(5);
         jScrollPane1.setViewportView(messageArea);
 
@@ -55,22 +68,23 @@ public class MessageBox extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(160, Short.MAX_VALUE)
-                .addComponent(okButton)
-                .addGap(157, 157, 157))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1)
-                .addContainerGap())
+                .addContainerGap(15, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(okButton)
+                        .addGap(157, 157, 157))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(okButton)
-                .addGap(11, 11, 11))
+                .addGap(5, 5, 5))
         );
 
         pack();
@@ -108,12 +122,25 @@ public class MessageBox extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(MessageBox.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MessageBox().setVisible(true);
-                     
+               // new MessageBox().setVisible(true);
+            
+            
+    
+                MessageBox dialog = new MessageBox(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                         System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
             }
         });
         
