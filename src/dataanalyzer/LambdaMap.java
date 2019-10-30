@@ -43,14 +43,21 @@ public class LambdaMap extends javax.swing.JFrame {
 
     //Contains the amount of columns + 1 for the row headers
     private final int columnSize = 24 + 1;
-    
-    //Containt the amount of rows
+
+    //Containts the amount of rows
     private final int rowSize = 25;
 
     //Setting values for JTable
     private int maxRPM;
     private double targetAFR;
     private double afrError;
+    private int injectorTimeColorMap;
+
+    //Containts whether the JTable is displaying the injector times
+    private boolean isInjectorView;
+    
+    //Contains which current lambda map (avg=0, max=1, min=2)
+    private int currentLambdaMap;
 
     //Lambda constant values
     private static final double MIN_LAMBDA = 0.68;
@@ -63,8 +70,9 @@ public class LambdaMap extends javax.swing.JFrame {
         //Sets default table setting values
         this.maxRPM = 12500;
         this.targetAFR = 14;
-        this.afrError = 1.5; 
-        
+        this.afrError = 1.5;
+        this.injectorTimeColorMap = 0;
+
         //Initializes table application
         initTableModel(maxRPM, 100);
         initComponents();
@@ -72,31 +80,32 @@ public class LambdaMap extends javax.swing.JFrame {
 
     /**
      * Creates new form LambdaMap with data from a catagoricalHashmap
-     * 
+     *
      * @param dataMap Log data for the car's ECU stored in a CategoricalHashMap
      */
     public LambdaMap(CategoricalHashMap dataMap) {
         //Passes through table data
         this.dataMap = dataMap;
-        
+
         //Sets default table setting values
         this.maxRPM = 12500;
         this.targetAFR = 14;
-        this.afrError = 1.5; 
-        
+        this.afrError = 1.5;
+        this.injectorTimeColorMap = 0;
+
         //Initializes table application
         initTableModel(maxRPM, 100);
         initComponents();
-        
+
         //Populates table with passed in data
         updateTables();
-        populateFuelMap();
+        populateTable(afrAvgTable);
     }
-    
+
     /**
-     * Creates new form LambdaMap with data from a catagoricalHashmap and sets 
-     * a new max RPM value, target AFR value and AFR error value.
-     * 
+     * Creates new form LambdaMap with data from a catagoricalHashmap and sets a
+     * new max RPM value, target AFR value and AFR error value.
+     *
      * @param dataMap Log data for the car's ECU stored in a CategoricalHashMap
      * @param maxRPM The maximum RPM value in the tables column header
      * @param targetAFR The desired AFR value
@@ -105,19 +114,20 @@ public class LambdaMap extends javax.swing.JFrame {
     public LambdaMap(CategoricalHashMap dataMap, int maxRPM, int targetAFR, int afrError) {
         //Passes through table data
         this.dataMap = dataMap;
-        
+
         //Sets default table setting values
         this.maxRPM = maxRPM;
         this.targetAFR = targetAFR;
-        this.afrError = afrError; 
-        
+        this.afrError = afrError;
+        this.injectorTimeColorMap = 0;
+
         //Initializes table application
         initTableModel(maxRPM, 100);
         initComponents();
-        
+
         //Populates table with passed in data
         updateTables();
-        populateFuelMap();
+        populateTable(afrAvgTable);
     }
 
     /**
@@ -173,12 +183,17 @@ public class LambdaMap extends javax.swing.JFrame {
         };
     }
 
-    //Squeezes a large range into a defined range
+    /**
+     * Squeezes a large range into a defined range
+     */
     private int squeeze(double value, int min, int max, int floor, int ceil) {
         return (int) Math.floor(((ceil - floor) * (value - min) * 1.0) / (max - min) + floor);
     }
 
-    //A linear function (The same as squeeze) to expand the data into its proper range
+    /**
+     * A linear function (The same as squeeze) to expand the data into its
+     * proper range
+     */
     private double afr(double lambda) {
         return ((20 - 10) * (lambda - MIN_LAMBDA) * 1.0) / (MAX_LAMBDA - MIN_LAMBDA) + 10;
     }
@@ -260,12 +275,11 @@ public class LambdaMap extends javax.swing.JFrame {
         }
     }
 
-    //populates each cell of the fuel map
-    private void populateFuelMap() {
-        populateTable(afrAvgTable);
-        //highlightCells(targetAFR, afrError);
-    }
-
+    /**
+     * Populates each cell of the jTable given a fuel map
+     *
+     * @param toSet the fuel map that populate the JTable
+     */
     private void populateTable(double[][] toSet) {
         for (int y = 0; y < table.getColumnCount() - 1; y++) {
             for (int x = 0; x < table.getRowCount(); x++) {
@@ -277,48 +291,74 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
     }
-    
-    public Color getColorVal(Object valO, double targetAFR, double afrError){
-        double val = Double.valueOf(valO.toString());
+
+    /**
+     * Returns a color on the gradient from blue to green to red for a given a
+     * cell value based on how far the cell value is from the target value
+     *
+     * @param val The value of the cell
+     * @param targetAFR The target value of the fuel map
+     * @param afrError The allowed error for the target value
+     * @return A color value based on how far the cell value is from the target
+     */
+    private Color getColorVal(double val, double targetAFR, double afrError) {
+        //The saturation and brightness values need for the color format HSB
         float saturation = 0.85f;
         float brightness = 0.75f;
-        double min = 2.5;
-        double max = 2.5;
-        if(val == 0){
+
+        //The amount of units from the target+-error until the color max's out
+        double upperBuffer = 2.5;
+        double lowerBuffer = 2.5;
+
+        //Check if value is equal to zero or max double value
+        if (val == 0 || val == Double.MAX_VALUE) {
+            //Returns light gray
             return Color.LIGHT_GRAY;
-        }
-        else if(val > targetAFR-afrError && val < targetAFR+afrError){
-            return Color.getHSBColor(0.35f, saturation, brightness+0.05f);
-        }
-        else if (val > targetAFR+afrError){
-            double offset = ((val-(targetAFR+afrError))/max);
-            if(offset > 1 ){
-                offset = 1;
+        //Check if value is within the target interval
+        } else if (val >= targetAFR - afrError && val <= targetAFR + afrError) {
+            //Returns a shade of green
+            return Color.getHSBColor(0.35f, saturation, brightness + 0.07f);
+        //Check if value is above the target interval
+        } else if (val > targetAFR + afrError) {
+            //Contains the percentage from target interval to upper buffer
+            double offsetPerc = ((val - (targetAFR + afrError)) / upperBuffer);
+            //If offset percentage is larger than one set it to one
+            if (offsetPerc > 1) {
+                offsetPerc = 1;
             }
-            return Color.getHSBColor(0.29f - (0.29f * (float)offset), saturation, brightness);
-        }
-        else{
-            double offset = (((targetAFR-afrError)-val)/min);
-            if(offset > 1){
-                offset = 1;
+            //Returns a shade of red
+            return Color.getHSBColor(0.25f - (0.25f * (float) offsetPerc), saturation, brightness);
+        //Values below the target interval
+        } else {
+            //Contains the percentage from target interval to lower buffer
+            double offsetPerc = (((targetAFR - afrError) - val) / lowerBuffer);
+            //If offset percentage is larger than one set it to one
+            if (offsetPerc > 1) {
+                offsetPerc = 1;
             }
-            return Color.getHSBColor(0.41f + (0.215f * (float)offset), saturation, brightness);
+            //Returns a shade of blue
+            return Color.getHSBColor(0.45f + (0.18f * (float) offsetPerc), saturation, brightness);
         }
     }
     
-    // Colors each cell of fuel map red if value is withing a range of allowable error (which is chosen by the user) away from desired value
-    public void highlightCells(double desiredValue, double allowableError) {
-        double maxLim = (desiredValue + allowableError);
-        double minLim = (desiredValue - allowableError);
-        for (int y = 0; y < table.getColumnCount() - 1; y++) {
-            for (int x = 0; x < table.getRowCount(); x++) {
-                double cellValue = Double.valueOf(table.getValueAt(x, y).toString());
-                if (cellValue > maxLim) {
-                    jTable.getCellRenderer(x, y + 1).getTableCellRendererComponent(jTable, table.getValueAt(x, y + 1), false, false, x, y + 1).setBackground(Color.red);
-                } else if (cellValue < minLim) {
-                    jTable.getCellRenderer(x, y + 1).getTableCellRendererComponent(jTable, table.getValueAt(x, y + 1), false, false, x, y + 1).setBackground(Color.red);
-                }
-            }
+    /**
+     * Returns a color on the gradient from blue to green to red for the target
+     * AFR map based on the selected average, max, or min lambda map
+     * 
+     * @param col The column index of the cell
+     * @param row The row index of the cell
+     * @param targetAFR The target AFR value of the fuel map
+     * @param afrError The allowed error for the target value
+     * @return A color value based on the selected average, max, or min lambda map
+     */
+    private Color getInjectorColorVal(int col, int row, double targetAFR, double afrError) {      
+        switch (injectorTimeColorMap) {
+            case 0:
+                return getColorVal(afrAvgTable[col - 1][row], targetAFR, afrError);
+            case 1:
+                return getColorVal(afrMaxTable[col - 1][row], targetAFR, afrError);
+            default:
+                return getColorVal(afrMinTable[col - 1][row], targetAFR, afrError);
         }
     }
 
@@ -345,9 +385,15 @@ public class LambdaMap extends javax.swing.JFrame {
                 {
                     return this.getTableHeader().getDefaultRenderer()
                     .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);
-                } else
+                }
+                else if (isInjectorView)
                 {
-                    component.setBackground(getColorVal(this.getValueAt(row, col), targetAFR, afrError));
+                    component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));
+                    return component;
+                }
+                else
+                {
+                    component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));
                     return component;
                     //return super.prepareRenderer(renderer, row, col);
                 }
@@ -355,18 +401,18 @@ public class LambdaMap extends javax.swing.JFrame {
         };
         RPMLabel = new javax.swing.JLabel();
         TPSLabel = new javax.swing.JLabel();
+        currentViewLabel = new javax.swing.JLabel();
         jMenuBar = new javax.swing.JMenuBar();
         tableMenu = new javax.swing.JMenu();
         tableSettingsMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         showLambdaAverageMenuItem = new javax.swing.JMenuItem();
-        showLambdaMinMenuItem = new javax.swing.JMenuItem();
         showLambdaMaxMenuItem = new javax.swing.JMenuItem();
+        showLambdaMinMenuItem = new javax.swing.JMenuItem();
         showInjectorTimesMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1350, 682));
-        setPreferredSize(new java.awt.Dimension(1350, 682));
 
         //Renders the row headers
         final JTableHeader header = jTable.getTableHeader();
@@ -383,7 +429,6 @@ public class LambdaMap extends javax.swing.JFrame {
         jTable.setShowVerticalLines(true);
         jTable.setShowHorizontalLines(true);
         jTable.setGridColor(Color.GRAY);
-        jTable.setCellSelectionEnabled(true);
         jTable.setRowHeight(22);
         jTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane.setViewportView(jTable);
@@ -391,6 +436,8 @@ public class LambdaMap extends javax.swing.JFrame {
         RPMLabel.setText("RPM");
 
         TPSLabel.setText("TPS");
+
+        currentViewLabel.setText("Current View: Average Lambda Map");
 
         tableMenu.setText("Table");
 
@@ -414,14 +461,6 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showLambdaAverageMenuItem);
 
-        showLambdaMinMenuItem.setText("Lambda Min");
-        showLambdaMinMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showLambdaMinMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(showLambdaMinMenuItem);
-
         showLambdaMaxMenuItem.setText("Lambda Max");
         showLambdaMaxMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -429,6 +468,14 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         });
         viewMenu.add(showLambdaMaxMenuItem);
+
+        showLambdaMinMenuItem.setText("Lambda Min");
+        showLambdaMinMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaMinMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showLambdaMinMenuItem);
 
         showInjectorTimesMenuItem.setText("Injector Times");
         showInjectorTimesMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -455,9 +502,13 @@ public class LambdaMap extends javax.swing.JFrame {
                         .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(RPMLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(currentViewLabel)
+                        .addGap(5, 5, 5)))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(RPMLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -466,46 +517,60 @@ public class LambdaMap extends javax.swing.JFrame {
                 .addComponent(RPMLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(TPSLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(currentViewLabel))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void showLambdaAverageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaAverageMenuItemActionPerformed
+        isInjectorView = false;
+        currentLambdaMap = 0;
+        currentViewLabel.setText("Current View: Average Lambda Map");
         populateTable(afrAvgTable);
     }//GEN-LAST:event_showLambdaAverageMenuItemActionPerformed
 
     private void showLambdaMinMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMinMenuItemActionPerformed
+        isInjectorView = false;
+        currentLambdaMap = 2;
+        currentViewLabel.setText("Current View: Minimum Lambda Map");
         populateTable(afrMinTable);
     }//GEN-LAST:event_showLambdaMinMenuItemActionPerformed
 
     private void showLambdaMaxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMaxMenuItemActionPerformed
+        isInjectorView = false;
+        currentLambdaMap = 1;
+        currentViewLabel.setText("Current View: Maximum Lambda Map");
         populateTable(afrMaxTable);
     }//GEN-LAST:event_showLambdaMaxMenuItemActionPerformed
 
     private void showInjectorTimesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInjectorTimesMenuItemActionPerformed
+        isInjectorView = true;
+        currentLambdaMap = 3;
+        currentViewLabel.setText("Current View: Injector Timing Map");
         populateTable(injectorTimingTable);
     }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
         //Creates a lambda map settings dialog box
-        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError);
+        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap);
         settings.setVisible(true);
-        
+
         //Sets table setting values equal to user updated dialog setting values
         this.maxRPM = settings.getMaxRPM().get();
         this.targetAFR = settings.getTargetAFR().get();
         this.afrError = settings.getAcceptedError().get();
-        
+        this.injectorTimeColorMap = settings.getInjectorTimeColorMap().get();
+
         //Initializes new table model with new max RPM
         initTableModel(maxRPM, 100);
-        
+
         //Links updated table model to JTable
         jTable.setModel(table);
 
@@ -515,10 +580,24 @@ public class LambdaMap extends javax.swing.JFrame {
         for (int i = 0; i < jTable.getModel().getColumnCount(); i++) {
             jTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
-        
-        //Populates table with passed in data
+
+        //Updates all tables with new settings
         this.updateTables();
-        this.populateFuelMap();
+        
+        //Populates table with previously displayed lambda table
+        switch(currentLambdaMap){
+            case 0:
+                this.populateTable(afrAvgTable);
+                break;
+            case 1:
+                this.populateTable(afrMaxTable);
+                break;
+            case 2:
+                this.populateTable(afrMinTable);
+                break;
+            default:
+                this.populateTable(injectorTimingTable);
+        }
     }//GEN-LAST:event_lambdaMapSettingsCalled
 
     /**
@@ -559,6 +638,7 @@ public class LambdaMap extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel RPMLabel;
     private javax.swing.JLabel TPSLabel;
+    private javax.swing.JLabel currentViewLabel;
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JTable jTable;

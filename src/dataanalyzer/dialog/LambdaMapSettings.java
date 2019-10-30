@@ -10,22 +10,26 @@ import dataanalyzer.Referencer;
 
 /**
  * @author Morgan
- * @author aribdhuka
+ * @author Peter
+ * @author Preston
+ * @author Dante
  */
 public class LambdaMapSettings extends javax.swing.JDialog {
 
     private static int maxRPM;
     private static double targetAFR;
     private static double acceptedError;
+    private static int injectorTimeColorMap;
 
     /**
      * Creates new form LambdaMapSettings
      */
-    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError) {
+    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError, int injectorTimeColorMap) {
         super(parent, modal);
         this.maxRPM = maxRPM;
         this.targetAFR = targetAFR;
         this.acceptedError = acceptedError;
+        this.injectorTimeColorMap = injectorTimeColorMap;
         initComponents();
     }
 
@@ -45,7 +49,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         afrErrorLabel = new javax.swing.JLabel();
         afrOffsetField = new javax.swing.JTextField();
         cancelButton = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        applyButton = new javax.swing.JButton();
+        injectorTimeLabel = new javax.swing.JLabel();
+        injectorTimeComboBox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -71,12 +77,17 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             }
         });
 
-        jButton2.setText("Apply");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        applyButton.setText("Apply");
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 settingsApplied(evt);
             }
         });
+
+        injectorTimeLabel.setText("Injector Time Color Map");
+
+        injectorTimeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Lambda Average", "Lambda Max", "Lambda Min"}));
+        injectorTimeComboBox.setSelectedIndex(injectorTimeColorMap);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -85,17 +96,19 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(cancelButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
-                        .addComponent(jButton2))
+                    .addComponent(injectorTimeLabel)
                     .addComponent(afrErrorLabel)
                     .addComponent(targetAFRLabel)
                     .addComponent(maxRPMLabel)
                     .addComponent(maxRpmField)
                     .addComponent(targetAfrField)
-                    .addComponent(afrOffsetField))
-                .addContainerGap(27, Short.MAX_VALUE))
+                    .addComponent(afrOffsetField)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(cancelButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                        .addComponent(applyButton))
+                    .addComponent(injectorTimeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -104,18 +117,22 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addComponent(maxRPMLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(maxRpmField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(targetAFRLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(targetAFRLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(targetAfrField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(afrErrorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(afrOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(injectorTimeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(injectorTimeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
-                    .addComponent(jButton2))
+                    .addComponent(applyButton))
                 .addContainerGap())
         );
 
@@ -143,7 +160,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             
             acceptedError = Double.parseDouble(afrOffsetField.getText());
             acceptedError = Math.abs(acceptedError);
-            this.dispose();
+            
+            injectorTimeColorMap = injectorTimeComboBox.getSelectedIndex();
+            
+            close();
         }
         //displays a message box with an error when exceptions are thrown
         catch (NumberFormatException e) {
@@ -162,7 +182,11 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     public Referencer<Double> getAcceptedError() {
         return new Referencer(acceptedError);
     }
-
+    
+    public Referencer<Integer> getInjectorTimeColorMap(){
+        return new Referencer(injectorTimeColorMap);
+    }
+    
     public void close() {
         this.dispose();
     }
@@ -197,7 +221,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError);
+                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError, injectorTimeColorMap);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -212,8 +236,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel afrErrorLabel;
     private javax.swing.JTextField afrOffsetField;
+    private javax.swing.JButton applyButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> injectorTimeComboBox;
+    private javax.swing.JLabel injectorTimeLabel;
     private javax.swing.JLabel maxRPMLabel;
     private javax.swing.JTextField maxRpmField;
     private javax.swing.JLabel targetAFRLabel;
