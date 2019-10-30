@@ -155,12 +155,12 @@ public class LambdaMap extends javax.swing.JFrame {
         //Initializes row headers based on parameter values
         for (int i = 0; i < rowSize - 1; i++) {
             if (rowLimit % (rowSize - 1) == 0) {
-                dataTable[i][0] = (rowLimit / (rowSize + 1)) * (i + 1);
+                dataTable[rowSize - 1 - i][0] = (rowLimit / (rowSize + 1)) * (i + 1);
             } else {
-                dataTable[i][0] = (rowLimit / (rowSize)) * (i + 1);
+                dataTable[rowSize - 1 - i][0] = (rowLimit / (rowSize)) * (i + 1);
             }
         }
-        dataTable[rowSize - 1][0] = rowLimit;
+        dataTable[0][0] = rowLimit;
 
         //Initializes column headers based on parameter values
         columnHeader[0] = "";
@@ -281,12 +281,15 @@ public class LambdaMap extends javax.swing.JFrame {
      * @param toSet the fuel map that populate the JTable
      */
     private void populateTable(double[][] toSet) {
+        //Loops through jTable and inputed 2D array
         for (int y = 0; y < table.getColumnCount() - 1; y++) {
             for (int x = 0; x < table.getRowCount(); x++) {
                 double dec = 0;
+                //Updates dec if the reference array's cell value is not 0 or Max_Value
                 if (toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE) {
                     dec = toSet[y][x];
                 }
+                //Sets jTable's cell vaule equal to the formatted array cell value
                 table.setValueAt(afrFormat.format(dec), x, y + 1);
             }
         }
@@ -312,7 +315,6 @@ public class LambdaMap extends javax.swing.JFrame {
 
         //Check if value is equal to zero or max double value
         if (val == 0 || val == Double.MAX_VALUE) {
-            //Returns light gray
             return Color.LIGHT_GRAY;
         //Check if value is within the target interval
         } else if (val >= targetAFR - afrError && val <= targetAFR + afrError) {
@@ -402,6 +404,7 @@ public class LambdaMap extends javax.swing.JFrame {
         RPMLabel = new javax.swing.JLabel();
         TPSLabel = new javax.swing.JLabel();
         currentViewLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
         jMenuBar = new javax.swing.JMenuBar();
         tableMenu = new javax.swing.JMenu();
         tableSettingsMenuItem = new javax.swing.JMenuItem();
@@ -412,7 +415,8 @@ public class LambdaMap extends javax.swing.JFrame {
         showInjectorTimesMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1350, 682));
+        setMinimumSize(new java.awt.Dimension(1350, 780));
+        setPreferredSize(new java.awt.Dimension(1350, 780));
 
         //Renders the row headers
         final JTableHeader header = jTable.getTableHeader();
@@ -429,7 +433,8 @@ public class LambdaMap extends javax.swing.JFrame {
         jTable.setShowVerticalLines(true);
         jTable.setShowHorizontalLines(true);
         jTable.setGridColor(Color.GRAY);
-        jTable.setRowHeight(22);
+        jTable.setRowHeight(25);
+        jTable.setRowSelectionAllowed(false);
         jTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane.setViewportView(jTable);
 
@@ -438,6 +443,8 @@ public class LambdaMap extends javax.swing.JFrame {
         TPSLabel.setText("TPS");
 
         currentViewLabel.setText("Current View: Average Lambda Map");
+
+        jLabel1.setText("<html><font color='red'>■</font> Above Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='green'>■</font> At Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='blue'>■</font> Below Target</html>");
 
         tableMenu.setText("Table");
 
@@ -453,7 +460,7 @@ public class LambdaMap extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        showLambdaAverageMenuItem.setText("Lambda Average");
+        showLambdaAverageMenuItem.setText("Average Lambda");
         showLambdaAverageMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showLambdaAverageMenuItemActionPerformed(evt);
@@ -461,7 +468,7 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showLambdaAverageMenuItem);
 
-        showLambdaMaxMenuItem.setText("Lambda Max");
+        showLambdaMaxMenuItem.setText("Maximum Lambda");
         showLambdaMaxMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showLambdaMaxMenuItemActionPerformed(evt);
@@ -469,7 +476,7 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showLambdaMaxMenuItem);
 
-        showLambdaMinMenuItem.setText("Lambda Min");
+        showLambdaMinMenuItem.setText("Minimum Lambda");
         showLambdaMinMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showLambdaMinMenuItemActionPerformed(evt);
@@ -477,7 +484,7 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showLambdaMinMenuItem);
 
-        showInjectorTimesMenuItem.setText("Injector Times");
+        showInjectorTimesMenuItem.setText("Injector Time");
         showInjectorTimesMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showInjectorTimesMenuItemActionPerformed(evt);
@@ -494,36 +501,39 @@ public class LambdaMap extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(7, 7, 7)
-                        .addComponent(TPSLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(currentViewLabel)
-                        .addGap(5, 5, 5)))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(RPMLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(7, 7, 7)
+                .addComponent(TPSLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(60, 60, 60)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 438, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(currentViewLabel)
+                .addGap(15, 15, 15))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(RPMLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(TPSLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(currentViewLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(325, 325, 325)
+                        .addComponent(TPSLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 653, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(currentViewLabel)
+                            .addComponent(jLabel1))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -639,6 +649,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private javax.swing.JLabel RPMLabel;
     private javax.swing.JLabel TPSLabel;
     private javax.swing.JLabel currentViewLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JTable jTable;
