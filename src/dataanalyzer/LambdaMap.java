@@ -444,7 +444,7 @@ public class LambdaMap extends javax.swing.JFrame {
 
         currentViewLabel.setText("Current View: Average Lambda Map");
 
-        jLabel1.setText("<html><font color='red'>■</font> Above Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='green'>■</font> At Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='blue'>■</font> Below Target</html>");
+        jLabel1.setText("<html><font color='#d11f1f'>■</font> Above Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#1fd131'>■</font> At Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#1f46d1'>■</font> Below Target</html>");
 
         tableMenu.setText("Table");
 

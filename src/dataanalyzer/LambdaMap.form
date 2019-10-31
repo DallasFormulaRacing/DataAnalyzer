@@ -184,7 +184,7 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="&quot;&lt;html&gt;&lt;font color=&apos;red&apos;&gt;&#x25a0;&lt;/font&gt; Above Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;green&apos;&gt;&#x25a0;&lt;/font&gt; At Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;blue&apos;&gt;&#x25a0;&lt;/font&gt; Below Target&lt;/html&gt;&quot;" type="code"/>
+          <Connection code="&quot;&lt;html&gt;&lt;font color=&apos;#d11f1f&apos;&gt;&#x25a0;&lt;/font&gt; Above Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1fd131&apos;&gt;&#x25a0;&lt;/font&gt; At Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1f46d1&apos;&gt;&#x25a0;&lt;/font&gt; Below Target&lt;/html&gt;&quot;" type="code"/>
         </Property>
       </Properties>
     </Component>
