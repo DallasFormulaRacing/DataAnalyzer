@@ -286,8 +286,8 @@ public class LambdaMap extends javax.swing.JFrame {
             for (int x = 0; x < table.getRowCount(); x++) {
                 double dec = 0;
                 //Updates dec if the reference array's cell value is not 0 or Max_Value
-                if (toSet[y][x] != 0 && toSet[y][x] != Double.MAX_VALUE) {
-                    dec = toSet[y][x];
+                if (toSet[y][table.getRowCount() - 1 - x] != 0 && toSet[y][table.getRowCount() - 1 - x] != Double.MAX_VALUE) {
+                    dec = toSet[y][table.getRowCount() - 1 - x];
                 }
                 //Sets jTable's cell vaule equal to the formatted array cell value
                 table.setValueAt(afrFormat.format(dec), x, y + 1);
@@ -356,11 +356,11 @@ public class LambdaMap extends javax.swing.JFrame {
     private Color getInjectorColorVal(int col, int row, double targetAFR, double afrError) {      
         switch (injectorTimeColorMap) {
             case 0:
-                return getColorVal(afrAvgTable[col - 1][row], targetAFR, afrError);
+                return getColorVal(afrAvgTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
             case 1:
-                return getColorVal(afrMaxTable[col - 1][row], targetAFR, afrError);
+                return getColorVal(afrMaxTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
             default:
-                return getColorVal(afrMinTable[col - 1][row], targetAFR, afrError);
+                return getColorVal(afrMinTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
         }
     }
 
