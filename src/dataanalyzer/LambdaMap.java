@@ -41,10 +41,10 @@ public class LambdaMap extends javax.swing.JFrame {
     //Decimal Formats for rendering floating point integers in the table
     DecimalFormat afrFormat = new DecimalFormat("##.##");
 
-    //Contains the amount of columns + 1 for the row headers
-    private final int columnSize = 24 + 1;
+    //Contains the amount of columns counting the row headers
+    private final int columnSize = 25;
 
-    //Containts the amount of rows
+    //Containts the amount of rows not counting the column headers
     private final int rowSize = 25;
 
     //Setting values for JTable
@@ -53,11 +53,8 @@ public class LambdaMap extends javax.swing.JFrame {
     private double afrError;
     private int injectorTimeColorMap;
 
-    //Containts whether the JTable is displaying the injector times
-    private boolean isInjectorView;
-    
-    //Contains which current lambda map (avg=0, max=1, min=2)
-    private int currentLambdaMap;
+    //Contains the current lambda view (avg=0, max=1, min=2, injector=3)
+    private int currentLambdaView;
 
     //Lambda constant values
     private static final double MIN_LAMBDA = 0.68;
@@ -137,12 +134,12 @@ public class LambdaMap extends javax.swing.JFrame {
      * @param columnLimit The last/largest value in the column header sequence
      * @param rowLimit The last/largest value in the row header sequence
      */
-    public void initTableModel(int columnLimit, int rowLimit) {
+    private void initTableModel(int columnLimit, int rowLimit) {
         //Creates 2D array for table model need for the JTable
         //Note: First column contains row headers, not table data
         Object[][] dataTable = new Object[rowSize][columnSize];
 
-        //Creates 2D array for just the column headers
+        //Creates array just for the column headers
         Object columnHeader[] = new Object[columnSize];
 
         //Initializes all table data to zero
@@ -152,7 +149,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
 
-        //Initializes row headers based on parameter values
+        //Initializes row headers based on the passed rowLimit value
         for (int i = 0; i < rowSize - 1; i++) {
             if (rowLimit % (rowSize - 1) == 0) {
                 dataTable[rowSize - 1 - i][0] = (rowLimit / (rowSize + 1)) * (i + 1);
@@ -162,7 +159,7 @@ public class LambdaMap extends javax.swing.JFrame {
         }
         dataTable[0][0] = rowLimit;
 
-        //Initializes column headers based on parameter values
+        //Initializes column headers based on the passed colLimit value
         columnHeader[0] = "";
         for (int i = 1; i < columnSize - 1; i++) {
             if (columnLimit % (columnSize - 2) == 0) {
@@ -276,16 +273,16 @@ public class LambdaMap extends javax.swing.JFrame {
     }
 
     /**
-     * Populates each cell of the jTable given a fuel map
+     * Populates each cell of the jTable with given fuel map
      *
-     * @param toSet the fuel map that populate the JTable
+     * @param toSet the fuel map that will populate the JTable
      */
     private void populateTable(double[][] toSet) {
-        //Loops through jTable and inputed 2D array
+        //Loops through jTable and passed in 2D array
         for (int y = 0; y < table.getColumnCount() - 1; y++) {
             for (int x = 0; x < table.getRowCount(); x++) {
                 double dec = 0;
-                //Updates dec if the reference array's cell value is not 0 or Max_Value
+                //Updates dec if the reference array's cell value is not 0 or Double.Max_Value
                 if (toSet[y][table.getRowCount() - 1 - x] != 0 && toSet[y][table.getRowCount() - 1 - x] != Double.MAX_VALUE) {
                     dec = toSet[y][table.getRowCount() - 1 - x];
                 }
@@ -313,14 +310,14 @@ public class LambdaMap extends javax.swing.JFrame {
         double upperBuffer = 2.5;
         double lowerBuffer = 2.5;
 
-        //Check if value is equal to zero or max double value
+        //Checks if value is equal to zero or Double.MAX_VALUE
         if (val == 0 || val == Double.MAX_VALUE) {
             return Color.LIGHT_GRAY;
-        //Check if value is within the target interval
+        //Checks if value is within the target interval
         } else if (val >= targetAFR - afrError && val <= targetAFR + afrError) {
             //Returns a shade of green
             return Color.getHSBColor(0.35f, saturation, brightness + 0.07f);
-        //Check if value is above the target interval
+        //Checks if value is above the target interval
         } else if (val > targetAFR + afrError) {
             //Contains the percentage from target interval to upper buffer
             double offsetPerc = ((val - (targetAFR + afrError)) / upperBuffer);
@@ -330,7 +327,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
             //Returns a shade of red
             return Color.getHSBColor(0.25f - (0.25f * (float) offsetPerc), saturation, brightness);
-        //Values below the target interval
+        //Last case, value's below the target interval
         } else {
             //Contains the percentage from target interval to lower buffer
             double offsetPerc = (((targetAFR - afrError) - val) / lowerBuffer);
@@ -342,24 +339,24 @@ public class LambdaMap extends javax.swing.JFrame {
             return Color.getHSBColor(0.45f + (0.18f * (float) offsetPerc), saturation, brightness);
         }
     }
-    
+
     /**
      * Returns a color on the gradient from blue to green to red for the target
-     * AFR map based on the selected average, max, or min lambda map
-     * 
+     * AFR map based on the current lambda view (average, max or min)
+     *
      * @param col The column index of the cell
      * @param row The row index of the cell
      * @param targetAFR The target AFR value of the fuel map
      * @param afrError The allowed error for the target value
      * @return A color value based on the selected average, max, or min lambda map
      */
-    private Color getInjectorColorVal(int col, int row, double targetAFR, double afrError) {      
+    private Color getInjectorColorVal(int col, int row, double targetAFR, double afrError) {
         switch (injectorTimeColorMap) {
-            case 0:
+            case 0: //Average lambda view
                 return getColorVal(afrAvgTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
-            case 1:
+            case 1: //Maximum lambda view
                 return getColorVal(afrMaxTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
-            default:
+            default: //Minimum lambda view
                 return getColorVal(afrMinTable[col - 1][table.getRowCount() - 1 - row], targetAFR, afrError);
         }
     }
@@ -379,25 +376,18 @@ public class LambdaMap extends javax.swing.JFrame {
         {
             //Overrides prepareRenderer so that the jTable can be formated
             @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int row, int col)
-            {
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
                 Component component = super.prepareRenderer(renderer, row, col);
 
-                if (col == 0)
-                {
+                if (col == 0) {
                     return this.getTableHeader().getDefaultRenderer()
                     .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);
-                }
-                else if (isInjectorView)
-                {
+                } else if (currentLambdaView == 3) {
                     component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));
                     return component;
-                }
-                else
-                {
+                } else {
                     component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));
                     return component;
-                    //return super.prepareRenderer(renderer, row, col);
                 }
             }
         };
@@ -416,7 +406,6 @@ public class LambdaMap extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1350, 780));
-        setPreferredSize(new java.awt.Dimension(1350, 780));
 
         //Renders the row headers
         final JTableHeader header = jTable.getTableHeader();
@@ -427,9 +416,11 @@ public class LambdaMap extends javax.swing.JFrame {
         //Centers all of the cells in the data table
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment( JLabel.CENTER );
-        for(int i = 0; i < jTable.getModel().getColumnCount(); i++){
+        for(int i = 0; i < jTable.getModel().getColumnCount(); i++) {
             jTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
+
+        //Adjusts the jTables defalut settings
         jTable.setShowVerticalLines(true);
         jTable.setShowHorizontalLines(true);
         jTable.setGridColor(Color.GRAY);
@@ -540,29 +531,25 @@ public class LambdaMap extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void showLambdaAverageMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaAverageMenuItemActionPerformed
-        isInjectorView = false;
-        currentLambdaMap = 0;
+        currentLambdaView = 0;
         currentViewLabel.setText("Current View: Average Lambda Map");
         populateTable(afrAvgTable);
     }//GEN-LAST:event_showLambdaAverageMenuItemActionPerformed
 
     private void showLambdaMinMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMinMenuItemActionPerformed
-        isInjectorView = false;
-        currentLambdaMap = 2;
+        currentLambdaView = 2;
         currentViewLabel.setText("Current View: Minimum Lambda Map");
         populateTable(afrMinTable);
     }//GEN-LAST:event_showLambdaMinMenuItemActionPerformed
 
     private void showLambdaMaxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMaxMenuItemActionPerformed
-        isInjectorView = false;
-        currentLambdaMap = 1;
+        currentLambdaView = 1;
         currentViewLabel.setText("Current View: Maximum Lambda Map");
         populateTable(afrMaxTable);
     }//GEN-LAST:event_showLambdaMaxMenuItemActionPerformed
 
     private void showInjectorTimesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInjectorTimesMenuItemActionPerformed
-        isInjectorView = true;
-        currentLambdaMap = 3;
+        currentLambdaView = 3;
         currentViewLabel.setText("Current View: Injector Timing Map");
         populateTable(injectorTimingTable);
     }//GEN-LAST:event_showInjectorTimesMenuItemActionPerformed
@@ -592,20 +579,20 @@ public class LambdaMap extends javax.swing.JFrame {
         }
 
         //Updates all tables with new settings
-        this.updateTables();
-        
+        updateTables();
+
         //Populates table with previously displayed lambda table
-        switch(currentLambdaMap){
-            case 0:
+        switch (currentLambdaView) {
+            case 0: //Average lambda view
                 this.populateTable(afrAvgTable);
                 break;
-            case 1:
+            case 1: //Maximum lambda view
                 this.populateTable(afrMaxTable);
                 break;
-            case 2:
+            case 2: //Minimum labda view
                 this.populateTable(afrMinTable);
                 break;
-            default:
+            default: //Injecotr time view
                 this.populateTable(injectorTimingTable);
         }
     }//GEN-LAST:event_lambdaMapSettingsCalled
@@ -664,8 +651,8 @@ public class LambdaMap extends javax.swing.JFrame {
 }
 
 /**
- * Table header renderer class for row headers (since row headers aren't
- * natively supported by jTable)
+ * Table header renderer class for formatting row headers (since row headers are
+ * not natively supported by jTable)
  */
 class HeaderRenderer implements TableCellRenderer {
 

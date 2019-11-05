@@ -54,6 +54,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         injectorTimeComboBox = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setFocusCycleRoot(false);
+        setMaximumSize(new java.awt.Dimension(260, 340));
+        setMinimumSize(new java.awt.Dimension(260, 340));
 
         maxRPMLabel.setText("Max RPM");
 
@@ -142,21 +145,21 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        this.dispose();
+        close();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void settingsApplied(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsApplied
         //checks for valid data in table settings
         try {
-            maxRPM = Integer.parseInt(maxRpmField.getText());
-            if (maxRPM <= 25) {
+            if (Integer.parseInt(maxRpmField.getText()) < 25) {
                 throw new NumberFormatException("Max RPM is less than 25!");
             }
+            maxRPM = Integer.parseInt(maxRpmField.getText());
             
-            targetAFR = Double.parseDouble(targetAfrField.getText());
-            if (targetAFR <= 10 || targetAFR >= 21) {
+            if (Double.parseDouble(targetAfrField.getText()) < 10 || Double.parseDouble(targetAfrField.getText()) > 21) {
                 throw new NumberFormatException("Target AFR must be between 10 and 21 (inclusive)!");
             }
+            targetAFR = Double.parseDouble(targetAfrField.getText());
             
             acceptedError = Double.parseDouble(afrOffsetField.getText());
             acceptedError = Math.abs(acceptedError);
