@@ -6,7 +6,7 @@
 package dataanalyzer;
 
 /**
- *
+ * equations used on raw data for graphing
  * @author aribdhuka
  */
 public class FunctionOfLogObject extends SimpleLogObject {

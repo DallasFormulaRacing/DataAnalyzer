@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
- *
+ * This is breaking down the data into laps for ease of use
  * @author aribdhuka
  */
 public class Lap {

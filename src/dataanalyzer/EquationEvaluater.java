@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Stack;
 
 /**
- *
+ * equations used on raw data for graphing
  * @author aribdhuka
  */
 public class EquationEvaluater {

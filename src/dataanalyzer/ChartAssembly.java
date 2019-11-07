@@ -1454,9 +1454,6 @@ public class ChartAssembly implements ChartMouseListener {
                 for( int i = 0; i < N; i++ ) {
                     ValueAxis rAxis = plot.getRangeAxis(i);
                     RectangleEdge rAxisEdge = plot.getRangeAxisEdge(i);
-    //                for( Crosshair c : shadowR ) {
-    //                    
-    //                }
                     Crosshair c = shadowR.get(i);
                     if( !c.isVisible() )
                         continue;

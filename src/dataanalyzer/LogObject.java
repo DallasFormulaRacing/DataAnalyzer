@@ -8,7 +8,7 @@ package dataanalyzer;
 import java.util.ArrayList;
 
 /**
- *
+ * 
  * @author aribdhuka
  */
 public abstract class LogObject implements Comparable {
