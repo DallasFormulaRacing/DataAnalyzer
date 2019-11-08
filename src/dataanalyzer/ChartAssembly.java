@@ -558,28 +558,44 @@ public class ChartAssembly implements ChartMouseListener {
         ((JMenuItem) chartFrame.getJMenuBar().getComponent(1)).setText("Histogram");
     }
     
+    /**
+     * Creates a custom histogram that uses a interval dataset
+     * @param title Title of the graph
+     * @param xAxisLabel label for x axis
+     * @param yAxisLabel label for y axis
+     * @param dataset The Interval dataset
+     * @param orientation orientation of the graph
+     * @param legend show legend
+     * @param tooltips show tooltips
+     * @param urls show urls
+     * @return JFreeChart object with data parameters
+     */
     public static JFreeChart createMyHistogram(String title,
             String xAxisLabel, String yAxisLabel, IntervalXYDataset dataset,
             PlotOrientation orientation, boolean legend, boolean tooltips,
             boolean urls) {
 
+        //ensure an orientation is given
         Args.nullNotPermitted(orientation, "orientation");
+        //apply labels
         NumberAxis xAxis = new NumberAxis(xAxisLabel);
         xAxis.setAutoRangeIncludesZero(false);
         ValueAxis yAxis = new NumberAxis(yAxisLabel);
 
+        //create the item renderer
         XYItemRenderer renderer = new XYBarRenderer(-10);
         if (urls) {
             renderer.setURLGenerator(new StandardXYURLGenerator());
         }
 
+        //create the plot
         XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
         plot.setOrientation(orientation);
         plot.setDomainZeroBaselineVisible(true);
         plot.setRangeZeroBaselineVisible(true);
+        //create the chart
         JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
                 plot, legend);
-        System.out.println(((XYBarRenderer) renderer).getMargin());
         return chart;
 
     }
@@ -600,20 +616,8 @@ public class ChartAssembly implements ChartMouseListener {
         // Gets the dependent variable from the title of the data
         String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
         
-        //create histogram
-//        JFreeChart chart = ChartFactory.createHistogram(
-//                title,
-//                xAxis,
-//                yAxis,
-//                data,
-//                PlotOrientation.VERTICAL,
-//                true,
-//                true,
-//                false
-//        );
-        
+        //creates a custom histogram
         JFreeChart chart = createMyHistogram(title, xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
-        
 
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
