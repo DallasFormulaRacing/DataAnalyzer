@@ -1211,11 +1211,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
         Referencer<String> ref = new Referencer<>(name);
         new FileNameDialog(this, true, ref).setVisible(true);
         name = ref.get();
+        if(!name.equals("!#@$NONAME")) {
+            try {
+                ChartConfiguration.saveChartConfiguration(name, chartManager.getCharts(), this, chartManager);
+            } catch (IOException ex) {
+                Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+            }
+        }
+        //remove all past
+        while(chartMenu.getMenuComponentCount() > 6)
+            chartMenu.remove(chartMenu.getMenuComponent(6));
+            
+        //resetup
         try {
-            //TODO:pass filename
-            ChartConfiguration.saveChartConfiguration(name, chartManager.getCharts(), this, chartManager);
-        } catch (IOException ex) {
-            Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+            setupChartConfigurationsMenu();
+        } catch (IOException e) {
+            Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
         }
     }//GEN-LAST:event_saveCurrentChartSetupMenuItemActionPerformed
   
