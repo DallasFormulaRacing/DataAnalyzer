@@ -55,6 +55,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     ChartManager chartManager;
     
     private String fileNotes;
+    
+    private int staticChartMenuItemCount;
 
     public DataAnalyzer() {
         initComponents();
@@ -115,6 +117,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
             }
         });
+        
+        //hold how many items are issued from design tool
+        staticChartMenuItemCount = chartMenu.getComponentCount();
         
         //setup charts menu
         try {
@@ -1219,8 +1224,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         }
         //remove all past
-        while(chartMenu.getMenuComponentCount() > 6)
-            chartMenu.remove(chartMenu.getMenuComponent(6));
+        while(chartMenu.getMenuComponentCount() > staticChartMenuItemCount)
+            chartMenu.remove(chartMenu.getMenuComponent(staticChartMenuItemCount));
             
         //resetup
         try {
