@@ -7,20 +7,12 @@ package dataanalyzer;
 
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import com.arib.toast.Toast;
-import java.awt.Color;
+import dataanalyzer.dialog.MessageBox;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import org.jfree.chart.*;
-import org.jfree.chart.event.ChartChangeEvent;
-import org.jfree.chart.panel.CrosshairOverlay;
-import org.jfree.chart.panel.Overlay;
-import org.jfree.chart.plot.Crosshair;
-import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -217,7 +209,7 @@ public class ChartManager {
             swapActive = 0;
             
             //show instructions
-            new MessageBox("Click two charts.\nBehold the magic.").setVisible(true);
+            new MessageBox(this.parent, "Click two charts.\nBehold the magic.", false).setVisible(true);
         } else {
             //disable it
             swapActive = -1;

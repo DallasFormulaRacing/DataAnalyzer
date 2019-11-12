@@ -6,7 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.CategorizedValueMarker;
-import dataanalyzer.MessageBox;
+import dataanalyzer.dialog.MessageBox;
 
 /**
  *
@@ -148,7 +148,7 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
         String note = notesTextArea.getText();
         //if reserved note, fail to add and let user know
         if(note.matches("Start Lap[0-9]+") || note.matches("End Lap[0-9]+"))
-            new MessageBox("Please do not follow the format of \"Start/End Lap#\"").setVisible(true);
+            new MessageBox(this, "Please do not follow the format of \"Start/End Lap#\"", true).setVisible(true);
         else {
             //Apply notes to the provided markers
             for(CategorizedValueMarker marker : markers) {
