@@ -63,7 +63,6 @@ public class ChartManager {
     
     public void updateChartZooms(ChartPanel chartPanel) {
         chartPanel.getZoomInFactor();
-//        chartPanel.getChart().getXYPlot().setDomain
     }
     
     public void updateOverlays(double xCor, ChartAssembly requestFrom) {

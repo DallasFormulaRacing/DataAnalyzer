@@ -8,7 +8,7 @@ package dataanalyzer;
 import java.io.File;
 
 /**
- *
+ * this checks the os type then creates if they don't already exist
  * @author aribdhuka
  */
 public class Installer {
