@@ -38,16 +38,26 @@ import javax.swing.border.Border;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.panel.CrosshairOverlay;
 import org.jfree.chart.plot.Crosshair;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.chart.urls.StandardXYURLGenerator;
 import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.statistics.SimpleHistogramBin;
+import org.jfree.data.statistics.SimpleHistogramDataset;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.graphics2d.Args;
 import org.jfree.ui.RectangleEdge;
+import sun.java2d.pipe.SpanShapeRenderer;
 
 /**
  * 
@@ -74,6 +84,8 @@ public class ChartAssembly implements ChartMouseListener {
     
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
+    
+    ChartTheme currentTheme = new StandardChartTheme("JFree");
     
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
@@ -546,6 +558,48 @@ public class ChartAssembly implements ChartMouseListener {
         ((JMenuItem) chartFrame.getJMenuBar().getComponent(1)).setText("Histogram");
     }
     
+    /**
+     * Creates a custom histogram that uses a interval dataset
+     * @param title Title of the graph
+     * @param xAxisLabel label for x axis
+     * @param yAxisLabel label for y axis
+     * @param dataset The Interval dataset
+     * @param orientation orientation of the graph
+     * @param legend show legend
+     * @param tooltips show tooltips
+     * @param urls show urls
+     * @return JFreeChart object with data parameters
+     */
+    public static JFreeChart createMyHistogram(String title,
+            String xAxisLabel, String yAxisLabel, IntervalXYDataset dataset,
+            PlotOrientation orientation, boolean legend, boolean tooltips,
+            boolean urls) {
+
+        //ensure an orientation is given
+        Args.nullNotPermitted(orientation, "orientation");
+        //apply labels
+        NumberAxis xAxis = new NumberAxis(xAxisLabel);
+        xAxis.setAutoRangeIncludesZero(false);
+        ValueAxis yAxis = new NumberAxis(yAxisLabel);
+
+        //create the item renderer
+        XYItemRenderer renderer = new XYBarRenderer(-10);
+        if (urls) {
+            renderer.setURLGenerator(new StandardXYURLGenerator());
+        }
+
+        //create the plot
+        XYPlot plot = new XYPlot(dataset, xAxis, yAxis, renderer);
+        plot.setOrientation(orientation);
+        plot.setDomainZeroBaselineVisible(true);
+        plot.setRangeZeroBaselineVisible(true);
+        //create the chart
+        JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
+                plot, legend);
+        return chart;
+
+    }
+    
     private void showHistogram() {
         Dimension currSize = chartPanel.getSize();
         String title = chartPanel.getChart().getTitle().getText();
@@ -555,25 +609,15 @@ public class ChartAssembly implements ChartMouseListener {
             tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
         }
         //update laps
-        XYSeriesCollection data = getHistogramDataCollection(tags, selectedLaps);
+        SimpleHistogramDataset data = getHistogramDataCollection(tags, selectedLaps);
         
         // Gets the independent variable from the title of the data
         String yAxis = "Milliseconds";
         // Gets the dependent variable from the title of the data
         String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
         
-        //create histogram
-        JFreeChart chart = ChartFactory.createHistogram(
-                title,
-                xAxis,
-                yAxis,
-                data,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false
-        );
-        
+        //creates a custom histogram
+        JFreeChart chart = createMyHistogram(title, xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
 
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
@@ -926,9 +970,17 @@ public class ChartAssembly implements ChartMouseListener {
         return graphData;
     }
     
-    private XYSeriesCollection getHistogramDataCollection(String[] tags, int[] laps) {
+    /**
+     * 
+     * @param tags
+     * @param laps
+     * @return 
+     */
+    private SimpleHistogramDataset getHistogramDataCollection(String[] tags, int[] laps) {
         //collection to return
-        final XYSeriesCollection graphData = new XYSeriesCollection();
+        SimpleHistogramDataset dataset = new SimpleHistogramDataset("time");
+        dataset.setAdjustForBinSize(false);
+
         
         for(String tag : tags) {
         //get data from dataset
@@ -937,8 +989,6 @@ public class ChartAssembly implements ChartMouseListener {
             //if asked for data with laps, complete for each lap
             if(laps != null) {
                 for(int l = 0; l < laps.length; l++) {
-                    //series that will hold the data
-                    XYSeries series = new XYSeries(tag.split(",")[1] + "Laps " + laps[l]);
                     //calculate min and max value of the data 
                     double min = Double.MAX_VALUE;
                     double max = Double.MIN_VALUE;
@@ -957,13 +1007,11 @@ public class ChartAssembly implements ChartMouseListener {
                     double interval = max - min;
                     interval /= 50;
 
-                    //holds how many instances occured within this interval
-                    int counter;
 
                     //for each of the 50 intervals
                     for(int i = 1; i < 51; i++) {
-                        //start with 0 count
-                        counter = 0;
+                        SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
+
 
                         //for each data element
                         for(LogObject lo : data) {
@@ -973,28 +1021,23 @@ public class ChartAssembly implements ChartMouseListener {
                                     //if the value of the current object is between the interval we are searching for
                                     if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                         //increment the counter
-                                        counter++;
+                                        bin.setItemCount(bin.getItemCount() + 50);
                                     }
                                 } else if(lo instanceof FunctionOfLogObject) {
                                     if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                         //increment the counter
-                                        counter++;
+                                        bin.setItemCount(bin.getItemCount() + 50);
                                     }
                                 }
                             }
                         }
-                        //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-                        if(counter != 0)
-                            series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
+                        dataset.addBin(bin);
                     }
 
 
 
-                    graphData.addSeries(series);
                 }
             } else {
-                //series that will hold the data
-                XYSeries series = new XYSeries(tag.split(",")[1]);
                 //calculate min and max value of the data 
                 double min = Double.MAX_VALUE;
                 double max = Double.MIN_VALUE;
@@ -1011,13 +1054,10 @@ public class ChartAssembly implements ChartMouseListener {
                 double interval = max - min;
                 interval /= 50;
 
-                //holds how many instances occured within this interval
-                int counter;
-
                 //for each of the 50 intervals
                 for(int i = 1; i < 51; i++) {
-                    //start with 0 count
-                    counter = 0;
+                    //A bin for this section
+                    SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
 
                     //for each data element
                     for(LogObject lo : data) {
@@ -1026,26 +1066,25 @@ public class ChartAssembly implements ChartMouseListener {
                             //if the value of the current object is between the interval we are searching for
                             if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                counter++;
+                                    bin.setItemCount(bin.getItemCount() + 50);
                             }
                         } else if(lo instanceof FunctionOfLogObject) {
                             if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
                                 //increment the counter
-                                counter++;
+                                    bin.setItemCount(bin.getItemCount() + 50);
                             }
                         }
                     }
                     //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-                    if(counter != 0)
-                        series.add((((interval * i) + min) + ((interval * i - 1) + min))/2, counter*50);
+                    dataset.addBin(bin);
+
                 }
 
 
 
-                graphData.addSeries(series);
             }
         }
-        return graphData;
+        return dataset;
         
     }
     
