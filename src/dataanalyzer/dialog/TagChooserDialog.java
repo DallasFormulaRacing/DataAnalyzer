@@ -7,11 +7,11 @@ package dataanalyzer.dialog;
 
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import com.arib.toast.Toast;
-import com.sun.glass.events.KeyEvent;
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.CategorizedValueMarker;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Lap;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -208,7 +208,7 @@ public class TagChooserDialog extends javax.swing.JDialog {
             switch(code) {
                 //if its backspace, remove the item from the datamap
                 case KeyEvent.VK_DELETE :
-                case KeyEvent.VK_BACKSPACE : deleteSelected("tag"); break;
+                case KeyEvent.VK_BACK_SPACE : deleteSelected("tag"); break;
             }
         }
     }//GEN-LAST:event_dataListKeyReleased
@@ -278,7 +278,7 @@ public class TagChooserDialog extends javax.swing.JDialog {
             switch(code) {
                 //if its backspace or delete, remove the item from the lapBreaker and update the Lap for the data objects.
                 case KeyEvent.VK_DELETE :
-                case KeyEvent.VK_BACKSPACE : deleteSelected("lap"); break;
+                case KeyEvent.VK_BACK_SPACE : deleteSelected("lap"); break;
             }
         }
 

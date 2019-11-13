@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package dataanalyzer;
 
 import com.arib.toast.Toast;
@@ -16,6 +11,7 @@ import java.util.Stack;
  *
  * @author aribdhuka
  */
+//TODO: Need to display errors, need a parent obj
 public class EquationEvaluater {
 
     //if vehicleData is not provided, provide an empty copy
@@ -101,8 +97,7 @@ public class EquationEvaluater {
         }
         if(!dataList.isEmpty())
             dataMap.put(dataList);
-        else
-            new MessageBox("No data elements created!").setVisible(true);
+        //TODO: Error message. No parent to send Toast or MessageBox to
         
     }
     
@@ -189,8 +184,8 @@ public class EquationEvaluater {
         }
         if(!dataList.isEmpty())
             dataMap.put(dataList);
-        else
-            new MessageBox("No data elements created!").setVisible(true);
+        //TODO: Error message. No parent to send Toast or MessageBox to
+
         
     }
     
@@ -202,7 +197,7 @@ public class EquationEvaluater {
         String functionOfTag = equationAndVar[1];
         //if the equation is replaced with error, something went wrong, do not continue;
         if(equationsStr.equals("ERROR")) {
-            new MessageBox("Parse Error").setVisible(true);
+            //TODO: Error message. No parent to send Toast or MessageBox to
             return;
         }
         //get the dataset we are getting the function of

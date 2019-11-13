@@ -7,7 +7,7 @@ package dataanalyzer.dialog;
 
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.EquationEvaluater;
-import dataanalyzer.MessageBox;
+import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.VehicleData;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -232,14 +232,14 @@ public class MathChannelDialog extends javax.swing.JFrame {
         double maxBound = Double.MAX_VALUE;
         if(channelTitleText.getText().isEmpty()) {
             // error message displayed
-            new MessageBox("Error: Equation not parsed properly").setVisible(true);
+            new MessageBox(this, "Error: Equation not parsed properly", true).setVisible(true);
             return;
         }
         if(!minTextField.getText().isEmpty()) {
             try {
                 minBound = Double.parseDouble(minTextField.getText());
             }  catch(NumberFormatException e) {
-                new MessageBox("Error: Lower bound is not a number!\nPlease enter a number or leave the field blank.").setVisible(true);
+                new MessageBox(this, "Error: Lower bound is not a number!\nPlease enter a number or leave the field blank.", true).setVisible(true);
                 return;
             }
         }
@@ -247,7 +247,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
             try {
                 maxBound = Double.parseDouble(maxTextField.getText());
             }  catch(NumberFormatException e) {
-                new MessageBox("Error: Upper bound is not a number!\nPlease enter a number or leave the field blank.").setVisible(true);
+                new MessageBox(this, "Error: Upper bound is not a number!\nPlease enter a number or leave the field blank.", true).setVisible(true);
                 return;
             }
         }
