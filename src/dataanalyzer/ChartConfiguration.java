@@ -98,20 +98,20 @@ public class ChartConfiguration {
         //Fills up locations based on the current state of the charts. 
         for (int i = 0; i < charts.size(); i++) {
             if((charts.get(i).getChartFrame().isVisible())){
-            JInternalFrame chartFrame = charts.get(i).getChartFrame();
+                JInternalFrame chartFrame = charts.get(i).getChartFrame();
 
-            float x = (float) chartFrame.getX() / dataAnalyzer.getWidth();
-            float y = (float) chartFrame.getY() / dataAnalyzer.getHeight();
-            float width = (float) chartFrame.getWidth() / dataAnalyzer.getWidth();
-            float height = (float) chartFrame.getHeight() / dataAnalyzer.getHeight();
+                float x = (float) chartFrame.getX() / dataAnalyzer.getWidth();
+                float y = (float) chartFrame.getY() / dataAnalyzer.getHeight();
+                float width = (float) chartFrame.getWidth() / dataAnalyzer.getWidth();
+                float height = (float) chartFrame.getHeight() / dataAnalyzer.getHeight();
 
-            ChartLocation currLocation = new ChartLocation();
-            currLocation.selectedTags = charts.get(i).getSelectedTags();
-            currLocation.x = x;
-            currLocation.y = y;
-            currLocation.width = width;
-            currLocation.height = height;
-            locations.add(currLocation);
+                ChartLocation currLocation = new ChartLocation();
+                currLocation.selectedTags = charts.get(i).getSelectedTags();
+                currLocation.x = x;
+                currLocation.y = y;
+                currLocation.width = width;
+                currLocation.height = height;
+                locations.add(currLocation);
             }
         }
 

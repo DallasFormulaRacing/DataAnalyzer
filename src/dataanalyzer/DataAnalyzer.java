@@ -13,27 +13,25 @@ import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import org.jfree.chart.plot.ValueMarker;
 
 /**
@@ -190,15 +188,34 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     if(extension.equals(".dfrchartconfig")) {
                         //add menu item
                         JMenuItem item = new JMenuItem(filename);
-                        item.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
+                        item.addMouseListener(new MouseAdapter() {
+                            public void mousePressed(MouseEvent e) {
                                 try {
-                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
+                                    if(e.getButton() == MouseEvent.BUTTON1){
+                                        System.out.println("button1");
+                                        ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
+                                    }else if(e.getButton() == MouseEvent.BUTTON2){
+                                        System.out.println("button2");
+                                        showPopUp(e);
+                                    }
                                 } catch (FileNotFoundException fnfe) {
                                     Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
                                 } catch (IOException ex) {
                                     Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                }
+                            }
+                            
+                            private void showPopUp(MouseEvent e) {
+                                PopUpMenu menu = new PopUpMenu();
+                                menu.show(e.getComponent(), e.getX(), e.getY());
+                            }
+    
+                            class PopUpMenu extends JPopupMenu {
+                                JMenuItem deleteItem;
+                                public PopUpMenu() {
+                                    System.out.println("got here");
+                                    deleteItem = new JMenuItem("Delete");
+                                    add(deleteItem);
                                 }
                             }
                         });
