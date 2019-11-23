@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 
 /**
@@ -18,6 +19,8 @@ public class GPSGraphFrame extends javax.swing.JFrame {
      */
     public GPSGraphFrame() {
         initComponents();
+        
+        setPreferredSize(new Dimension(600,450));
         
         this.setContentPane(new GPSGraphPanel());
     }
@@ -33,6 +36,7 @@ public class GPSGraphFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(600, 420));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
