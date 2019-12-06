@@ -11,7 +11,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Stroke;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 import javax.swing.JPanel;
@@ -29,11 +31,11 @@ public class GPSGraphPanel extends JPanel{
     @Override
     public void paintComponent(Graphics g){
         TrackMap tm = new TrackMap();
-        tm.readCSV("D:\\CodingThings\\DataAnalyzer\\Poly.csv");
+        tm.readCSV("test.csv");
         
         Graphics2D g2 = (Graphics2D) g;
         
-        g2.setStroke(new BasicStroke(10.0f));
+        //g2.setStroke(new BasicStroke(10.0f));
         g2.draw(tm);
         
     }
@@ -41,13 +43,13 @@ public class GPSGraphPanel extends JPanel{
 }
 
 class Point{
-    public int x, xScaled;
-    public int y, yScaled;
+    public double x, y;
+    public int xScaled, yScaled;
 }
 
 class TrackMap extends Polygon{
     private ArrayList<Point> points;
-    private int xMin, xMax, yMin, yMax;
+    private double xMin, xMax, yMin, yMax;
     private int length, width;
     
     public TrackMap(){
@@ -63,20 +65,45 @@ class TrackMap extends Polygon{
     public void readCSV(String path){
         points = new ArrayList<>();
         try{
-            Scanner in = new Scanner(new File(path));
-            while(in.hasNextLine()){
-                Point p = new Point();
-                String[] row = in.nextLine().split(",");
-                p.x = Integer.parseInt(row[0]);
-                p.y = Integer.parseInt(row[1]);
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line = "";
+            boolean isx = true;
+            boolean gps = false;
+            int pos = 0;
+
+            while((line = br.readLine()) != null){
+                String[] row = line.trim().split(",");
                 
-                xMax = Math.max(xMax, p.x);
-                yMax = Math.max(yMax, p.y);
-                
-                xMin = Math.min(xMin, p.x);
-                yMin = Math.min(yMin, p.y);
-                
-                points.add(p);
+                if(row.length > 1){
+                    if(row[1].equals("longitude")){
+                        gps = true;
+                        isx = true;
+                        pos = 0;
+                    }else if(row[1].equals("latitude")){
+                        gps = true;
+                        isx = false;
+                        pos = 0;
+                    }else{
+                        if(gps){
+
+                            if(isx){
+                               Point p = points.get(pos);
+                               p.x = Double.parseDouble(row[1]);
+                               
+                               xMax = Math.max(p.x, xMax);
+                               xMin = Math.min(p.x, xMin);
+                            }else{
+                               Point p = new Point();
+                               p.y = Double.parseDouble(row[1]);
+                               points.add(p);
+                               
+                               yMax = Math.max(p.y, yMax);
+                               yMin = Math.min(p.y, yMin);
+                            }
+                            pos++;
+                        }
+                    }
+                }       
             }
         }catch(Exception e){
             System.out.println(e);
@@ -87,11 +114,12 @@ class TrackMap extends Polygon{
     private void resize(){
         for(int i = 0; i<points.size(); i++){
             Point p = points.get(i);
-            p.xScaled = 20 + ((p.x - xMin) * (length - 60)) / (xMax - xMin);
-            p.yScaled = 20 + ((p.y - yMin) * (width - 60)) / (yMax - yMin);
+            p.xScaled = (int) (20 + ((p.x - xMin) * (length - 60)) / (xMax - xMin));
+            p.yScaled = (int) (20 + ((p.y - yMin) * (width - 60)) / (yMax - yMin));
             
             super.addPoint(p.xScaled, p.yScaled);
         }
+        System.out.println();
     }
     
     
