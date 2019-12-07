@@ -192,7 +192,8 @@ public class LambdaMap extends javax.swing.JFrame {
      * proper range
      */
     private double afr(double lambda) {
-        return ((20 - 10) * (lambda - MIN_LAMBDA) * 1.0) / (MAX_LAMBDA - MIN_LAMBDA) + 10;
+//        return ((19.5 - 10.5) * (lambda - MIN_LAMBDA) * 1.0) / (MAX_LAMBDA - MIN_LAMBDA) + 10.5;
+        return lambda * 14.7;
     }
 
     /**

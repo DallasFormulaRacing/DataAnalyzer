@@ -1337,6 +1337,34 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
     
+    public void applyPE3PostProcessing() {
+        //Change PE3 -> our standards. (So fuel mapper and such work)
+        
+        int origsize = chartManager.getDataMap().getTags().size();
+        ArrayList<String> origtags = new ArrayList<>(); 
+        origtags.addAll(chartManager.getDataMap().getTags());
+        
+        for(int i = 0; i < origsize; i++) {
+            String[] split = origtags.get(i).split(",");
+            String newTag;
+            if(split[1].indexOf('[', 2) != -1)
+                newTag = split[1].substring(1, split[1].indexOf('[', 2));
+            else
+                newTag = split[1].substring(1, split[1].length() - 1);
+            EquationEvaluater.evaluate("$(" + origtags.get(i) + ")", chartManager.getDataMap(), newTag);
+            
+        }
+        
+        for(String tag : origtags) {
+            chartManager.getDataMap().remove(tag);
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,MeasuredAFR#1") && chartManager.getDataMap().tags.contains("Time,MeasuredAFR#2")) {
+            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", chartManager.getDataMap(), "Time,AFRAveraged");
+            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
+        }
+    }
+    
     public void applyPostProcessing() {
         //if nothing was loaded do not try to do math channels
         if(chartManager.getDataMap().isEmpty())
@@ -1409,7 +1437,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         //Perform Operations
         //TODO: FILTERING
-        EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", chartManager.getDataMap(), "CoolantCelcius");
+        if(chartManager.getDataMap().tags.contains("Time,Coolant")) {
+            EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", chartManager.getDataMap(), "CoolantCelcius");
+        }
         
         //Create Distance Channels for all datasets that do not contain "Time"
         for(int i = 0; i < chartManager.getDataMap().table.length; i++) {
@@ -1864,8 +1894,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
      * @param filepaths 
      */
     private void openPE3Files(File[] files) throws FileNotFoundException {
+        //TODO: HANDLE MULITPLE PE3 FILE OPENING
+        
         //handle the first file to not open a new screen
         boolean first = true;
+        
+        //ask for post processing
+        boolean applyPostProcessing = askForPostProcessing();
         
         //for each file
         for(File file : files) {
@@ -1900,6 +1935,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 
             }
+            
+            //apply post processing
+            if(applyPostProcessing) {
+                applyPE3PostProcessing();
+                applyPostProcessing();
+            }
+            
         }
     }
     
