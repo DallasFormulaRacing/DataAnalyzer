@@ -1363,8 +1363,24 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", chartManager.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
         }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#5")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#6")) {
+            EquationEvaluater.evaluate("(($(Time,Analog#6) / .55) - 3) * (0 - 1)", chartManager.getDataMap(), "Time,yAccel");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#7")) {
+            EquationEvaluater.evaluate("(($(Time,Analog#7) / .55) - 3) * (0 - 1)", chartManager.getDataMap(), "Time,xAccel");
+        }
+        if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
+            EquationEvaluater.evaluate("(($(Time,Analog#8) / .55) - 3) * (0 - 1)", chartManager.getDataMap(), "Time,zAccel");
+        }
+        
     }
-    
+   
     public void applyPostProcessing() {
         //if nothing was loaded do not try to do math channels
         if(chartManager.getDataMap().isEmpty())
@@ -1902,6 +1918,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //ask for post processing
         boolean applyPostProcessing = askForPostProcessing();
         
+        //holds number of files opened
+        int num = 0;
+        
         //for each file
         for(File file : files) {
             //if its the first file we don't need to do this in a new window.
@@ -1934,12 +1953,65 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     
                 }
                 
+                //set title
+                this.setTitle("DataAnalyzer - " + file.getName());
+                
+                //no longer first
+                first = false;
+                num++;
+                
+                //apply post processing
+                if(applyPostProcessing) {
+                    applyPE3PostProcessing();
+                    applyPostProcessing();
+                }
+                
             }
-            
-            //apply post processing
-            if(applyPostProcessing) {
-                applyPE3PostProcessing();
-                applyPostProcessing();
+            else {
+                DataAnalyzer dataAnalyzer = new DataAnalyzer();
+                //Create way to read file
+                Scanner scan = new Scanner(file);
+                //get the first line which tells us the order of parameters
+                String header = scan.nextLine();
+                //store these as an array of keys
+                String[] keys = header.split(",");
+                //for each remaining line
+                while(scan.hasNextLine()) {
+                    //get the next line
+                    String line = scan.nextLine();
+                    //if its empty move forward which will skip corrupted lines or end
+                    if(line.isEmpty())
+                        continue;
+                    
+                    //all the data should be split by commas in the same order as the header
+                    String[] data = line.split(",");
+                    //the first element is time
+                    double timeInSeconds = Double.parseDouble(data[0]);
+                    
+                    long time = (long) (timeInSeconds*1000);
+                    //for each of the remaining columns
+                    for(int i = 1; i < data.length; i++) {
+                        //add this element to the datamap
+                        dataAnalyzer.chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+                    }
+                    
+                }
+                
+                //set title
+                dataAnalyzer.setTitle("DataAnalyzer - " + file.getName());
+                
+                //apply post processing
+                if(applyPostProcessing) {
+                    dataAnalyzer.applyPE3PostProcessing();
+                    dataAnalyzer.applyPostProcessing();
+                }
+                
+                //set visible and location
+                dataAnalyzer.setVisible(true);
+                dataAnalyzer.setLocation(100 * num, 100 * num);
+                
+                //opened another file
+                num++;
             }
             
         }
