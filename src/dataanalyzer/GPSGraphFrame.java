@@ -5,9 +5,6 @@
  */
 package dataanalyzer;
 
-import java.awt.Dimension;
-import java.awt.Graphics;
-
 /**
  *
  * @author Preston Baxter
@@ -19,8 +16,6 @@ public class GPSGraphFrame extends javax.swing.JFrame {
      */
     public GPSGraphFrame() {
         initComponents();
-        
-        setPreferredSize(new Dimension(600,450));
         
         this.setContentPane(new GPSGraphPanel());
     }
