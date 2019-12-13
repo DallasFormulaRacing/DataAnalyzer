@@ -6,16 +6,15 @@
 package dataanalyzer;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Stroke;
+import java.awt.RenderingHints;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Scanner;
 import javax.swing.JPanel;
 
 /**
@@ -24,33 +23,58 @@ import javax.swing.JPanel;
  */
 public class GPSGraphPanel extends JPanel{
     
+    private TrackMap tm;
+    
     public GPSGraphPanel(){
         setPreferredSize(new Dimension(600,400));
+        tm = new TrackMap();
+        tm.readCSV("test.csv");
     }
     
+    /*
+    *   paintComponent redraws the component whenever a redraw event is triggerd by the super JPanel
+    */
     @Override
     public void paintComponent(Graphics g){
-        TrackMap tm = new TrackMap();
-        tm.readCSV("test.csv");
-        
+        //Convert from basic graphics to Graphics2D 
         Graphics2D g2 = (Graphics2D) g;
         
-        //g2.setStroke(new BasicStroke(10.0f));
+        //Set the new dimensions of the track map
+        Dimension d = this.getSize();
+        tm.length = d.width;
+        tm.width = d.height;
+        tm.resize();
+        
+        /*
+        *   Stuff to make the lines look smoother
+        *   CAP_BUTT means the line will be a rectangle
+        *   JOIN_ROUND means that the joining of two lines will curve instead of coming to a point
+        *   The last two lines enable anti-aliasing and then clean up the anti-aliasing
+        */
+        BasicStroke stroke = new BasicStroke(2.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
+        RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        rh.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
+        
+        //Enable the beautifying established above
+        g2.setColor(Color.BLACK);
+        g2.setRenderingHints(rh);
+        g2.setStroke(stroke);
+        
+        //Draw the track map with all of the settings above
         g2.draw(tm);
         
     }
     
 }
 
-class Point{
-    public double x, y;
-    public int xScaled, yScaled;
-}
-
+/*
+*   TrackMap represents a polygon to be drawn
+*   TrackMap Takes GPS data and maps it into the polygon class to be drawn later
+*/
 class TrackMap extends Polygon{
     private ArrayList<Point> points;
     private double xMin, xMax, yMin, yMax;
-    private int length, width;
+    int length, width;
     
     public TrackMap(){
         xMin = yMin = Integer.MAX_VALUE;
@@ -88,13 +112,14 @@ class TrackMap extends Polygon{
 
                             if(isx){
                                Point p = points.get(pos);
-                               p.x = Double.parseDouble(row[1]);
+                               p.x = Double.parseDouble(row[1]);                             
                                
                                xMax = Math.max(p.x, xMax);
                                xMin = Math.min(p.x, xMin);
                             }else{
                                Point p = new Point();
                                p.y = Double.parseDouble(row[1]);
+                               p.time = Long.parseLong(row[0]);
                                points.add(p);
                                
                                yMax = Math.max(p.y, yMax);
@@ -111,7 +136,8 @@ class TrackMap extends Polygon{
         resize();
     }
     
-    private void resize(){
+    void resize(){
+        super.reset();
         for(int i = 0; i<points.size(); i++){
             Point p = points.get(i);
             p.xScaled = (int) (20 + ((p.x - xMin) * (length - 60)) / (xMax - xMin));
@@ -122,5 +148,10 @@ class TrackMap extends Polygon{
         System.out.println();
     }
     
+    class Point{
+        public double x, y;
+        public long time;
+        public int xScaled, yScaled;
+    }
     
 }
