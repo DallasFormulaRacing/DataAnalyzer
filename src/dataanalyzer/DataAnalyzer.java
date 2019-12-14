@@ -10,6 +10,7 @@ import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import dataanalyzer.dialog.FileNotesDialog;
+import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,7 +27,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
 import org.jfree.chart.plot.ValueMarker;
 
 /**
@@ -1274,14 +1279,30 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
     }
-    
-    public void importFile(String[] filepaths) {
-        
-    }
 
     public void importTXT(String filepath) {
+        
         openingAFile = true;
-        TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            
+            public Void doInBackground() {
+                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+                return null;
+            }
+
+            @Override
+            public void done() {
+                openingAFile = false;
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
     }
     
     public void importCSV(String filepath) {
@@ -1664,245 +1685,267 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     //open file
     private void openFile(String[] filepaths) {
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        //holds the context to give into the swing worker
+        DataAnalyzer me = this;
        
-        boolean first = true;
-        for(String filepath : filepaths) {
-            if(!first) {
-                DataAnalyzer da = new DataAnalyzer();
-                //begin file operation
-                openingAFile = true;
-                //Scanner to handle the file
-                Scanner scanner = null;
-                try {
-                    scanner = new Scanner(new File(filepath));
-                } catch(FileNotFoundException e) {
-                    //error message displayed
-                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
-                }
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            public Void doInBackground() {
+                boolean first = true;
+                for(String filepath : filepaths) {
+                    if(!first) {
+                        DataAnalyzer da = new DataAnalyzer();
+                        //begin file operation
+                        openingAFile = true;
+                        //Scanner to handle the file
+                        Scanner scanner = null;
+                        try {
+                            scanner = new Scanner(new File(filepath));
+                        } catch(FileNotFoundException e) {
+                            //error message displayed
+                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                        }
 
-                //if we failed to open the file exit
-                if(scanner == null) {
-                    return;
-                }
+                        //if we failed to open the file exit
+                        if(scanner == null) {
+                            return null;
+                        }
 
-                //is the current item a marker
-                boolean isMarker = false;
-                //current tag
-                String tag = "";
-                // While there is a next line
-                //handles csv data and markers
-                while (scanner.hasNextLine()) {
-                    // Store the line
-                    String line = scanner.nextLine();
-                    // If the line represents an END of the current tag
-                    if (line.equals("END")) {
-                        isMarker = false;
-                        // Necessary so that END statements don't get added to 'tags' ArrayList
-                    } else if(line.isEmpty()) {
-                        continue;
-                    }
-                    else if(line.equals("MARKERS")) {
-                        isMarker = true;
-                    } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                        break;
-                    } else if (Character.isLetter(line.charAt(0))) {
-                        // If the first character is a letter
-                        // Then add the line to the tags list
-                        tag = line;
-                    } else if (Character.isDigit(line.charAt(0))) {
-                        if(!isMarker) {
-                            // If the first character is a digit
-                            // Then divide the list in 2 values by ,
-                            final String DELIMITER = ",";
-                            String[] values = line.split(DELIMITER);
-                            // And add the values to the hashmap with their correct tag
-                            // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                            if(tag.contains("Time"))
-                                chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                            else
-                                chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                        } else {
-                            String[] split = line.split(",");
-                            if(split.length == 2) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                            } else if(split.length == 1) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                        //is the current item a marker
+                        boolean isMarker = false;
+                        //current tag
+                        String tag = "";
+                        // While there is a next line
+                        //handles csv data and markers
+                        while (scanner.hasNextLine()) {
+                            // Store the line
+                            String line = scanner.nextLine();
+                            // If the line represents an END of the current tag
+                            if (line.equals("END")) {
+                                isMarker = false;
+                                // Necessary so that END statements don't get added to 'tags' ArrayList
+                            } else if(line.isEmpty()) {
+                                continue;
+                            }
+                            else if(line.equals("MARKERS")) {
+                                isMarker = true;
+                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                                break;
+                            } else if (Character.isLetter(line.charAt(0))) {
+                                // If the first character is a letter
+                                // Then add the line to the tags list
+                                tag = line;
+                            } else if (Character.isDigit(line.charAt(0))) {
+                                if(!isMarker) {
+                                    // If the first character is a digit
+                                    // Then divide the list in 2 values by ,
+                                    final String DELIMITER = ",";
+                                    String[] values = line.split(DELIMITER);
+                                    // And add the values to the hashmap with their correct tag
+                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                                    if(tag.contains("Time"))
+                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                                    else
+                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                                } else {
+                                    String[] split = line.split(",");
+                                    if(split.length == 2) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                                    } else if(split.length == 1) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                    }
+                                }
                             }
                         }
-                    }
-                }
 
-                //string builder for creating string of data
-                StringBuilder vd = new StringBuilder("");
-                while(scanner.hasNextLine()) {
-                    //get next line
-                    String line = scanner.nextLine();
-                    if(line.equals("LAPDATA"))
-                        break;
-                    //append the next line followed by a new line char
-                    vd.append(line);
-                    vd.append("\n");
-                }
+                        //string builder for creating string of data
+                        StringBuilder vd = new StringBuilder("");
+                        while(scanner.hasNextLine()) {
+                            //get next line
+                            String line = scanner.nextLine();
+                            if(line.equals("LAPDATA"))
+                                break;
+                            //append the next line followed by a new line char
+                            vd.append(line);
+                            vd.append("\n");
+                        }
 
-                //for all the lines for lapdata
-                while(scanner.hasNextLine()) {
-                    //get the next line
-                    String line = scanner.nextLine();
-                    if(line.isEmpty())
-                        continue;
+                        //for all the lines for lapdata
+                        while(scanner.hasNextLine()) {
+                            //get the next line
+                            String line = scanner.nextLine();
+                            if(line.isEmpty())
+                                continue;
 
-                    //holds the data
-                    long lapStart;
-                    long lapStop;
-                    int lapNumber;
-                    String lapLabel;
-                    //parse data from string
-                    lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                    lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                    lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                    lapLabel = line.substring(line.indexOf(')')+1);
-                    //save data
-                    if (lapLabel.trim().length() > 0)
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
-                    else
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
-                }
-
-                //give the data to the vehicleData class to create
-                chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                //we are finished with file operation
-                openingAFile = false;
-
-                //update lap data
-                Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
-            } else {
-                //begin file operation
-                openingAFile = true;
-                //Scanner to handle the file
-                Scanner scanner = null;
-                try {
-                    scanner = new Scanner(new File(filepath));
-                } catch(FileNotFoundException e) {
-                    //error message displayed
-                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
-                }
-
-                //if we failed to open the file exit
-                if(scanner == null) {
-                    return;
-                }
-
-                //is the current item a marker
-                boolean isMarker = false;
-                //current tag
-                String tag = "";
-                // While there is a next line
-                //handles csv data and markers
-                while (scanner.hasNextLine()) {
-                    // Store the line
-                    String line = scanner.nextLine();
-                    // If the line represents an END of the current tag
-                    if (line.equals("END")) {
-                        isMarker = false;
-                        // Necessary so that END statements don't get added to 'tags' ArrayList
-                    } else if(line.isEmpty()) {
-                        continue;
-                    }
-                    else if(line.equals("MARKERS")) {
-                        isMarker = true;
-                    } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                        break;
-                    } else if (Character.isLetter(line.charAt(0))) {
-                        // If the first character is a letter
-                        // Then add the line to the tags list
-                        tag = line;
-                    } else if (Character.isDigit(line.charAt(0))) {
-                        if(!isMarker) {
-                            // If the first character is a digit
-                            // Then divide the list in 2 values by ,
-                            final String DELIMITER = ",";
-                            String[] values = line.split(DELIMITER);
-                            // And add the values to the hashmap with their correct tag
-                            // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                            if(tag.contains("Time"))
-                                chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                            //holds the data
+                            long lapStart;
+                            long lapStop;
+                            int lapNumber;
+                            String lapLabel;
+                            //parse data from string
+                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                            lapLabel = line.substring(line.indexOf(')')+1);
+                            //save data
+                            if (lapLabel.trim().length() > 0)
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
                             else
-                                chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                        } else {
-                            String[] split = line.split(",");
-                            if(split.length == 2) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                            } else if(split.length == 1) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                        }
+
+                        //give the data to the vehicleData class to create
+                        chartManager.getVehicleData().applyVehicleData(vd.toString());
+
+                        //we are finished with file operation
+                        openingAFile = false;
+
+                        //update lap data
+                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+                    } else {
+                        //begin file operation
+                        openingAFile = true;
+                        //Scanner to handle the file
+                        Scanner scanner = null;
+                        try {
+                            scanner = new Scanner(new File(filepath));
+                        } catch(FileNotFoundException e) {
+                            //error message displayed
+                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                        }
+
+                        //if we failed to open the file exit
+                        if(scanner == null) {
+                            return null;
+                        }
+
+                        //is the current item a marker
+                        boolean isMarker = false;
+                        //current tag
+                        String tag = "";
+                        // While there is a next line
+                        //handles csv data and markers
+                        while (scanner.hasNextLine()) {
+                            // Store the line
+                            String line = scanner.nextLine();
+                            // If the line represents an END of the current tag
+                            if (line.equals("END")) {
+                                isMarker = false;
+                                // Necessary so that END statements don't get added to 'tags' ArrayList
+                            } else if(line.isEmpty()) {
+                                continue;
+                            }
+                            else if(line.equals("MARKERS")) {
+                                isMarker = true;
+                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                                break;
+                            } else if (Character.isLetter(line.charAt(0))) {
+                                // If the first character is a letter
+                                // Then add the line to the tags list
+                                tag = line;
+                            } else if (Character.isDigit(line.charAt(0))) {
+                                if(!isMarker) {
+                                    // If the first character is a digit
+                                    // Then divide the list in 2 values by ,
+                                    final String DELIMITER = ",";
+                                    String[] values = line.split(DELIMITER);
+                                    // And add the values to the hashmap with their correct tag
+                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                                    if(tag.contains("Time"))
+                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                                    else
+                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                                } else {
+                                    String[] split = line.split(",");
+                                    if(split.length == 2) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                                    } else if(split.length == 1) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                    }
+                                }
                             }
                         }
+
+                        //string builder for creating string of data
+                        StringBuilder vd = new StringBuilder("");
+                        while(scanner.hasNextLine()) {
+                            //get next line
+                            String line = scanner.nextLine();
+                            if(line.equals("LAPDATA"))
+                                break;
+                            //append the next line followed by a new line char
+                            vd.append(line);
+                            vd.append("\n");
+                        }
+
+                        //for all the lines for lapdata
+                        while(scanner.hasNextLine()) {
+                            //get the next line
+                            String line = scanner.nextLine();
+                            if(line.isEmpty())
+                                continue;
+
+                            if(line.equals(("FILENOTES"))) {
+                                break;
+                            }
+
+                            //holds the data
+                            long lapStart;
+                            long lapStop;
+                            int lapNumber;
+                            String lapLabel;
+                            //parse data from string
+                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                            lapLabel = line.substring(line.indexOf(')')+1);
+                            //save data
+                            if (lapLabel.trim().length() > 0)
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+                            else
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                        }
+
+                        //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                        while(scanner.hasNextLine()) {
+                            fileNotes += scanner.nextLine();
+                        }
+
+                        //give the data to the vehicleData class to create
+                        chartManager.getVehicleData().applyVehicleData(vd.toString());
+
+                        //we are finished with file operation
+                        openingAFile = false;
+
+                        //update lap data
+                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
                     }
-                }
-
-                //string builder for creating string of data
-                StringBuilder vd = new StringBuilder("");
-                while(scanner.hasNextLine()) {
-                    //get next line
-                    String line = scanner.nextLine();
-                    if(line.equals("LAPDATA"))
-                        break;
-                    //append the next line followed by a new line char
-                    vd.append(line);
-                    vd.append("\n");
-                }
-
-                //for all the lines for lapdata
-                while(scanner.hasNextLine()) {
-                    //get the next line
-                    String line = scanner.nextLine();
-                    if(line.isEmpty())
-                        continue;
-                    
-                    if(line.equals(("FILENOTES"))) {
-                        break;
-                    }
-
-                    //holds the data
-                    long lapStart;
-                    long lapStop;
-                    int lapNumber;
-                    String lapLabel;
-                    //parse data from string
-                    lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                    lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                    lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                    lapLabel = line.substring(line.indexOf(')')+1);
-                    //save data
-                    if (lapLabel.trim().length() > 0)
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
-                    else
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
                 }
                 
-                //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
-                while(scanner.hasNextLine()) {
-                    fileNotes += scanner.nextLine();
-                }
-
-                //give the data to the vehicleData class to create
-                chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                //we are finished with file operation
-                openingAFile = false;
-
-                //update lap data
-                Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+                return null;
             }
-        }
+
+            @Override
+            public void done() {
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+        
+        
     }
     
     /**
@@ -1910,111 +1953,128 @@ public class DataAnalyzer extends javax.swing.JFrame {
      * @param filepaths 
      */
     private void openPE3Files(File[] files) throws FileNotFoundException {
-        //TODO: HANDLE MULITPLE PE3 FILE OPENING
-        
-        //handle the first file to not open a new screen
-        boolean first = true;
         
         //ask for post processing
         boolean applyPostProcessing = askForPostProcessing();
         
-        //holds number of files opened
-        int num = 0;
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
         
-        //for each file
-        for(File file : files) {
-            //if its the first file we don't need to do this in a new window.
-            if(first) {
-                //Create way to read file
-                Scanner scan = new Scanner(file);
-                //get the first line which tells us the order of parameters
-                String header = scan.nextLine();
-                //store these as an array of keys
-                String[] keys = header.split(",");
-                //for each remaining line
-                while(scan.hasNextLine()) {
-                    //get the next line
-                    String line = scan.nextLine();
-                    //if its empty move forward which will skip corrupted lines or end
-                    if(line.isEmpty())
-                        continue;
-                    
-                    //all the data should be split by commas in the same order as the header
-                    String[] data = line.split(",");
-                    //the first element is time
-                    double timeInSeconds = Double.parseDouble(data[0]);
-                    
-                    long time = (long) (timeInSeconds*1000);
-                    //for each of the remaining columns
-                    for(int i = 1; i < data.length; i++) {
-                        //add this element to the datamap
-                        chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-                    }
-                    
-                }
-                
-                //set title
-                this.setTitle("DataAnalyzer - " + file.getName());
-                
-                //no longer first
-                first = false;
-                num++;
-                
-                //apply post processing
-                if(applyPostProcessing) {
-                    applyPE3PostProcessing();
-                    applyPostProcessing();
-                }
-                
-            }
-            else {
-                DataAnalyzer dataAnalyzer = new DataAnalyzer();
-                //Create way to read file
-                Scanner scan = new Scanner(file);
-                //get the first line which tells us the order of parameters
-                String header = scan.nextLine();
-                //store these as an array of keys
-                String[] keys = header.split(",");
-                //for each remaining line
-                while(scan.hasNextLine()) {
-                    //get the next line
-                    String line = scan.nextLine();
-                    //if its empty move forward which will skip corrupted lines or end
-                    if(line.isEmpty())
-                        continue;
-                    
-                    //all the data should be split by commas in the same order as the header
-                    String[] data = line.split(",");
-                    //the first element is time
-                    double timeInSeconds = Double.parseDouble(data[0]);
-                    
-                    long time = (long) (timeInSeconds*1000);
-                    //for each of the remaining columns
-                    for(int i = 1; i < data.length; i++) {
-                        //add this element to the datamap
-                        dataAnalyzer.chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-                    }
-                    
-                }
-                
-                //set title
-                dataAnalyzer.setTitle("DataAnalyzer - " + file.getName());
-                
-                //apply post processing
-                if(applyPostProcessing) {
-                    dataAnalyzer.applyPE3PostProcessing();
-                    dataAnalyzer.applyPostProcessing();
-                }
-                
-                //set visible and location
-                dataAnalyzer.setVisible(true);
-                dataAnalyzer.setLocation(100 * num, 100 * num);
-                
-                //opened another file
-                num++;
-            }
+        SwingWorker worker = new SwingWorker<Void, Void>() {
             
-        }
+            public Void doInBackground() throws FileNotFoundException {
+                //handle the first file to not open a new screen
+                boolean first = true;
+
+                //holds number of files opened
+                int num = 0;
+
+                //for each file
+                for(File file : files) {
+                    //if its the first file we don't need to do this in a new window.
+                    if(first) {
+                        //Create way to read file
+                        Scanner scan = new Scanner(file);
+                        //get the first line which tells us the order of parameters
+                        String header = scan.nextLine();
+                        //store these as an array of keys
+                        String[] keys = header.split(",");
+                        //for each remaining line
+                        while(scan.hasNextLine()) {
+                            //get the next line
+                            String line = scan.nextLine();
+                            //if its empty move forward which will skip corrupted lines or end
+                            if(line.isEmpty())
+                                continue;
+
+                            //all the data should be split by commas in the same order as the header
+                            String[] data = line.split(",");
+                            //the first element is time
+                            double timeInSeconds = Double.parseDouble(data[0]);
+
+                            long time = (long) (timeInSeconds*1000);
+                            //for each of the remaining columns
+                            for(int i = 1; i < data.length; i++) {
+                                //add this element to the datamap
+                                chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+                            }
+
+                        }
+
+                        //set title
+                        setTitle("DataAnalyzer - " + file.getName());
+
+                        //no longer first
+                        first = false;
+                        num++;
+
+                        //apply post processing
+                        if(applyPostProcessing) {
+                            applyPE3PostProcessing();
+                            applyPostProcessing();
+                        }
+
+                    }
+                    else {
+                        DataAnalyzer dataAnalyzer = new DataAnalyzer();
+                        //Create way to read file
+                        Scanner scan = new Scanner(file);
+                        //get the first line which tells us the order of parameters
+                        String header = scan.nextLine();
+                        //store these as an array of keys
+                        String[] keys = header.split(",");
+                        //for each remaining line
+                        while(scan.hasNextLine()) {
+                            //get the next line
+                            String line = scan.nextLine();
+                            //if its empty move forward which will skip corrupted lines or end
+                            if(line.isEmpty())
+                                continue;
+
+                            //all the data should be split by commas in the same order as the header
+                            String[] data = line.split(",");
+                            //the first element is time
+                            double timeInSeconds = Double.parseDouble(data[0]);
+
+                            long time = (long) (timeInSeconds*1000);
+                            //for each of the remaining columns
+                            for(int i = 1; i < data.length; i++) {
+                                //add this element to the datamap
+                                dataAnalyzer.chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+                            }
+
+                        }
+
+                        //set title
+                        dataAnalyzer.setTitle("DataAnalyzer - " + file.getName());
+
+                        //apply post processing
+                        if(applyPostProcessing) {
+                            dataAnalyzer.applyPE3PostProcessing();
+                            dataAnalyzer.applyPostProcessing();
+                        }
+
+                        //set visible and location
+                        dataAnalyzer.setVisible(true);
+                        dataAnalyzer.setLocation(100 * num, 100 * num);
+
+                        //opened another file
+                        num++;
+                    }
+
+                }
+                
+                return null;
+            }
+
+            public void done() {
+                //Destroy the Loading Dialog
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+        
     }
     
     //returns chartManager
