@@ -82,6 +82,9 @@ public class ChartAssembly implements ChartMouseListener {
     String[] selectedTags;
     int[] selectedLaps;
     
+    //current selected lists and laps
+    LinkedList<LinkedList<LogObject>> selectedLists;
+    
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
     
@@ -226,7 +229,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 //apply filtering
                 if(rc.getCode() != -1) {
-                    setChart(titleToTag(), selectedLaps, rc.getCode());
+                    setChart(selectedTags, selectedLaps, rc.getCode());
                 }
             }
         });
@@ -346,7 +349,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 //apply filtering
                 if(rc.getCode() != -1) {
-                    setChart(titleToTag(), selectedLaps, rc.getCode());
+                    setChart(selectedTags, selectedLaps, rc.getCode());
                 }
             }
         });
@@ -602,22 +605,20 @@ public class ChartAssembly implements ChartMouseListener {
     
     private void showHistogram() {
         Dimension currSize = chartPanel.getSize();
-        String title = chartPanel.getChart().getTitle().getText();
-        String[] titleSplit = title.split(" vs ");
-        String[] tags = new String[titleSplit.length - 1];
-        for (int i = 0; i < titleSplit.length - 1; i++) {
-            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
-        }
+        String[] tags;
+        tags = selectedTags;
+        if(tags == null || tags[0] == null)
+            return;
         //update laps
         SimpleHistogramDataset data = getHistogramDataCollection(tags, selectedLaps);
         
         // Gets the independent variable from the title of the data
-        String yAxis = "Milliseconds";
+        String yAxis = selectedTags[0].split(",")[0];
         // Gets the dependent variable from the title of the data
-        String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
+        String xAxis = selectedTags[0].split(",")[1];  //split title by vs, we get ["RPM", "Time"] or something like that
         
         //creates a custom histogram
-        JFreeChart chart = createMyHistogram(title, xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
+        JFreeChart chart = createMyHistogram(chartPanel.getChart().getTitle().getText(), xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
 
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
@@ -981,72 +982,25 @@ public class ChartAssembly implements ChartMouseListener {
         SimpleHistogramDataset dataset = new SimpleHistogramDataset("time");
         dataset.setAdjustForBinSize(false);
 
-        
-        for(String tag : tags) {
+        //We are currently only capable of showing one histogram per chart assembly
+        String tag = tags[0];
         //get data from dataset
-            LinkedList<LogObject> data = manager.getDataMap().getList(tag);
-            
-            //if asked for data with laps, complete for each lap
-            if(laps != null) {
-                for(int l = 0; l < laps.length; l++) {
-                    //calculate min and max value of the data 
-                    double min = Double.MAX_VALUE;
-                    double max = Double.MIN_VALUE;
-                    for(LogObject lo : data) {
-                        if(lo.getLaps().contains(laps[l])) {
-                            if(lo instanceof SimpleLogObject) {
-                                if(((SimpleLogObject) lo).getValue() > max)
-                                    max = ((SimpleLogObject) lo).getValue();
-                                if(((SimpleLogObject) lo).getValue() < min)
-                                    min = ((SimpleLogObject) lo).getValue();
-                            }
-                        }
-                    }
+        LinkedList<LogObject> data = manager.getDataMap().getList(tag);
 
-                    //get the intervals to work with
-                    double interval = max - min;
-                    interval /= 50;
-
-
-                    //for each of the 50 intervals
-                    for(int i = 1; i < 51; i++) {
-                        SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
-
-
-                        //for each data element
-                        for(LogObject lo : data) {
-                            if(lo.getLaps().contains(laps[l])) {
-                                //if its a simple log object its value can be obtained
-                                if(lo instanceof SimpleLogObject) {
-                                    //if the value of the current object is between the interval we are searching for
-                                    if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                        //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 50);
-                                    }
-                                } else if(lo instanceof FunctionOfLogObject) {
-                                    if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                        //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 50);
-                                    }
-                                }
-                            }
-                        }
-                        dataset.addBin(bin);
-                    }
-
-
-
-                }
-            } else {
+        //if asked for data with laps, complete for each lap
+        if(laps != null) {
+            for(int l = 0; l < laps.length; l++) {
                 //calculate min and max value of the data 
                 double min = Double.MAX_VALUE;
                 double max = Double.MIN_VALUE;
                 for(LogObject lo : data) {
-                    if(lo instanceof SimpleLogObject) {
-                        if(((SimpleLogObject) lo).getValue() > max)
-                            max = ((SimpleLogObject) lo).getValue();
-                        if(((SimpleLogObject) lo).getValue() < min)
-                            min = ((SimpleLogObject) lo).getValue();
+                    if(lo.getLaps().contains(laps[l])) {
+                        if(lo instanceof SimpleLogObject) {
+                            if(((SimpleLogObject) lo).getValue() > max)
+                                max = ((SimpleLogObject) lo).getValue();
+                            if(((SimpleLogObject) lo).getValue() < min)
+                                min = ((SimpleLogObject) lo).getValue();
+                        }
                     }
                 }
 
@@ -1054,35 +1008,81 @@ public class ChartAssembly implements ChartMouseListener {
                 double interval = max - min;
                 interval /= 50;
 
+
                 //for each of the 50 intervals
                 for(int i = 1; i < 51; i++) {
-                    //A bin for this section
                     SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
+
 
                     //for each data element
                     for(LogObject lo : data) {
-                        //if its a simple log object its value can be obtained
-                        if(lo instanceof SimpleLogObject) {
-                            //if the value of the current object is between the interval we are searching for
-                            if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                //increment the counter
+                        if(lo.getLaps().contains(laps[l])) {
+                            //if its a simple log object its value can be obtained
+                            if(lo instanceof SimpleLogObject) {
+                                //if the value of the current object is between the interval we are searching for
+                                if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                    //increment the counter
                                     bin.setItemCount(bin.getItemCount() + 50);
-                            }
-                        } else if(lo instanceof FunctionOfLogObject) {
-                            if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                //increment the counter
+                                }
+                            } else if(lo instanceof FunctionOfLogObject) {
+                                if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                                    //increment the counter
                                     bin.setItemCount(bin.getItemCount() + 50);
+                                }
                             }
                         }
                     }
-                    //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
                     dataset.addBin(bin);
-
                 }
 
 
 
             }
+        } else {
+            //calculate min and max value of the data 
+            double min = Double.MAX_VALUE;
+            double max = Double.MIN_VALUE;
+            for(LogObject lo : data) {
+                if(lo instanceof SimpleLogObject) {
+                    if(((SimpleLogObject) lo).getValue() > max)
+                        max = ((SimpleLogObject) lo).getValue();
+                    if(((SimpleLogObject) lo).getValue() < min)
+                        min = ((SimpleLogObject) lo).getValue();
+                }
+            }
+
+            //get the intervals to work with
+            double interval = max - min;
+            interval /= 50;
+
+            //for each of the 50 intervals
+            for(int i = 1; i < 51; i++) {
+                //A bin for this section
+                SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
+
+                //for each data element
+                for(LogObject lo : data) {
+                    //if its a simple log object its value can be obtained
+                    if(lo instanceof SimpleLogObject) {
+                        //if the value of the current object is between the interval we are searching for
+                        if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                            //increment the counter
+                                bin.setItemCount(bin.getItemCount() + 50);
+                        }
+                    } else if(lo instanceof FunctionOfLogObject) {
+                        if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
+                            //increment the counter
+                                bin.setItemCount(bin.getItemCount() + 50);
+                        }
+                    }
+                }
+                //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
+                dataset.addBin(bin);
+
+            }
+
+
+
         }
         return dataset;
         
@@ -1101,23 +1101,20 @@ public class ChartAssembly implements ChartMouseListener {
             if(manager.getLapBreakerActive() < 0 && !SwingUtilities.isRightMouseButton(cme.getTrigger())) {
                 // Create a static cursor that isnt cleared every time
                 ValueMarker marker = new ValueMarker(xCrosshair.getValue());
-                //calculate the tag
-                String title = cme.getChart().getTitle().getText();
-                //create array of tags
-                String[] titleSplit = title.split(" vs ");
-                String[] tags = new String[titleSplit.length - 1];
-                for (int i = 0; i < titleSplit.length - 1; i++) {
-                    tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
-                }
+
+                String[] tags;
+                tags = selectedTags;
 
                 for(String tag : tags) {
+                    if(tag == null)
+                        continue;
                     //add to the list of static markers
                     if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, marker)) == null)
                         manager.getStaticMarkers().put(new CategorizedValueMarker(tag, marker));
                 }
 
                 //draw markers
-                drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+                drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
             } else {
                 //if lapbreaker has just started
                 if(manager.getLapBreakerActive() == 0) {
@@ -1133,7 +1130,7 @@ public class ChartAssembly implements ChartMouseListener {
                     }
 
                     //draw markers
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+                    drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
                 //if the start has already been defined
                 } else if(manager.getLapBreakerActive() == 1) {
                     //define the next click as a stop
@@ -1153,7 +1150,7 @@ public class ChartAssembly implements ChartMouseListener {
                     }
 
                     //draw markers
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+                    drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
 
                     //get the used lap numbers
                     ArrayList<Integer> usedLaps = new ArrayList<>();
@@ -1201,7 +1198,7 @@ public class ChartAssembly implements ChartMouseListener {
                             manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStartTime));
                             manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStopTime));
                         }
-                        drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
+                        drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
                     }
                 }
             }
@@ -1232,7 +1229,6 @@ public class ChartAssembly implements ChartMouseListener {
         XYPlot plot = (XYPlot) chartPanel.getChart().getPlot();
         // Find the y cordinate from the plots data set given a x cordinate and store to list
         ArrayList<Double> yCors = new ArrayList<>();
-        String[] titles = titleToTag();
         // Repeat the loop for each series in the plot
         for (int i = 0; i < plot.getDatasetCount(); i++) {
             //get current data set
@@ -1295,6 +1291,7 @@ public class ChartAssembly implements ChartMouseListener {
     /**
     * Gets the tag from the active chart and formats it into a String array of TAGs
     * @return String of the TAGs of the active charts
+    * @deprecated Do not use this anymore, it will fail with multiple datasets.
     */
     private String[] titleToTag() {
         return titleToTag("");
@@ -1305,6 +1302,7 @@ public class ChartAssembly implements ChartMouseListener {
      * Reformats a title into a String array of TAGs
      * @param title String value of the title of a chart
      * @return String value of the TAGs from the title given
+     * @deprecated Do not use this anymore, it will fail with multiple datasets.
      */
     private String[] titleToTag(String title) {
         //if empty get from chart
@@ -1344,7 +1342,7 @@ public class ChartAssembly implements ChartMouseListener {
         //time to return if its not already a function of time
         long time = -1;
         //get the tag of the first chart
-        String TAG = titleToTag()[0];
+        String TAG = selectedTags[0];
         //if its a function of time, find nearest 50ms point
         if(TAG.contains("Time,")) {
             //get mod of value
@@ -1509,6 +1507,5 @@ public class ChartAssembly implements ChartMouseListener {
             g2.setClip(savedClip);
         }
     }
-
     
 }
