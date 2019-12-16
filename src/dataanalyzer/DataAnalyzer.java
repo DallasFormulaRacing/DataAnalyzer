@@ -31,7 +31,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import org.jfree.chart.plot.ValueMarker;
 
 /**
@@ -51,6 +53,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     ChartManager chartManager;
     
     private String fileNotes;
+    
+    //holds the current theme
+    protected Theme currTheme = Theme.DEFAULT;
 
     public DataAnalyzer() {
         initComponents();
@@ -161,8 +166,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         fileChooser = new javax.swing.JFileChooser();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -189,6 +193,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
+        defaultTheme_menuitem = new javax.swing.JMenuItem();
+        systemTheme_menuitem = new javax.swing.JMenuItem();
+        darkTheme_menuitem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
@@ -208,30 +215,24 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         newWindowMenuItem.setText("New Window");
-        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newWindowMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(newWindowMenuItem);
 
         newImportMenuItem.setText("New Import");
-        newImportMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newImportMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(newImportMenuItem);
 
         importECUDataMenuItem.setText("Import PE3 data");
-        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importECUDataMenuItemActionPerformed(evt);
             }
         });
@@ -239,10 +240,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
-        openBtn.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openBtnClicked(evt);
             }
         });
@@ -250,10 +249,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
-        saveMenuButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuButtonClicked(evt);
             }
         });
@@ -261,10 +258,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         saveAsMenuItem.setText("Save As");
-        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsMenuItemActionPerformed(evt);
             }
         });
@@ -272,10 +267,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         exportMenuItem.setText("Export");
-        exportMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportMenuItemActionPerformed(evt);
             }
         });
@@ -283,10 +276,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         resetMenuItem.setText("Reset");
-        resetMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetMenuItemActionPerformed(evt);
             }
         });
@@ -294,10 +285,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Exit");
-        closeMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeMenuItemActionPerformed(evt);
             }
         });
@@ -308,10 +297,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         editMenu.setText("Edit");
 
         addMathChannelButton.setLabel("Add Math Channel");
-        addMathChannelButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addMathChannel(evt);
             }
         });
@@ -319,20 +306,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
-        addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addLapConditionMenuItemActionPerformed(evt);
             }
         });
         editMenu.add(addLapConditionMenuItem);
 
         addNotesMenuItem.setText("Add Notes");
-        addNotesMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addNotesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addNotesMenuItemActionPerformed(evt);
             }
         });
@@ -344,60 +327,48 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         fullscreenMenuItem.setText("Fullscreen");
-        fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fullscreenMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(fullscreenMenuItem);
 
         showRangeMarkersMenuItem.setText("Hide Range Markers");
-        showRangeMarkersMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        showRangeMarkersMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showRangeMarkersMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(showRangeMarkersMenuItem);
 
         singleViewMenuItem.setText("Single View");
-        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 singleViewMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(singleViewMenuItem);
 
         twoVerticalMenuItem.setText("Two Vertical");
-        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 twoVerticalMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(twoVerticalMenuItem);
 
         twoHorizontalMenuItem.setText("Two Horizontal");
-        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 twoHorizontalMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(twoHorizontalMenuItem);
 
         swapChartsMenuItem.setText("Swap Charts");
-        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 swapChartsMenuItemActionPerformed(evt);
             }
         });
@@ -405,54 +376,68 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         addChartMenuItem.setText("Add Chart");
-        addChartMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addChartMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(addChartMenuItem);
+
+        defaultTheme_menuitem.setText("Default");
+        defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                defaultTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(defaultTheme_menuitem);
+
+        systemTheme_menuitem.setText("System");
+        systemTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                systemTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(systemTheme_menuitem);
+
+        darkTheme_menuitem.setText("Dark");
+        darkTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                darkTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(darkTheme_menuitem);
 
         menuBar.add(viewMenu);
 
         vehicleMenu.setText("Vehicle");
 
         newVehicleMenuItem.setText("New Vehicle");
-        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(newVehicleMenuItem);
 
         saveVehicleMenuItem.setText("Save Vehicle");
-        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(saveVehicleMenuItem);
 
         importVehicleMenuItem.setText("Import Vehicle");
-        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(importVehicleMenuItem);
 
         editVehicleMenuItem.setText("Edit Vehicle");
-        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editVehicleMenuItemActionPerformed(evt);
             }
         });
@@ -463,20 +448,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
         engineMenu.setText("Engine");
 
         engineChartSetup.setText("Setup Charts");
-        engineChartSetup.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        engineChartSetup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 engineChartSetupActionPerformed(evt);
             }
         });
         engineMenu.add(engineChartSetup);
 
         showLambdaMap.setText("Show Lambda Map");
-        showLambdaMap.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        showLambdaMap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showLambdaMapActionPerformed(evt);
             }
         });
@@ -1160,6 +1141,118 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new LambdaMap(chartManager.getDataMap()).setVisible(true);
         }
     }//GEN-LAST:event_showLambdaMapActionPerformed
+
+    /**
+     * Apply the default theme
+     * @param evt 
+     */
+    private void defaultTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultTheme_menuitemActionPerformed
+        currTheme = Theme.DEFAULT;
+        //light theme parameters
+        UIManager.put( "control", new Color(214,217,223) );
+        UIManager.put( "info", new Color(242,242,189) );
+        UIManager.put( "nimbusBase", new Color(51,98,140) );
+        UIManager.put( "nimbusAlertYellow", new Color(255,220,35) );
+        UIManager.put( "nimbusDisabledText", new Color(142,143,145) );
+        UIManager.put( "nimbusFocus", new Color(115,164,209));
+        UIManager.put( "nimbusGreen", new Color(176,179,50) );
+        UIManager.put( "nimbusInfoBlue", new Color(47,92,180));
+        UIManager.put( "nimbusLightBackground", new Color(255,255,255));
+        UIManager.put( "nimbusOrange", new Color(191,98,4) );
+        UIManager.put( "nimbusRed", new Color(169,46,34) );
+        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
+        UIManager.put( "nimbusSelectionBackground", new Color(57,105,138) );
+        UIManager.put( "text", new Color(0,0,0) );
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_defaultTheme_menuitemActionPerformed
+
+    /**
+     * Apply the system default theme
+     * @param evt 
+     */
+    private void systemTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemTheme_menuitemActionPerformed
+        currTheme = Theme.SYSTEM;
+        try {
+            UIManager.setLookAndFeel(
+                UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_systemTheme_menuitemActionPerformed
+
+    /**
+     * Apply the dark theme
+     * @param evt 
+     */
+    private void darkTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_darkTheme_menuitemActionPerformed
+        currTheme = Theme.DARK;
+        //dark
+        UIManager.put( "control", new Color( 128, 128, 128));
+        UIManager.put( "info", new Color(128,128,128));
+        UIManager.put( "nimbusBase", new Color( 18, 30, 49));
+        UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0));
+        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128));
+        UIManager.put( "nimbusFocus", new Color(115,164,209));
+        UIManager.put( "nimbusGreen", new Color(176,179,50));
+        UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221));
+        UIManager.put( "nimbusLightBackground", new Color( 18, 30, 49));
+        UIManager.put( "nimbusOrange", new Color(191,98,4));
+        UIManager.put( "nimbusRed", new Color(169,46,34));
+        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255));
+        UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156));
+        UIManager.put( "text", new Color( 230, 230, 230));
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_darkTheme_menuitemActionPerformed
   
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -2250,6 +2343,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
     private javax.swing.JMenuItem closeMenuItem;
+    private javax.swing.JMenuItem darkTheme_menuitem;
+    private javax.swing.JMenuItem defaultTheme_menuitem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
     private javax.swing.JMenuItem engineChartSetup;
@@ -2274,6 +2369,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
+    private javax.swing.JMenuItem systemTheme_menuitem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
     private javax.swing.JMenuItem twoVerticalMenuItem;
     private javax.swing.JMenu vehicleMenu;
@@ -2319,5 +2415,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             TAG.add(elem);
             return this;
         }
+    }
+    
+    //Enumeration definition for Theme
+    public enum Theme {
+        DEFAULT, SYSTEM, DARK;
     }
 }
