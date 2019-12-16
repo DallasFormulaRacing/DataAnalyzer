@@ -1398,7 +1398,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         }
         if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037 * (0 - 1)", chartManager.getDataMap(), "Time,zAccel");
+            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", chartManager.getDataMap(), "Time,zAccel");
         }
         
         //now we have unoriented xyz 
