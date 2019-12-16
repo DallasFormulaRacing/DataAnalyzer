@@ -1491,7 +1491,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         }
         if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037 * (0 - 1)", chartManager.getDataMap(), "Time,zAccel");
+            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", chartManager.getDataMap(), "Time,zAccel");
         }
         
         //now we have unoriented xyz 
@@ -1515,7 +1515,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         double[] have = new double[3];
         have[0] = -.21316;
         have[1] = .116;
-        have[2] = -.91;
+        have[2] = .91;
         LinkedList<LogObject> newX = new LinkedList<>();
         LinkedList<LogObject> newY = new LinkedList<>();
         LinkedList<LogObject> newZ = new LinkedList<>();
@@ -2179,6 +2179,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                             //all the data should be split by commas in the same order as the header
                             String[] data = line.split(",");
+                            //if line does not match the format of the header, skip
+                            if(data.length != keys.length)
+                                continue;
                             //the first element is time
                             double timeInSeconds = Double.parseDouble(data[0]);
 
