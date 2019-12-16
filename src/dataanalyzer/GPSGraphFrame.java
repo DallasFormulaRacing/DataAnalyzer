@@ -19,6 +19,12 @@ public class GPSGraphFrame extends javax.swing.JFrame {
         
         this.setContentPane(new GPSGraphPanel());
     }
+    
+    public GPSGraphFrame(CategoricalHashMap data) {
+        initComponents();
+        
+        this.setContentPane(new GPSGraphPanel(data));
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

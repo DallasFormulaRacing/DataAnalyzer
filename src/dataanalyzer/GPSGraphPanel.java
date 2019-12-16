@@ -15,6 +15,7 @@ import java.awt.RenderingHints;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JPanel;
 
 /**
@@ -26,9 +27,12 @@ public class GPSGraphPanel extends JPanel{
     private TrackMap tm;
     
     public GPSGraphPanel(){
-        setPreferredSize(new Dimension(600,400));
         tm = new TrackMap();
         tm.readCSV("test.csv");
+    }
+    
+    public GPSGraphPanel(CategoricalHashMap data){
+        tm = new TrackMap(data);
     }
     
     /*
@@ -73,6 +77,7 @@ public class GPSGraphPanel extends JPanel{
 */
 class TrackMap extends Polygon{
     private ArrayList<Point> points;
+    private CategoricalHashMap data;
     private double xMin, xMax, yMin, yMax;
     int length, width;
     
@@ -82,6 +87,17 @@ class TrackMap extends Polygon{
         length = 600;
         width = 400;
         points = null;
+    }
+    
+    public TrackMap(CategoricalHashMap data){
+        xMin = yMin = Integer.MAX_VALUE;
+        xMax = yMax = Integer.MIN_VALUE;
+        length = 600;
+        width = 400;
+        points = null;
+        this.data = data;
+        
+        readData();
     }
     
     //THIS IS TO NEVER BE ACTUALLY USED IN ITS CURRENT STATER
@@ -133,6 +149,46 @@ class TrackMap extends Polygon{
         }catch(Exception e){
             System.out.println(e);
         }
+        resize();
+    }
+    
+    private void readData(){
+        points = new ArrayList<>();
+        //Get the lists
+        LinkedList<LogObject> longlist = data.getList("Time,Longitude");
+        LinkedList<LogObject> latlist = data.getList("Time,Latitude");
+        
+        //Loop through Lists
+        for(int i = 0; i<longlist.size(); i++){
+            //xCordinates
+            LogObject longitude = longlist.pop();
+            longlist.addLast(longitude);
+            
+            //yCordinates
+            LogObject latitude = latlist.pop();
+            latlist.addLast(latitude);
+            
+            Point p = new Point();
+            
+            try{
+                p.x = ((SimpleLogObject) longitude).value;
+                p.y = ((SimpleLogObject) latitude).value;
+                p.time = ((SimpleLogObject) longitude).time;
+                
+                xMax = Math.max(p.x, xMax);
+                xMin = Math.min(p.x, xMin);
+                
+                yMax = Math.max(p.y, yMax);
+                yMin = Math.min(p.y, yMin);
+            
+                points.add(p);
+                
+            }catch(Exception e){
+                System.out.println(e);
+            }
+            
+        }
+        
         resize();
     }
     

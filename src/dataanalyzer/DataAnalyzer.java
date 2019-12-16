@@ -156,8 +156,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         fileChooser = new javax.swing.JFileChooser();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -192,6 +191,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         engineMenu = new javax.swing.JMenu();
         engineChartSetup = new javax.swing.JMenuItem();
         showLambdaMap = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         jMenuItem2.setText("jMenuItem2");
 
@@ -203,30 +204,24 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         newWindowMenuItem.setText("New Window");
-        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newWindowMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(newWindowMenuItem);
 
         newImportMenuItem.setText("New Import");
-        newImportMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newImportMenuItemActionPerformed(evt);
             }
         });
         fileMenu.add(newImportMenuItem);
 
         importECUDataMenuItem.setText("Import PE3 data");
-        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importECUDataMenuItemActionPerformed(evt);
             }
         });
@@ -234,10 +229,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
-        openBtn.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        openBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openBtnClicked(evt);
             }
         });
@@ -245,10 +238,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
-        saveMenuButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuButtonClicked(evt);
             }
         });
@@ -256,10 +247,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         saveAsMenuItem.setText("Save As");
-        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsMenuItemActionPerformed(evt);
             }
         });
@@ -267,10 +256,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         exportMenuItem.setText("Export");
-        exportMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportMenuItemActionPerformed(evt);
             }
         });
@@ -278,10 +265,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         resetMenuItem.setText("Reset");
-        resetMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetMenuItemActionPerformed(evt);
             }
         });
@@ -289,10 +274,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Exit");
-        closeMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeMenuItemActionPerformed(evt);
             }
         });
@@ -303,10 +286,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         editMenu.setText("Edit");
 
         addMathChannelButton.setLabel("Add Math Channel");
-        addMathChannelButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addMathChannel(evt);
             }
         });
@@ -314,20 +295,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
-        addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addLapConditionMenuItemActionPerformed(evt);
             }
         });
         editMenu.add(addLapConditionMenuItem);
 
         addNotesMenuItem.setText("Add Notes");
-        addNotesMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addNotesMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addNotesMenuItemActionPerformed(evt);
             }
         });
@@ -339,60 +316,48 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         fullscreenMenuItem.setText("Fullscreen");
-        fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fullscreenMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(fullscreenMenuItem);
 
         showRangeMarkersMenuItem.setText("Hide Range Markers");
-        showRangeMarkersMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        showRangeMarkersMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showRangeMarkersMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(showRangeMarkersMenuItem);
 
         singleViewMenuItem.setText("Single View");
-        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        singleViewMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 singleViewMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(singleViewMenuItem);
 
         twoVerticalMenuItem.setText("Two Vertical");
-        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        twoVerticalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 twoVerticalMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(twoVerticalMenuItem);
 
         twoHorizontalMenuItem.setText("Two Horizontal");
-        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        twoHorizontalMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 twoHorizontalMenuItemActionPerformed(evt);
             }
         });
         viewMenu.add(twoHorizontalMenuItem);
 
         swapChartsMenuItem.setText("Swap Charts");
-        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        swapChartsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 swapChartsMenuItemActionPerformed(evt);
             }
         });
@@ -400,10 +365,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         addChartMenuItem.setText("Add Chart");
-        addChartMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addChartMenuItemActionPerformed(evt);
             }
         });
@@ -414,40 +377,32 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.setText("Vehicle");
 
         newVehicleMenuItem.setText("New Vehicle");
-        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(newVehicleMenuItem);
 
         saveVehicleMenuItem.setText("Save Vehicle");
-        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(saveVehicleMenuItem);
 
         importVehicleMenuItem.setText("Import Vehicle");
-        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importVehicleMenuItemActionPerformed(evt);
             }
         });
         vehicleMenu.add(importVehicleMenuItem);
 
         editVehicleMenuItem.setText("Edit Vehicle");
-        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editVehicleMenuItemActionPerformed(evt);
             }
         });
@@ -458,26 +413,34 @@ public class DataAnalyzer extends javax.swing.JFrame {
         engineMenu.setText("Engine");
 
         engineChartSetup.setText("Setup Charts");
-        engineChartSetup.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        engineChartSetup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 engineChartSetupActionPerformed(evt);
             }
         });
         engineMenu.add(engineChartSetup);
 
         showLambdaMap.setText("Show Lambda Map");
-        showLambdaMap.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        showLambdaMap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showLambdaMapActionPerformed(evt);
             }
         });
         engineMenu.add(showLambdaMap);
 
         menuBar.add(engineMenu);
+
+        jMenu1.setText("Track Map");
+
+        jMenuItem1.setText("Show Track Map");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showTrackMapActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        menuBar.add(jMenu1);
 
         setJMenuBar(menuBar);
 
@@ -1155,6 +1118,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new LambdaMap(chartManager.getDataMap()).setVisible(true);
         }
     }//GEN-LAST:event_showLambdaMapActionPerformed
+
+    private void showTrackMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTrackMapActionPerformed
+        if(chartManager.getDataMap().isEmpty()){
+            new GPSGraphFrame().setVisible(true);
+        } else {
+            new GPSGraphFrame(chartManager.getDataMap()).setVisible(true);
+        }
+    }//GEN-LAST:event_showTrackMapActionPerformed
   
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1986,6 +1957,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem fullscreenMenuItem;
     private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newImportMenuItem;
