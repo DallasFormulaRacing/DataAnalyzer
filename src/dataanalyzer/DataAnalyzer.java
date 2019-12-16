@@ -1422,7 +1422,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         double[] have = new double[3];
         have[0] = -.21316;
         have[1] = .116;
-        have[2] = -.91;
+        have[2] = .91;
         LinkedList<LogObject> newX = new LinkedList<>();
         LinkedList<LogObject> newY = new LinkedList<>();
         LinkedList<LogObject> newZ = new LinkedList<>();
