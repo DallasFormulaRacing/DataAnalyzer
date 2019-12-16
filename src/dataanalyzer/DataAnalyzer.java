@@ -2086,6 +2086,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                             //all the data should be split by commas in the same order as the header
                             String[] data = line.split(",");
+                            //if line does not match the format of the header, skip
+                            if(data.length != keys.length)
+                                continue;
                             //the first element is time
                             double timeInSeconds = Double.parseDouble(data[0]);
 
