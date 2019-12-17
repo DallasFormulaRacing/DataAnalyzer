@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
@@ -55,7 +56,7 @@ public class GPSGraphPanel extends JPanel{
         *   JOIN_ROUND means that the joining of two lines will curve instead of coming to a point
         *   The last two lines enable anti-aliasing and then clean up the anti-aliasing
         */
-        BasicStroke stroke = new BasicStroke(2.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
+        BasicStroke stroke = new BasicStroke(4.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND);
         RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         rh.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
         
@@ -67,6 +68,8 @@ public class GPSGraphPanel extends JPanel{
         //Draw the track map with all of the settings above
         g2.draw(tm);
         
+        tm.setOverlay("Time,Speed");
+        tm.getOverlay().paintComponent(g2);
     }
     
 }
@@ -76,9 +79,10 @@ public class GPSGraphPanel extends JPanel{
 *   TrackMap Takes GPS data and maps it into the polygon class to be drawn later
 */
 class TrackMap extends Polygon{
-    private ArrayList<Point> points;
-    private CategoricalHashMap data;
+    protected ArrayList<Point> points;
+    protected CategoricalHashMap data;
     private double xMin, xMax, yMin, yMax;
+    private Overlay overlay;
     int length, width;
     
     public TrackMap(){
@@ -192,6 +196,14 @@ class TrackMap extends Polygon{
         resize();
     }
     
+    public Overlay getOverlay(){
+        return overlay;
+    }
+    
+    public void setOverlay(String param){
+        overlay = new Overlay(param);
+    }
+    
     void resize(){
         super.reset();
         for(int i = 0; i<points.size(); i++){
@@ -204,10 +216,82 @@ class TrackMap extends Polygon{
         System.out.println();
     }
     
+    
+    //A point structure for easy data manipulation
     class Point{
         public double x, y;
         public long time;
         public int xScaled, yScaled;
     }
     
+    
+    /*
+    *   Overlay is a class drawn seperatly of the track map. It takes the points
+    *   from the Track Map class and draws lines between them colored based on 
+    *   their distance from the minimum value (Low values red, high values green)
+    */
+    class Overlay extends JComponent{
+        private double max, min;
+        private ArrayList<SimpleLogObject> logPoints;
+        private LinkedList<LogObject> list;
+        private Graphics2D g;
+        
+        public Overlay(){
+            max = Integer.MIN_VALUE;
+            min = Integer.MAX_VALUE;
+            logPoints = new ArrayList<>();
+        }
+        
+        public Overlay(String param){
+            max = Integer.MIN_VALUE;
+            min = Integer.MAX_VALUE;
+            logPoints = new ArrayList<>();
+            list = data.getList(param);
+            
+            processLog();
+        }
+        
+        public void processLog(){
+            for(int i = 0; i<list.size(); i++){
+                try{
+                    SimpleLogObject slo = (SimpleLogObject)list.pop();
+                    logPoints.add(slo);
+                    list.addLast(slo);
+                    
+                    max = Math.max(slo.value, max);
+                    min = Math.min(slo.value, min);
+                }catch(Exception e){
+                    System.out.println(e);
+                }
+            }
+        }
+        
+        @Override
+        public void paintComponent(Graphics g){
+            Graphics2D g2 = (Graphics2D) g;
+            
+            int x1 = points.get(0).xScaled;
+            int y1 = points.get(0).yScaled;
+            int x2 = 0, y2 = 0;
+            for(int i = 1; i<logPoints.size(); i++){
+                x2 = points.get(i).xScaled;
+                y2 = points.get(i).yScaled;
+                
+                /*
+                    This is a function that return a float between 0 and 1/3 so 
+                    the color of the line will be between red and green on the
+                    color wheel (The hue will range form 0 to 120 degrees)
+                */
+                float hue = (float) (1 - ((logPoints.get(i).value - min) / (max - min))) / 3;
+                
+                g2.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
+                g2.drawLine(x1,y1,x2,y2);
+                
+                x1 = x2;
+                y1 = y2;
+            }
+        }
+        
+        
+    }
 }
