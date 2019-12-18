@@ -27,9 +27,6 @@ public class GPSGraphFrame extends javax.swing.JFrame {
         //initializes GPSGraphFrame
         initComponents();
         
-        //sets class variables
-        this.hasData = false;
-        
         //sets the content panel of the frame to a GPSGraphPanel
         this.setContentPane(new GPSGraphPanel());
         
@@ -72,6 +69,7 @@ public class GPSGraphFrame extends javax.swing.JFrame {
         //sets the content panel of the frame to a GPSGraphPanel
         this.setContentPane(new GPSGraphPanel(dataMap));
     }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

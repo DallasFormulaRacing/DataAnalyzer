@@ -48,6 +48,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private String fileNotes;
     
     private ArrayList<JInternalFrame> trackMaps = new ArrayList<>();
+    
+    private ArrayList<JInternalFrame> lambdaMaps = new ArrayList<>();
 
     public DataAnalyzer() {
         initComponents();
@@ -121,6 +123,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             trackMap.dispose();
         }
         trackMaps.clear();
+        
+        for(JInternalFrame lambdaMap : lambdaMaps){
+            lambdaMap.dispose();
+        }
+        lambdaMaps.clear();
     }
     
     private void initializeBasicView() {
@@ -208,7 +215,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         jMenuItem2.setText("jMenuItem2");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(1100, 700));
+        setMinimumSize(new java.awt.Dimension(1220, 720));
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         fileMenu.setText("File");
@@ -1117,11 +1124,26 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_engineChartSetupActionPerformed
 
     private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
+        JInternalFrame lambdaMapInternalFrame;
+        clearAllCharts();
+        //calls the correct constructor based on wheather data has been loaded
         if(chartManager.getDataMap().isEmpty()){
-            new LambdaMap().setVisible(true);
+            lambdaMapInternalFrame = new LambdaMapInternalFrame(this);
         } else {
-            new LambdaMap(chartManager.getDataMap()).setVisible(true);
+            lambdaMapInternalFrame = new LambdaMapInternalFrame(this, chartManager.getDataMap());
         }
+        lambdaMapInternalFrame.setVisible(true);
+        
+        //adds the trackMapInternalFrame to a list, to keep track of them
+        lambdaMaps.add(lambdaMapInternalFrame);
+        
+        //sets the location and size of the trackMapInternalFrame
+        Dimension frameSize = this.getSize();
+        lambdaMapInternalFrame.setLocation(0, 0);
+        lambdaMapInternalFrame.setSize(frameSize.width-15, frameSize.height-70);
+        
+        //adds the trackMapInternalFrame to the DataAnalyzer frame
+        getContentPane().add(lambdaMapInternalFrame);
     }//GEN-LAST:event_showLambdaMapActionPerformed
 
     private void showTrackMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTrackMapActionPerformed
@@ -1964,6 +1986,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //returns trackMaps
     public ArrayList<JInternalFrame> getTrackMap() {
         return trackMaps;
+    }
+    
+    //return lambdaMaps
+    public ArrayList<JInternalFrame> getLambdaMap() {
+        return lambdaMaps;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
