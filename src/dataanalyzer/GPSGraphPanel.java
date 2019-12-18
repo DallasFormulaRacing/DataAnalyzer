@@ -68,7 +68,7 @@ public class GPSGraphPanel extends JPanel{
         //Draw the track map with all of the settings above
         g2.draw(tm);
         
-        tm.setOverlay("Time,Speed");
+        //tm.setOverlay("Time,Speed");
         if(tm.getOverlay() != null){
             tm.getOverlay().paintComponent(g2);
         }

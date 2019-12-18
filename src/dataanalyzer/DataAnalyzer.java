@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import javax.swing.JInternalFrame;
 import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
@@ -13,7 +14,6 @@ import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.MessageBox;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,6 +46,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     ChartManager chartManager;
     
     private String fileNotes;
+    
+    private ArrayList<JInternalFrame> trackMaps = new ArrayList<>();
 
     public DataAnalyzer() {
         initComponents();
@@ -114,13 +116,20 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        
+        for(JInternalFrame trackMap : trackMaps){
+            trackMap.dispose();
+        }
+        trackMaps.clear();
     }
     
     private void initializeBasicView() {
         ChartAssembly chart = chartManager.addChart();
         chart.getChartFrame().setLocation(0, 0);
         Dimension frameSize = this.getSize();
-        chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
+        chart.getChartFrame().setSize((frameSize.width/4)*3, frameSize.height - (3 * ((int) menuBar.getSize().getHeight())));
+        
+        showTrackMapActionPerformed(null);
     }
     
     private void twoVerticalView() {
@@ -128,11 +137,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         clearAllCharts();
         ChartAssembly leftChart = chartManager.addChart();
         leftChart.getChartFrame().setLocation(0, 0);
-        leftChart.getChartFrame().setSize(frameSize.width/2, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
+        leftChart.getChartFrame().setSize(((frameSize.width/4)*3)/2, frameSize.height - (3 * ((int) menuBar.getSize().getHeight())));
         
         ChartAssembly rightChart = chartManager.addChart();
-        rightChart.getChartFrame().setLocation(frameSize.width/2 + 1, 0);
-        rightChart.getChartFrame().setSize(frameSize.width/2, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
+        rightChart.getChartFrame().setLocation(((frameSize.width/4)*3)/2 + 1, 0);
+        rightChart.getChartFrame().setSize(((frameSize.width/4)*3)/2, frameSize.height - (3 * ((int) menuBar.getSize().getHeight())));
+        
+        showTrackMapActionPerformed(null);
     }
     
     private void twoHorizontalView() {
@@ -141,12 +152,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         ChartAssembly topChart = chartManager.addChart();
         topChart.getChartFrame().setLocation(0,0);
-        topChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2 - 22);
+        topChart.getChartFrame().setSize((frameSize.width/4)*3, frameSize.height / 2 - (3 * ((int) menuBar.getSize().getHeight()))/2);
         
         ChartAssembly bottomChart = chartManager.addChart();
-        bottomChart.getChartFrame().setLocation(0,frameSize.height/2 - 22 + 1);
-        bottomChart.getChartFrame().setSize(frameSize.width, frameSize.height / 2 - 22);
-
+        bottomChart.getChartFrame().setLocation(0,frameSize.height/2 - (3 * ((int) menuBar.getSize().getHeight()))/2);
+        bottomChart.getChartFrame().setSize((frameSize.width/4)*3, frameSize.height / 2 - (3 * ((int) menuBar.getSize().getHeight()))/2);
+        
+        showTrackMapActionPerformed(null);
     }
  
     /**
@@ -183,6 +195,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
+        trackMapMenuItem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
@@ -191,8 +204,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         engineMenu = new javax.swing.JMenu();
         engineChartSetup = new javax.swing.JMenuItem();
         showLambdaMap = new javax.swing.JMenuItem();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
 
         jMenuItem2.setText("jMenuItem2");
 
@@ -372,6 +383,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(addChartMenuItem);
 
+        trackMapMenuItem.setText("Add Track Map");
+        trackMapMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showTrackMapActionPerformed(evt);
+            }
+        });
+        viewMenu.add(trackMapMenuItem);
+
         menuBar.add(viewMenu);
 
         vehicleMenu.setText("Vehicle");
@@ -429,18 +448,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         engineMenu.add(showLambdaMap);
 
         menuBar.add(engineMenu);
-
-        jMenu1.setText("Track Map");
-
-        jMenuItem1.setText("Show Track Map");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showTrackMapActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
-
-        menuBar.add(jMenu1);
 
         setJMenuBar(menuBar);
 
@@ -1025,9 +1032,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_importECUDataMenuItemActionPerformed
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
-        //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1120,11 +1125,26 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_showLambdaMapActionPerformed
 
     private void showTrackMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTrackMapActionPerformed
+        JInternalFrame trackMapInternalFrame;
+        
+        //calls the correct constructor based on wheather data has been loaded
         if(chartManager.getDataMap().isEmpty()){
-            new GPSGraphFrame().setVisible(true);
+            trackMapInternalFrame = new GPSGraphInternalFrame(this);
         } else {
-            new GPSGraphFrame(chartManager.getDataMap()).setVisible(true);
+            trackMapInternalFrame = new GPSGraphInternalFrame(this, chartManager.getDataMap());
         }
+        trackMapInternalFrame.setVisible(true);
+        
+        //adds the trackMapInternalFrame to a list, to keep track of them
+        trackMaps.add(trackMapInternalFrame);
+        
+        //sets the location and size of the trackMapInternalFrame
+        Dimension frameSize = this.getSize();
+        trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+        trackMapInternalFrame.setSize((frameSize.width/4)-18, frameSize.height/2);
+        
+        //adds the trackMapInternalFrame to the DataAnalyzer frame
+        getContentPane().add(trackMapInternalFrame);
     }//GEN-LAST:event_showTrackMapActionPerformed
   
     public void invertRangeMarkersActive() {
@@ -1940,6 +1960,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             return false;
         }
     }
+    
+    //returns trackMaps
+    public ArrayList<JInternalFrame> getTrackMap() {
+        return trackMaps;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addChartMenuItem;
@@ -1957,8 +1982,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem fullscreenMenuItem;
     private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newImportMenuItem;
@@ -1973,6 +1996,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
+    private javax.swing.JMenuItem trackMapMenuItem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
     private javax.swing.JMenuItem twoVerticalMenuItem;
     private javax.swing.JMenu vehicleMenu;
@@ -2017,6 +2041,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         public AnalysisCategory addTag(String elem) {
             TAG.add(elem);
             return this;
-        }
+        } 
     }
 }

@@ -5,25 +5,72 @@
  */
 package dataanalyzer;
 
+import java.awt.Dimension;
+import javax.swing.Box;
+import javax.swing.JInternalFrame;
+
 /**
- *
+ * 
+ * @author Peter Glass
  * @author Preston Baxter
  */
 public class GPSGraphFrame extends javax.swing.JFrame {
-
+    //class variables
+    CategoricalHashMap dataMap;
+    DataAnalyzer dataAnalyzer;
+    boolean hasData;
+    
     /**
      * Creates new form GPSGraphFrame
      */
     public GPSGraphFrame() {
+        //initializes GPSGraphFrame
         initComponents();
         
+        //sets class variables
+        this.hasData = false;
+        
+        //sets the content panel of the frame to a GPSGraphPanel
+        this.setContentPane(new GPSGraphPanel());
+        
+        //Disables pop-in buttom when frame is ran independently
+        popInMenu.setEnabled(false);
+    }
+    
+    /**
+     * Creates new form GPSGraphFrame with a DataAnalyzer frame
+     *
+     * @param dataAnalyzer current DataAnalyzer frame
+     */
+    public GPSGraphFrame(DataAnalyzer dataAnalyzer) {
+        //initializes GPSGraphFrame
+        initComponents();
+        
+        //sets class variables
+        this.dataAnalyzer = dataAnalyzer;
+        this.hasData = false;
+        
+        //sets the content panel of the frame to a GPSGraphPanel
         this.setContentPane(new GPSGraphPanel());
     }
     
-    public GPSGraphFrame(CategoricalHashMap data) {
+    /**
+     * Creates new form GPSGraphFrame with a DataAnalyzer frame
+     *
+     * @param dataAnalyzer current DataAnalyzer frame
+     * @param dataMap log data for the car's ECU stored in a CategoricalHashMap
+     */
+    public GPSGraphFrame(DataAnalyzer dataAnalyzer, CategoricalHashMap dataMap) {
+        //initializes GPSGraphFrame
         initComponents();
         
-        this.setContentPane(new GPSGraphPanel(data));
+        //sets class variables
+        this.dataAnalyzer = dataAnalyzer;
+        this.hasData = true;
+        this.dataMap = dataMap;
+        
+        //sets the content panel of the frame to a GPSGraphPanel
+        this.setContentPane(new GPSGraphPanel(dataMap));
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -34,35 +81,62 @@ public class GPSGraphFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        jMenuBar = new javax.swing.JMenuBar();
+        popInMenu = new javax.swing.JMenu();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(600, 420));
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(375, 300));
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        popInMenu.setText("  Pop-In  ");
+        jMenuBar.add(Box.createHorizontalGlue());
+        popInMenu.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                popInMenuMouseClicked(evt);
+            }
+        });
+        jMenuBar.add(popInMenu);
+
+        setJMenuBar(jMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGap(0, 345, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGap(0, 229, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void popInMenuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_popInMenuMouseClicked
+        JInternalFrame TrackMapInternalFrame;
+        
+        //calls the correct constructor based on wheather data has been loaded
+        if(hasData){
+            TrackMapInternalFrame = new GPSGraphInternalFrame(dataAnalyzer, dataMap);
+        } else {
+            TrackMapInternalFrame = new GPSGraphInternalFrame(dataAnalyzer);
+        }
+        TrackMapInternalFrame.setVisible(true);
+        
+        //adds the trackMapInternalFrame to a list, to keep track of them
+        dataAnalyzer.getTrackMap().add(TrackMapInternalFrame);
+        
+        //sets the location and size of the trackMapInternalFrame
+        Dimension frameSize = dataAnalyzer.getSize();
+        TrackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+        TrackMapInternalFrame.setSize((frameSize.width/4)-18, frameSize.height/2);
+        
+        //adds the trackMapInternalFrame to the DataAnalyzer frame
+        dataAnalyzer.getContentPane().add(TrackMapInternalFrame);
+        
+        //closes the frame, so that the internal frame can replace it
+        dispose();
+    }//GEN-LAST:event_popInMenuMouseClicked
 
     /**
      * @param args the command line arguments
@@ -100,6 +174,7 @@ public class GPSGraphFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JMenuBar jMenuBar;
+    private javax.swing.JMenu popInMenu;
     // End of variables declaration//GEN-END:variables
 }
