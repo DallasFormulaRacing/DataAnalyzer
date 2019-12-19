@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 public class GPSGraphPanel extends JPanel{
     
     private TrackMap tm;
+    private String overlayParam;
     
     public GPSGraphPanel(){
         tm = new TrackMap();
@@ -34,6 +35,16 @@ public class GPSGraphPanel extends JPanel{
     
     public GPSGraphPanel(CategoricalHashMap data){
         tm = new TrackMap(data);
+    }
+    
+    public GPSGraphPanel(CategoricalHashMap data, String overlayParam){
+        tm = new TrackMap(data);
+        setOverlay(overlayParam);
+    }
+    
+    public void setOverlay(String overlayParam){
+        this.overlayParam = overlayParam;
+        tm.setOverlay(this.overlayParam);
     }
     
     /*
@@ -68,7 +79,6 @@ public class GPSGraphPanel extends JPanel{
         //Draw the track map with all of the settings above
         g2.draw(tm);
         
-        //tm.setOverlay("Time,Speed");
         if(tm.getOverlay() != null){
             tm.getOverlay().paintComponent(g2);
         }
