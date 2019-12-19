@@ -79,7 +79,7 @@ public class GPSGraphPanel extends JPanel{
         //Draw the track map with all of the settings above
         g2.draw(tm);
         
-        if(tm.getOverlay() != null){
+        if(tm.getOverlay() != null && !(tm.getOverlay().isClear())){
             tm.getOverlay().paintComponent(g2);
         }
     }
@@ -171,8 +171,15 @@ class TrackMap extends Polygon{
     private void readData(){
         points = new ArrayList<>();
         //Get the lists
-        LinkedList<LogObject> longlist = data.getList("Time,Longitude");
-        LinkedList<LogObject> latlist = data.getList("Time,Latitude");
+        LinkedList<LogObject> longlist = null;
+        LinkedList<LogObject> latlist = null;
+        try{
+            longlist = data.getList("Time,Longitude");
+            latlist = data.getList("Time,Latitude");
+        }catch(Exception e){
+            System.out.println("Please make sure Data map has GPS data. It seems it is not there");
+            return;
+        }
         
         //Loop through Lists
         for(int i = 0; i<longlist.size(); i++){
@@ -201,6 +208,7 @@ class TrackMap extends Polygon{
                 
             }catch(Exception e){
                 System.out.println(e);
+                return;
             }
             
         }
@@ -258,8 +266,13 @@ class TrackMap extends Polygon{
             max = Integer.MIN_VALUE;
             min = Integer.MAX_VALUE;
             logPoints = new ArrayList<>();
-            list = data.getList(param);
             
+            try{
+                list = data.getList(param);
+            }catch(Exception e){
+                System.out.println("Please make sure Data map has the appropriate data you are trying to overlay. It seems it is not there");
+                return;
+            }
             processLog();
         }
         
@@ -304,6 +317,8 @@ class TrackMap extends Polygon{
             }
         }
         
-        
+        public boolean isClear(){
+            return logPoints.size() == 0;
+        }
     }
 }
