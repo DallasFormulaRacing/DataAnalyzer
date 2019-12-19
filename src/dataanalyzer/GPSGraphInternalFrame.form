@@ -15,6 +15,29 @@
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jMenuBar.add(Box.createHorizontalGlue());"/>
           </AuxValues>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="overlayJMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Overlay"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="speedOverlayJMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Speed"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="speedOverlayJMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="noOverlayJMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="None"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="noOverlayJMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
       </SubComponents>
     </Menu>
   </NonVisualComponents>
