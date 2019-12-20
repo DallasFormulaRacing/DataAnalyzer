@@ -12,6 +12,7 @@ import com.arib.toast.Toast;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
+import dataanalyzer.dialog.VitalsDialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -170,6 +171,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         fileChooser = new javax.swing.JFileChooser();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newWindowMenuItem = new javax.swing.JMenuItem();
@@ -185,6 +187,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
         addNotesMenuItem = new javax.swing.JMenuItem();
+        checkVitals_menuitem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
@@ -206,6 +209,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         showLambdaMap = new javax.swing.JMenuItem();
 
         jMenuItem2.setText("jMenuItem2");
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
@@ -320,6 +325,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         editMenu.add(addNotesMenuItem);
+
+        checkVitals_menuitem.setText("Check Vitals");
+        checkVitals_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkVitals_menuitemActionPerformed(evt);
+            }
+        });
+        editMenu.add(checkVitals_menuitem);
 
         menuBar.add(editMenu);
 
@@ -1253,6 +1266,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
     }//GEN-LAST:event_darkTheme_menuitemActionPerformed
+
+    private void checkVitals_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkVitals_menuitemActionPerformed
+        new VitalsDialog(this, true, chartManager.getDataMap()).setVisible(true);
+    }//GEN-LAST:event_checkVitals_menuitemActionPerformed
   
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -2342,6 +2359,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenuItem checkVitals_menuitem;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem darkTheme_menuitem;
     private javax.swing.JMenuItem defaultTheme_menuitem;
@@ -2355,6 +2373,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem fullscreenMenuItem;
     private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newImportMenuItem;
