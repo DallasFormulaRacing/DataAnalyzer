@@ -267,7 +267,7 @@ public class ChartAssembly implements ChartMouseListener {
         statistics.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
+                new StatisticsFrame(selectedLists).setVisible(true);
             }
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
@@ -387,7 +387,7 @@ public class ChartAssembly implements ChartMouseListener {
         statistics.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
+                new StatisticsFrame(selectedLists).setVisible(true);
             }
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));

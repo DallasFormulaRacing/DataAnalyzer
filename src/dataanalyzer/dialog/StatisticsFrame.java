@@ -10,6 +10,7 @@ import dataanalyzer.FunctionOfLogObject;
 import dataanalyzer.LogObject;
 import dataanalyzer.SimpleLogObject;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -19,16 +20,12 @@ import java.util.List;
  * @author aribdhuka
  */
 public class StatisticsFrame extends javax.swing.JFrame {
-
-    private final CategoricalHashMap dataMap;
-    private final String[] tags;
-    private final int[] laps;
-
-    public StatisticsFrame(CategoricalHashMap dataMap, String[] tags, int[] laps) {
+    
+    private final LinkedList<LinkedList<LogObject>> chosenTags;
+    
+    public StatisticsFrame(LinkedList<LinkedList<LogObject>> chosenTags) {
         initComponents();
-        this.dataMap = dataMap;
-        this.tags = tags;
-        this.laps = laps;
+        this.chosenTags = chosenTags;
         calculateStatistics();
     }
     
@@ -39,83 +36,44 @@ public class StatisticsFrame extends javax.swing.JFrame {
         mins = new ArrayList<>();
         maxs = new ArrayList<>();
         
-        //for each lap if laps is not null
-        if(laps != null) {
-            for(int lap : laps) {
-                //for each tag
-                for(String tag : tags) {
-                    //get the data list thats showing
-                    List<LogObject> data = dataMap.getList(tag);
-                    //variables that hold average, min, and max
-                    double avg = 0;
-                    double min = Double.MAX_VALUE;
-                    double max = Double.MIN_VALUE;
-                    int countAdded = 0;
-                    //for each logobject in the list we got
-                    for(LogObject lo : data) {
-                        if(!lo.getLaps().contains(lap))
-                            continue;
-                        //if the LogObject is an instance of a SimpleLogObject
-                        if(lo instanceof SimpleLogObject) {
-                            //add all the values to average
-                            avg += ((SimpleLogObject) lo).getValue();
-                            //if the current object is less than the current min, update min
-                            if(((SimpleLogObject) lo).getValue() < min)
-                                min = ((SimpleLogObject) lo).getValue();
-                            //if the current object is greater than the current max, update max
-                            if(((SimpleLogObject) lo).getValue() > max)
-                                max = ((SimpleLogObject) lo).getValue();
-                        }
-                        else if(lo instanceof FunctionOfLogObject) {
-                            //add all the values to average
-                            avg += ((SimpleLogObject) lo).getValue();
-                            //if the current object is less than the current min, update min
-                            if(((SimpleLogObject) lo).getValue() < min)
-                                min = ((SimpleLogObject) lo).getValue();
-                            //if the current object is greater than the current max, update max
-                            if(((SimpleLogObject) lo).getValue() > max)
-                                max = ((SimpleLogObject) lo).getValue();
-                        }
-                        countAdded++;
-                    }
-                    //divide average by number of objects we added
-                    avg /= countAdded;
-                    //append the string
-                    avgs.add(tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", avg));
-                    mins.add(tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", min));
-                    maxs.add(tag.substring(tag.indexOf(',')+1) + lap +":" + String.format("%.2f", max));
+        for(LinkedList<LogObject> data : chosenTags) {
+            //variables that hold average, min, and max
+            double avg = 0;
+            double min = Double.MAX_VALUE;
+            double max = Double.MIN_VALUE;
+            int countAdded = 0;
+            String tag = data.getFirst().getTAG();
+            //for each logobject in the list we got
+            for(LogObject lo : data) {
+                //if the LogObject is an instance of a SimpleLogObject
+                if(lo instanceof SimpleLogObject) {
+                    //add all the values to average
+                    avg += ((SimpleLogObject) lo).getValue();
+                    //if the current object is less than the current min, update min
+                    if(((SimpleLogObject) lo).getValue() < min)
+                        min = ((SimpleLogObject) lo).getValue();
+                    //if the current object is greater than the current max, update max
+                    if(((SimpleLogObject) lo).getValue() > max)
+                        max = ((SimpleLogObject) lo).getValue();
                 }
-            }
-        } else {
-            //for each tag
-            for(String tag : tags) {
-                //get the data list thats showing
-                List<LogObject> data = dataMap.getList(tag);
-                //variables that hold average, min, and max
-                double avg = 0;
-                double min = Double.MAX_VALUE;
-                double max = Double.MIN_VALUE;
-                //for each logobject in the list we got
-                for(LogObject lo : data) {
-                    //if the LogObject is an instance of a SimpleLogObject
-                    if(lo instanceof SimpleLogObject) {
-                        //add all the values to average
-                        avg += ((SimpleLogObject) lo).getValue();
-                        //if the current object is less than the current min, update min
-                        if(((SimpleLogObject) lo).getValue() < min)
-                            min = ((SimpleLogObject) lo).getValue();
-                        //if the current object is greater than the current max, update max
-                        if(((SimpleLogObject) lo).getValue() > max)
-                            max = ((SimpleLogObject) lo).getValue();
-                    }
+                else if(lo instanceof FunctionOfLogObject) {
+                    //add all the values to average
+                    avg += ((SimpleLogObject) lo).getValue();
+                    //if the current object is less than the current min, update min
+                    if(((SimpleLogObject) lo).getValue() < min)
+                        min = ((SimpleLogObject) lo).getValue();
+                    //if the current object is greater than the current max, update max
+                    if(((SimpleLogObject) lo).getValue() > max)
+                        max = ((SimpleLogObject) lo).getValue();
                 }
-                //divide average by number of objects we added
-                avg /= data.size();
-                //append the string
-                avgs.add(tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", avg));
-                mins.add(tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", min));
-                maxs.add(tag.substring(tag.indexOf(',')+1) + ":" + String.format("%.2f", max));
+                countAdded++;
             }
+            //divide average by number of objects we added
+            avg /= countAdded;
+            //append the string
+            avgs.add(tag.substring(tag.indexOf(',')+1));
+            mins.add(tag.substring(tag.indexOf(',')+1));
+            maxs.add(tag.substring(tag.indexOf(',')+1));
         }
         
         //set the lists

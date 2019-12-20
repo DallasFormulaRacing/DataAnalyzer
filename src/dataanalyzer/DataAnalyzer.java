@@ -586,10 +586,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //if its a csv
                         if(fileExtension.equals(".csv")) {
                             //make the new window import a CSV
-                            da.importCSV(chosenFilePath);
+                            da.openCSV(chosenFilePath);
                         //else if its a TXT make the new window import a CSV
                         } else if (fileExtension.equals(".txt")) {
-                            da.importTXT(chosenFilePath);
+                            da.openTXT(chosenFilePath);
                         }
                         if(applyPostProcessing)
                             da.applyPostProcessing();
@@ -622,10 +622,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //if its a csv
                         if(fileExtension.equals(".csv")) {
                             //make the new window import a CSV
-                            importCSV(chosenFilePath);
+                            openCSV(chosenFilePath);
                         //else if its a TXT make the new window import a CSV
                         } else if (fileExtension.equals(".txt")) {
-                            importTXT(chosenFilePath);
+                            openTXT(chosenFilePath);
                         }
                         if(applyPostProcessing)
                             applyPostProcessing();
@@ -764,10 +764,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //if its a csv
                         if(fileExtension.equals(".csv")) {
                             //make the new window import a CSV
-                            da.importCSV(chosenFilePath);
+                            da.openCSV(chosenFilePath);
                         //else if its a TXT make the new window import a CSV
                         } else if (fileExtension.equals(".txt")) {
-                            da.importTXT(chosenFilePath);
+                            da.openTXT(chosenFilePath);
                         }
                         if(applyPostProcessing)
                             da.applyPostProcessing();
@@ -792,11 +792,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //if CSV
                         if(fileExtension.equals(".csv")) {
                             //import CSV
-                            importCSV(chosenFilePath);
+                            openCSV(chosenFilePath);
                         //if TXT
                         } else if (fileExtension.equals(".txt")) {
                             //import TXT
-                            importTXT(chosenFilePath);
+                            openTXT(chosenFilePath);
                         }
                         if(applyPostProcessing)
                             applyPostProcessing();
@@ -1372,84 +1372,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
     }
-
-    public void importTXT(String filepath) {
-        
-        openingAFile = true;
-        
-        //show loading screen
-        LoadingDialog loading = new LoadingDialog();
-        loading.setVisible(true);
-        
-        SwingWorker worker = new SwingWorker<Void, Void>() {
-            
-            public Void doInBackground() {
-                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
-                return null;
-            }
-
-            @Override
-            public void done() {
-                openingAFile = false;
-                loading.stop();
-            }
-        };
-        
-        worker.execute();
-    }
-    
-    public void importCSV(String filepath) {
-        //begin file operations
-        openingAFile = true;
-        String tag = "";
-        try {
-            // Create a new file from the filepath
-            File file = new File(filepath);
-            // Scan the file
-            Scanner sc = new Scanner(file);
-            
-            boolean isMarker = false;
-            // While there is a next line
-            while (sc.hasNextLine()) {
-                // Store the line
-                String line = sc.nextLine();
-                // If the line represents an END of the current tag
-                if (line.equals("END")) {
-                    isMarker = false;
-                    // Necessary so that END statements don't get added to 'tags' ArrayList
-                } else if(line.equals("MARKERS")) {
-                    isMarker = true;
-                } else if (Character.isLetter(line.charAt(0))) {
-                    // If the first character is a letter
-                    // Then add the line to the tags list
-                    tag = line;
-                } else if (Character.isDigit(line.charAt(0))) {
-                    if(!isMarker) {
-                        // If the first character is a digit
-                        // Then divide the list in 2 values by ,
-                        final String DELIMITER = ",";
-                        String[] values = line.split(DELIMITER);
-                        // And add the values to the hashmap with their correct tag
-                        // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                        if(tag.contains("Time,"))
-                            chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                        else
-                            chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                    } else {
-                        ValueMarker v = new ValueMarker(Double.parseDouble(line));
-                        v.setPaint(Color.BLUE);
-                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
-                    }
-                }
-                
-            }
-        } catch (FileNotFoundException x) {
-            // Error message displayed
-            new MessageBox(this, "Error: File not found", true).setVisible(true);
-        }
-        
-        
-    }
     
     public void applyPE3PostProcessing() {
         //Change PE3 -> our standards. (So fuel mapper and such work)
@@ -1869,6 +1791,86 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         }
     }
+    
+    //OPEN FILES OF MULTIPLE TYPES
+    //THESE ARE MEANT TO OPEN A FILE IN A NEW WINDOW
+    public void openTXT(String filepath) {
+        
+        openingAFile = true;
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            
+            public Void doInBackground() {
+                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+                return null;
+            }
+
+            @Override
+            public void done() {
+                openingAFile = false;
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    public void openCSV(String filepath) {
+        //begin file operations
+        openingAFile = true;
+        String tag = "";
+        try {
+            // Create a new file from the filepath
+            File file = new File(filepath);
+            // Scan the file
+            Scanner sc = new Scanner(file);
+            
+            boolean isMarker = false;
+            // While there is a next line
+            while (sc.hasNextLine()) {
+                // Store the line
+                String line = sc.nextLine();
+                // If the line represents an END of the current tag
+                if (line.equals("END")) {
+                    isMarker = false;
+                    // Necessary so that END statements don't get added to 'tags' ArrayList
+                } else if(line.equals("MARKERS")) {
+                    isMarker = true;
+                } else if (Character.isLetter(line.charAt(0))) {
+                    // If the first character is a letter
+                    // Then add the line to the tags list
+                    tag = line;
+                } else if (Character.isDigit(line.charAt(0))) {
+                    if(!isMarker) {
+                        // If the first character is a digit
+                        // Then divide the list in 2 values by ,
+                        final String DELIMITER = ",";
+                        String[] values = line.split(DELIMITER);
+                        // And add the values to the hashmap with their correct tag
+                        // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                        if(tag.contains("Time,"))
+                            chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                        else
+                            chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                    } else {
+                        ValueMarker v = new ValueMarker(Double.parseDouble(line));
+                        v.setPaint(Color.BLUE);
+                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                    }
+                }
+                
+            }
+        } catch (FileNotFoundException x) {
+            // Error message displayed
+            new MessageBox(this, "Error: File not found", true).setVisible(true);
+        }
+        
+        
+    }
         
     private void openFile(String filepath) {
         openFile(new String[] {filepath});
@@ -2267,6 +2269,107 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
     
+    //IMPORT FILES OF MULTIPLE TYPES
+    //THESE ARE MEANT TO IMPORT A FILE TO ADD ONTO THE CURRENT INSTANCE
+    public void importTXT(String filepath) {
+                
+        openingAFile = true;
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            
+            public Void doInBackground() {
+                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, getLastTime());
+                return null;
+            }
+
+            @Override
+            public void done() {
+                openingAFile = false;
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    public void importCSV(String filepath) {
+        //begin file operations
+        openingAFile = true;
+        long startTime = getLastTime();
+        String tag = "";
+        try {
+            // Create a new file from the filepath
+            File file = new File(filepath);
+            // Scan the file
+            Scanner sc = new Scanner(file);
+            
+            //ArrayList of tags to regenerate 
+            
+            boolean isMarker = false;
+            // While there is a next line
+            while (sc.hasNextLine()) {
+                // Store the line
+                String line = sc.nextLine();
+                // If the line represents an END of the current tag
+                if (line.equals("END")) {
+                    isMarker = false;
+                    // Necessary so that END statements don't get added to 'tags' ArrayList
+                } else if(line.equals("MARKERS")) {
+                    isMarker = true;
+                } else if (Character.isLetter(line.charAt(0))) {
+                    // If the first character is a letter
+                    // Then add the line to the tags list
+                    tag = line;
+                } else if (Character.isDigit(line.charAt(0))) {
+                    if(!isMarker) {
+                        // If the first character is a digit
+                        // Then divide the list in 2 values by ,
+                        final String DELIMITER = ",";
+                        String[] values = line.split(DELIMITER);
+                        // And add the values to the hashmap with their correct tag
+                        // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                        if(tag.contains("Time,"))
+                            chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0]) + startTime));
+                        else
+                            chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                    } else {
+                        ValueMarker v = new ValueMarker(Double.parseDouble(line));
+                        v.setPaint(Color.BLUE);
+                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                    }
+                }
+                
+            }
+        } catch (FileNotFoundException x) {
+            // Error message displayed
+            new MessageBox(this, "Error: File not found", true).setVisible(true);
+        }
+    }
+    
+    public long getLastTime() {
+        //get the datamap
+        CategoricalHashMap datamap = chartManager.getDataMap();
+        String toUse = "";
+        //find the first tag that goes has a time domain
+        for(String tag : datamap.tags) {
+            if(tag.matches("Time,[A-Za-z]*")) {
+                toUse = tag;
+                break;
+            }
+            
+        }
+        //if we don't find one, return 0 (start from scratch)
+        if(toUse.isEmpty())
+            return 0;
+        
+        //get time paramenter of last item of this tag.
+        return datamap.getList(toUse).getLast().time;
+        
+    }
     //returns chartManager
     public ChartManager getChartManager() {
         return chartManager;

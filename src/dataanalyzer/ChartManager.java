@@ -11,6 +11,7 @@ import dataanalyzer.dialog.MessageBox;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JFrame;
 import org.jfree.chart.*;
 
@@ -21,21 +22,14 @@ import org.jfree.chart.*;
 public class ChartManager {
     
     private final JFrame parent;
-    // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
-    private CategoricalHashMap dataMap;
     
-    //stores the static markers
-    private CategoricalHashTable<CategorizedValueMarker> staticMarkers;
-    
-    //holds vehicle parameters
-    private VehicleData vehicleData;
-    
-    //stores the laps breaker
-    private ArrayList<Lap> lapBreaker;
     //status of lapBreakerTool
     private int lapBreakerActive;
     //lap that will be created and applied to lapBreaker list
     private Lap newLap;
+    
+    //holds all the datasets in this application instance
+    LinkedList<Dataset> datasets;
     
     //holds all active charts
     ArrayList<ChartAssembly> charts;
@@ -48,10 +42,6 @@ public class ChartManager {
     
     public ChartManager(JFrame parent) {
         this.parent = parent;
-        dataMap = new CategoricalHashMap();
-        staticMarkers = new CategoricalHashTable<>();
-        vehicleData = new VehicleData();
-        lapBreaker = new ArrayList<>();
         lapBreakerActive = -1;
         swapActive = -1;
         newLap = new Lap();
@@ -145,31 +135,7 @@ public class ChartManager {
      */
     
     public CategoricalHashMap getDataMap() {
-        return dataMap;
-    }
-
-    public CategoricalHashTable<CategorizedValueMarker> getStaticMarkers() {
-        return staticMarkers;
-    }
-
-    public void setStaticMarkers(CategoricalHashTable<CategorizedValueMarker> staticMarkers) {
-        this.staticMarkers = staticMarkers;
-    }
-
-    public VehicleData getVehicleData() {
-        return vehicleData;
-    }
-
-    public void setVehicleData(VehicleData vehicleData) {
-        this.vehicleData = vehicleData;
-    }
-
-    public ArrayList<Lap> getLapBreaker() {
-        return lapBreaker;
-    }
-
-    public void setLapBreaker(ArrayList<Lap> lapBreaker) {
-        this.lapBreaker = lapBreaker;
+        return datasets.getFirst().getDataMap();
     }
 
     public int getLapBreakerActive() {
