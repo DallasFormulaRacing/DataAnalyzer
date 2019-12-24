@@ -5,6 +5,7 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.DatasetSelection;
 import com.arib.toast.Toast;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Dataset;

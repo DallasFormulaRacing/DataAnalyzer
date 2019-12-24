@@ -69,6 +69,9 @@ public class ChartAssembly implements ChartMouseListener {
     //parent class to access, lapbreaker, staticmarkers, things that belong to all charts
     private ChartManager manager;
     
+    //Selection for this assembly
+    Selection selection;
+    
     //physical componenets
     ChartPanel chartPanel;
     JInternalFrame chartFrame;
@@ -93,6 +96,7 @@ public class ChartAssembly implements ChartMouseListener {
     
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
+        selection = new Selection();
         selectedTags = new String[1];
         selectedLaps = new int[1];
         showingHistogram = false;
@@ -667,22 +671,20 @@ public class ChartAssembly implements ChartMouseListener {
         plot.clearDomainMarkers();
         //which dataset we are on
         int count = 0;
-        for(String tag : tags) {
-            //get the linked list from tag
-            LinkedList<CategorizedValueMarker> markers = manager.getStaticMarkers().getList(tag);
-            //if the linked list is not null
-            if(markers != null) {
+        //get the linked list from tag
+        LinkedList<LinkedList<CategorizedValueMarker>> markerList = selection.getAllMarkers();
+        //if the linked list is not null
+        if(markerList != null && !markerList.isEmpty()) {
+            for(LinkedList<CategorizedValueMarker> markers : markerList) {
                 //draw every domain marker saved for this chart and add it to an array
                 for(CategorizedValueMarker v : markers) {
                     v.getMarker().setPaint(getColorFromIndex(count));
                     plot.addDomainMarker(v.getMarker());
                 }
-
+                //declare we are moving on to the next tag
+                count++;
             }
-            //move to next dataset
-            count++;
-        }      
-        
+        }
     }
      
     // Creates a new render for a new series or data type. Gives a new color

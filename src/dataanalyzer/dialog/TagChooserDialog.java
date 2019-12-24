@@ -5,6 +5,7 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.Selection;
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import com.arib.toast.Toast;
 import dataanalyzer.CategoricalHashMap;

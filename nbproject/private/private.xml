@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="1">
+        <file>
+            <url>src/dataanalyzer/ChartAssembly.java</url>
+            <bookmark id="1">
+                <name/>
+                <line>1102</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/Dataset.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/ChartAssembly.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/Lap.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/DataAnalyzer.java</file>
-            <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/dialog/DatasetSelection.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/dialog/StatisticsFrame.java</file>
-            <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/dialog/TagChooserPanel.java</file>
-            <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/dialog/Selection.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/ChartManager.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/EquationEvaluater.java</file>
+            <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/Selection.java</file>
             <file>file:/Users/aribdhuka/Documents/FSAE/DataAnalyzer/src/dataanalyzer/dialog/TagChooserDialog.java</file>
         </group>
     </open-files>
