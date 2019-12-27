@@ -3,12 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GPSGraphPanel.java</file>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GPSGraphInternalFrame.java</file>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/ChartFrame.java</file>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GPSGraphFrame.java</file>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/ChartAssembly.java</file>
-            <file>file:/C:/Users/Peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/DataAnalyzer.java</file>
+            <file>file:/C:/Users/peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GPSGraphFrame.java</file>
+            <file>file:/C:/Users/peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GraphExample.java</file>
+            <file>file:/C:/Users/peter/Documents/NetBeansProjects/DataAnalyzer/src/dataanalyzer/GPSGraphPanel.java</file>
         </group>
     </open-files>
 </project-private>

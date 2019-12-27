@@ -63,7 +63,6 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     private void initComponents() {
 
         jMenuBar = new javax.swing.JMenuBar();
-        popOutMenu = new javax.swing.JMenu();
         overlayJMenuItem = new javax.swing.JMenu();
         speedOverlayJMenuItem = new javax.swing.JMenuItem();
         noOverlayJMenuItem = new javax.swing.JMenuItem();
@@ -78,15 +77,6 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
         } catch (java.beans.PropertyVetoException e1) {
             e1.printStackTrace();
         }
-
-        popOutMenu.setText("  Pop-Out  ");
-        jMenuBar.add(Box.createHorizontalGlue());
-        popOutMenu.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                popOutMenuMouseClicked(evt);
-            }
-        });
-        jMenuBar.add(popOutMenu);
 
         overlayJMenuItem.setText("Overlay");
 
@@ -124,18 +114,6 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void popOutMenuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_popOutMenuMouseClicked
-        //calls the correct constructor based on wheather data has been loaded
-        if(hasData){
-            new GPSGraphFrame(dataAnalyzer, dataMap).setVisible(true);
-        } else {
-            new GPSGraphFrame(dataAnalyzer).setVisible(true);
-        }
-        
-        //closes the internal frame, so that the frame can replace it
-        dispose();
-    }//GEN-LAST:event_popOutMenuMouseClicked
-
     private void speedOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedOverlayJMenuItemActionPerformed
         this.setContentPane(new GPSGraphPanel(dataMap, "Time,Speed"));
     }//GEN-LAST:event_speedOverlayJMenuItemActionPerformed
@@ -149,7 +127,6 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JMenuItem noOverlayJMenuItem;
     private javax.swing.JMenu overlayJMenuItem;
-    private javax.swing.JMenu popOutMenu;
     private javax.swing.JMenuItem speedOverlayJMenuItem;
     // End of variables declaration//GEN-END:variables
 }

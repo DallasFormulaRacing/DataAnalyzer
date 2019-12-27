@@ -4,17 +4,6 @@
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="popOutMenu">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="  Pop-Out  "/>
-          </Properties>
-          <Events>
-            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="popOutMenuMouseClicked"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jMenuBar.add(Box.createHorizontalGlue());"/>
-          </AuxValues>
-        </Menu>
         <Menu class="javax.swing.JMenu" name="overlayJMenuItem">
           <Properties>
             <Property name="text" type="java.lang.String" value="Overlay"/>

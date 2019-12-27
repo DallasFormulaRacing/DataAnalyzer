@@ -307,7 +307,7 @@ class TrackMap extends Polygon{
                     the color of the line will be between red and green on the
                     color wheel (The hue will range form 0 to 120 degrees)
                 */
-                float hue = (float) (1 - ((logPoints.get(i).value - min) / (max - min))) / 3;
+                float hue = (float) ((logPoints.get(i).value - min) / (max - min)) / 3;
                 
                 g2.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
                 g2.drawLine(x1,y1,x2,y2);

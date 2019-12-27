@@ -118,16 +118,26 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chart.getChartFrame().dispose();
         }
         charts.clear();
-        
+    }
+    
+    private void clearAllTrackMaps(){
         for(JInternalFrame trackMap : trackMaps){
             trackMap.dispose();
         }
         trackMaps.clear();
-        
+    }
+    
+    private void clearAllLambdaMaps(){
         for(JInternalFrame lambdaMap : lambdaMaps){
             lambdaMap.dispose();
         }
         lambdaMaps.clear();
+    }
+    
+    private void clearAllFrames(){
+        clearAllCharts();
+        clearAllTrackMaps();
+        clearAllLambdaMaps();
     }
     
     private void initializeBasicView() {
@@ -141,7 +151,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     private void twoVerticalView() {
         Dimension frameSize = this.getSize();
-        clearAllCharts();
+        clearAllFrames();
         ChartAssembly leftChart = chartManager.addChart();
         leftChart.getChartFrame().setLocation(0, 0);
         leftChart.getChartFrame().setSize(((frameSize.width/4)*3)/2, frameSize.height - (3 * ((int) menuBar.getSize().getHeight())));
@@ -155,7 +165,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     private void twoHorizontalView() {
         Dimension frameSize = this.getSize();
-        clearAllCharts();
+        clearAllFrames();
         
         ChartAssembly topChart = chartManager.addChart();
         topChart.getChartFrame().setLocation(0,0);
@@ -1039,7 +1049,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_importECUDataMenuItemActionPerformed
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
-        clearAllCharts();
+        clearAllFrames();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1047,7 +1057,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void engineChartSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_engineChartSetupActionPerformed
         //delete all current charts
-        clearAllCharts();
+        clearAllFrames();
         
         //create main graph which will show overlay between RPM, TPS, and Lambda
         Dimension frameSize = this.getSize();
@@ -1125,7 +1135,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
         JInternalFrame lambdaMapInternalFrame;
-        clearAllCharts();
+        clearAllFrames();
         //calls the correct constructor based on wheather data has been loaded
         if(chartManager.getDataMap().isEmpty()){
             lambdaMapInternalFrame = new LambdaMapInternalFrame(this);
@@ -1628,6 +1638,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     private void openFile(String filepath) {
         openFile(new String[] {filepath});
+        clearAllTrackMaps();
+        showTrackMapActionPerformed(null);
     }
     //open file
     private void openFile(String[] filepaths) {
