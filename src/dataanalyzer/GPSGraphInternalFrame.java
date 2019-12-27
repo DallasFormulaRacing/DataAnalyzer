@@ -15,6 +15,7 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     //class variables
     CategoricalHashMap dataMap;
     DataAnalyzer dataAnalyzer;
+    GPSGraphPanel panel;
     boolean hasData;
     
     /**
@@ -28,7 +29,8 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
         this.dataAnalyzer = dataAnalyzer;
         
         //sets the content panel of the frame to a GPSGraphPanel
-        this.setContentPane(new GPSGraphPanel());
+        this.panel = new GPSGraphPanel();
+        this.setContentPane(panel);
         
         //initializes GPSGraphInternalFrame
         initComponents();
@@ -47,10 +49,15 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
         this.dataMap = dataMap;
         
         //sets the content panel of the frame to a GPSGraphPanel
-        this.setContentPane(new GPSGraphPanel(dataMap));
+        this.panel = new GPSGraphPanel(dataMap);
+        this.setContentPane(panel);
         
         //initializes GPSGraphInternalFrame
         initComponents();
+    }
+    
+    public void setXCor (double xCor) {
+        panel.setXCor(xCor);
     }
 
     /**
@@ -115,11 +122,13 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void speedOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedOverlayJMenuItemActionPerformed
-        this.setContentPane(new GPSGraphPanel(dataMap, "Time,Speed"));
+        panel = new GPSGraphPanel(dataMap, "Time,Speed");
+        this.setContentPane(panel);
     }//GEN-LAST:event_speedOverlayJMenuItemActionPerformed
 
     private void noOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noOverlayJMenuItemActionPerformed
-        this.setContentPane(new GPSGraphPanel(dataMap));
+        panel = new GPSGraphPanel(dataMap);
+        this.setContentPane(panel);
     }//GEN-LAST:event_noOverlayJMenuItemActionPerformed
 
 

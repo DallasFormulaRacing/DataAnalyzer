@@ -1226,6 +1226,10 @@ public class ChartAssembly implements ChartMouseListener {
                 RectangleEdge.BOTTOM);
         updateOverlay(xCor);
         manager.updateOverlays(xCor, this);
+        for(GPSGraphInternalFrame tm : manager.getTrackMaps()){
+            tm.setXCor(xCor);
+            tm.repaint();
+        }
     }
     
     public void updateOverlay(double xCor) {

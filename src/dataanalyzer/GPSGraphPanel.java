@@ -27,6 +27,7 @@ public class GPSGraphPanel extends JPanel{
     
     private TrackMap tm;
     private String overlayParam;
+    private double xCor;
     
     public GPSGraphPanel(){
         tm = new TrackMap();
@@ -78,12 +79,15 @@ public class GPSGraphPanel extends JPanel{
         
         //Draw the track map with all of the settings above
         g2.draw(tm);
-        
         if(tm.getOverlay() != null && !(tm.getOverlay().isClear())){
+            tm.getOverlay().setXCor(this.xCor);
             tm.getOverlay().paintComponent(g2);
         }
     }
     
+    public void setXCor(double xCor){
+        this.xCor = xCor;
+    }
 }
 
 /*
@@ -233,7 +237,6 @@ class TrackMap extends Polygon{
             
             super.addPoint(p.xScaled, p.yScaled);
         }
-        System.out.println();
     }
     
     
@@ -251,21 +254,21 @@ class TrackMap extends Polygon{
     *   their distance from the minimum value (Low values red, high values green)
     */
     class Overlay extends JComponent{
-        private double max, min;
+        private double max, min, xCor = 0;
         private ArrayList<SimpleLogObject> logPoints;
         private LinkedList<LogObject> list;
         private Graphics2D g;
         
         public Overlay(){
-            max = Integer.MIN_VALUE;
-            min = Integer.MAX_VALUE;
-            logPoints = new ArrayList<>();
+            this.max = Integer.MIN_VALUE;
+            this.min = Integer.MAX_VALUE;
+            this.logPoints = new ArrayList<>();
         }
         
         public Overlay(String param){
-            max = Integer.MIN_VALUE;
-            min = Integer.MAX_VALUE;
-            logPoints = new ArrayList<>();
+            this.max = Integer.MIN_VALUE;
+            this.min = Integer.MAX_VALUE;
+            this.logPoints = new ArrayList<>();
             
             try{
                 list = data.getList(param);
@@ -289,6 +292,15 @@ class TrackMap extends Polygon{
                     System.out.println(e);
                 }
             }
+        }
+        
+        public int getCarPoint(double xCor){
+            for(int i = 0; i < list.size(); i++){
+                if((long) xCor < list.get(i).getTime()){
+                    return i;
+                }
+            }
+            return 0;
         }
         
         @Override
@@ -315,10 +327,17 @@ class TrackMap extends Polygon{
                 x1 = x2;
                 y1 = y2;
             }
+            g2.setColor(Color.RED);
+            int carPointIndex = getCarPoint(xCor);
+            g2.fillOval(points.get(carPointIndex).xScaled-5, points.get(carPointIndex).yScaled-5, 10, 10);
         }
         
         public boolean isClear(){
             return logPoints.size() == 0;
+        }
+        
+        public void setXCor(double xCor){
+            this.xCor = xCor;
         }
     }
 }

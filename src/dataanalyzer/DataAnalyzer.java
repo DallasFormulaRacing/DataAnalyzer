@@ -47,7 +47,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     private String fileNotes;
     
-    private ArrayList<JInternalFrame> trackMaps = new ArrayList<>();
+    private ArrayList<GPSGraphInternalFrame> trackMaps = new ArrayList<>();
     
     private ArrayList<JInternalFrame> lambdaMaps = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         fileNotes = "";
         
         //initialize chart manager
-        chartManager = new ChartManager(this);
+        chartManager = new ChartManager(this, trackMaps);
         
         //Set the title of the frame
         this.setTitle("DataAnalyzer");
@@ -1157,7 +1157,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_showLambdaMapActionPerformed
 
     private void showTrackMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTrackMapActionPerformed
-        JInternalFrame trackMapInternalFrame;
+        GPSGraphInternalFrame trackMapInternalFrame;
         
         //calls the correct constructor based on wheather data has been loaded
         if(chartManager.getDataMap().isEmpty()){
@@ -1169,11 +1169,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //adds the trackMapInternalFrame to a list, to keep track of them
         trackMaps.add(trackMapInternalFrame);
-        
         //sets the location and size of the trackMapInternalFrame
         Dimension frameSize = this.getSize();
         trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
-        trackMapInternalFrame.setSize((frameSize.width/4)-18, frameSize.height/2);
+        trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
         
         //adds the trackMapInternalFrame to the DataAnalyzer frame
         getContentPane().add(trackMapInternalFrame);
@@ -1996,7 +1995,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     
     //returns trackMaps
-    public ArrayList<JInternalFrame> getTrackMap() {
+    public ArrayList<GPSGraphInternalFrame> getTrackMap() {
         return trackMaps;
     }
     

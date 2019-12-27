@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import org.jfree.chart.*;
 
 /**
@@ -21,6 +22,7 @@ import org.jfree.chart.*;
 public class ChartManager {
     
     private final JFrame parent;
+    private ArrayList<GPSGraphInternalFrame> trackMaps;
     // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
     private CategoricalHashMap dataMap;
     
@@ -46,8 +48,9 @@ public class ChartManager {
     ChartAssembly first, second;
     
     
-    public ChartManager(JFrame parent) {
+    public ChartManager(JFrame parent, ArrayList<GPSGraphInternalFrame> trackMaps) {
         this.parent = parent;
+        this.trackMaps = trackMaps;
         dataMap = new CategoricalHashMap();
         staticMarkers = new CategoricalHashTable<>();
         vehicleData = new VehicleData();
@@ -190,6 +193,14 @@ public class ChartManager {
 
     public JFrame getParentFrame() {
         return parent;
+    }
+    
+    public ArrayList<GPSGraphInternalFrame> getTrackMaps() {
+        return trackMaps;
+    }
+    
+    public void setTrackMaps(ArrayList<GPSGraphInternalFrame> trackMaps) {
+        this.trackMaps = trackMaps;
     }
 
     public ArrayList<ChartAssembly> getCharts() {
