@@ -11,7 +11,9 @@ import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import dataanalyzer.dialog.FileNotesDialog;
+import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
+import dataanalyzer.dialog.VitalsDialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -26,7 +28,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import org.jfree.chart.plot.ValueMarker;
 
 /**
@@ -50,6 +58,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private ArrayList<GPSGraphInternalFrame> trackMaps = new ArrayList<>();
     
     private ArrayList<JInternalFrame> lambdaMaps = new ArrayList<>();
+
+    //holds the current theme
+    protected Theme currTheme = Theme.DEFAULT;
 
     public DataAnalyzer() {
         initComponents();
@@ -189,6 +200,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         fileChooser = new javax.swing.JFileChooser();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newWindowMenuItem = new javax.swing.JMenuItem();
@@ -204,6 +216,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
         addNotesMenuItem = new javax.swing.JMenuItem();
+        checkVitals_menuitem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
@@ -213,6 +226,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
         trackMapMenuItem = new javax.swing.JMenuItem();
+        defaultTheme_menuitem = new javax.swing.JMenuItem();
+        systemTheme_menuitem = new javax.swing.JMenuItem();
+        darkTheme_menuitem = new javax.swing.JMenuItem();
         vehicleMenu = new javax.swing.JMenu();
         newVehicleMenuItem = new javax.swing.JMenuItem();
         saveVehicleMenuItem = new javax.swing.JMenuItem();
@@ -223,6 +239,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         showLambdaMap = new javax.swing.JMenuItem();
 
         jMenuItem2.setText("jMenuItem2");
+
+        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1220, 720));
@@ -338,6 +356,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         editMenu.add(addNotesMenuItem);
 
+        checkVitals_menuitem.setText("Check Vitals");
+        checkVitals_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkVitals_menuitemActionPerformed(evt);
+            }
+        });
+        editMenu.add(checkVitals_menuitem);
+
         menuBar.add(editMenu);
 
         viewMenu.setText("View");
@@ -399,7 +425,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(addChartMenuItem);
-
         trackMapMenuItem.setText("Add Track Map");
         trackMapMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -407,6 +432,29 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(trackMapMenuItem);
+        defaultTheme_menuitem.setText("Default");
+        defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                defaultTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(defaultTheme_menuitem);
+
+        systemTheme_menuitem.setText("System");
+        systemTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                systemTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(systemTheme_menuitem);
+
+        darkTheme_menuitem.setText("Dark");
+        darkTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                darkTheme_menuitemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(darkTheme_menuitem);
 
         menuBar.add(viewMenu);
 
@@ -1177,6 +1225,122 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //adds the trackMapInternalFrame to the DataAnalyzer frame
         getContentPane().add(trackMapInternalFrame);
     }//GEN-LAST:event_showTrackMapActionPerformed
+
+    /**
+     * Apply the default theme
+     * @param evt 
+     */
+    private void defaultTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultTheme_menuitemActionPerformed
+        currTheme = Theme.DEFAULT;
+        //light theme parameters
+        UIManager.put( "control", new Color(214,217,223) );
+        UIManager.put( "info", new Color(242,242,189) );
+        UIManager.put( "nimbusBase", new Color(51,98,140) );
+        UIManager.put( "nimbusAlertYellow", new Color(255,220,35) );
+        UIManager.put( "nimbusDisabledText", new Color(142,143,145) );
+        UIManager.put( "nimbusFocus", new Color(115,164,209));
+        UIManager.put( "nimbusGreen", new Color(176,179,50) );
+        UIManager.put( "nimbusInfoBlue", new Color(47,92,180));
+        UIManager.put( "nimbusLightBackground", new Color(255,255,255));
+        UIManager.put( "nimbusOrange", new Color(191,98,4) );
+        UIManager.put( "nimbusRed", new Color(169,46,34) );
+        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
+        UIManager.put( "nimbusSelectionBackground", new Color(57,105,138) );
+        UIManager.put( "text", new Color(0,0,0) );
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_defaultTheme_menuitemActionPerformed
+
+    /**
+     * Apply the system default theme
+     * @param evt 
+     */
+    private void systemTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemTheme_menuitemActionPerformed
+        currTheme = Theme.SYSTEM;
+        try {
+            UIManager.setLookAndFeel(
+                UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_systemTheme_menuitemActionPerformed
+
+    /**
+     * Apply the dark theme
+     * @param evt 
+     */
+    private void darkTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_darkTheme_menuitemActionPerformed
+        currTheme = Theme.DARK;
+        //dark
+        UIManager.put( "control", new Color( 128, 128, 128));
+        UIManager.put( "info", new Color(128,128,128));
+        UIManager.put( "nimbusBase", new Color( 18, 30, 49));
+        UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0));
+        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128));
+        UIManager.put( "nimbusFocus", new Color(115,164,209));
+        UIManager.put( "nimbusGreen", new Color(176,179,50));
+        UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221));
+        UIManager.put( "nimbusLightBackground", new Color( 18, 30, 49));
+        UIManager.put( "nimbusOrange", new Color(191,98,4));
+        UIManager.put( "nimbusRed", new Color(169,46,34));
+        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255));
+        UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156));
+        UIManager.put( "text", new Color( 230, 230, 230));
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        SwingUtilities.updateComponentTreeUI(this);
+        //apply new theme everywhere
+        for(ChartAssembly ca : chartManager.getCharts())
+            ca.applyNewTheme(currTheme);
+    }//GEN-LAST:event_darkTheme_menuitemActionPerformed
+
+    private void checkVitals_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkVitals_menuitemActionPerformed
+        new VitalsDialog(this, true, chartManager.getDataMap()).setVisible(true);
+    }//GEN-LAST:event_checkVitals_menuitemActionPerformed
   
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1296,14 +1460,30 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
     }
-    
-    public void importFile(String[] filepaths) {
-        
-    }
 
     public void importTXT(String filepath) {
+        
         openingAFile = true;
-        TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            
+            public Void doInBackground() {
+                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+                return null;
+            }
+
+            @Override
+            public void done() {
+                openingAFile = false;
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
     }
     
     public void importCSV(String filepath) {
@@ -1359,6 +1539,147 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
     
+    public void applyPE3PostProcessing() {
+        //Change PE3 -> our standards. (So fuel mapper and such work)
+        
+        int origsize = chartManager.getDataMap().getTags().size();
+        ArrayList<String> origtags = new ArrayList<>(); 
+        origtags.addAll(chartManager.getDataMap().getTags());
+        
+        for(int i = 0; i < origsize; i++) {
+            String[] split = origtags.get(i).split(",");
+            String newTag;
+            if(split[1].indexOf('[', 2) != -1)
+                newTag = split[1].substring(1, split[1].indexOf('[', 2));
+            else
+                newTag = split[1].substring(1, split[1].length() - 1);
+            EquationEvaluater.evaluate("$(" + origtags.get(i) + ")", chartManager.getDataMap(), newTag);
+            
+        }
+        
+        for(String tag : origtags) {
+            chartManager.getDataMap().remove(tag);
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,MeasuredAFR#1") && chartManager.getDataMap().tags.contains("Time,MeasuredAFR#2")) {
+            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", chartManager.getDataMap(), "Time,AFRAveraged");
+            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#5")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#6")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", chartManager.getDataMap(), "Time,yAccel");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog#7")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", chartManager.getDataMap(), "Time,xAccel");
+
+        }
+        if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", chartManager.getDataMap(), "Time,zAccel");
+        }
+        
+        //now we have unoriented xyz 
+        LinkedList<LogObject> rotXAccel = new LinkedList<>();
+        LinkedList<LogObject> rotYAccel = new LinkedList<>();
+        LinkedList<LogObject> rotZAccel = new LinkedList<>();
+        
+        //get x y z data as arrays
+        ArrayList<LogObject> x,y,z;
+        x = new ArrayList<>(chartManager.getDataMap().getList("Time,xAccel"));
+        y = new ArrayList<>(chartManager.getDataMap().getList("Time,yAccel"));
+        z = new ArrayList<>(chartManager.getDataMap().getList("Time,zAccel"));
+        
+        //desired calibration
+        double[] desired = new double[3];
+        desired[0] = 0;
+        desired[1] = 0;
+        desired[2] = 1;
+
+        //current rotation
+        double[] have = new double[3];
+        have[0] = -.21316;
+        have[1] = .116;
+        have[2] = .91;
+        LinkedList<LogObject> newX = new LinkedList<>();
+        LinkedList<LogObject> newY = new LinkedList<>();
+        LinkedList<LogObject> newZ = new LinkedList<>();
+        
+        //get rotation matrix
+        double[][] rot = Mathematics.rotationMatrix3(have, desired);
+        
+        //for each accel value apply rotation matrix
+        for(int i = 0; i < x.size(); i++) {
+            //get current accel values
+            double xVal = 0, yVal = 0, zVal = 0;
+            if(x.get(i) instanceof SimpleLogObject) {
+                xVal = ((SimpleLogObject)x.get(i)).getValue();
+            }
+            if(y.get(i) instanceof SimpleLogObject) {
+                yVal = ((SimpleLogObject)y.get(i)).getValue();
+            }
+            if(z.get(i) instanceof SimpleLogObject) {
+                zVal = ((SimpleLogObject)z.get(i)).getValue();
+            }
+            //apply rotation
+            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
+            //add to new list
+            newX.add(new SimpleLogObject("Time,rotX", rotated[0], x.get(i).getTime()));
+            newY.add(new SimpleLogObject("Time,rotY", rotated[1], y.get(i).getTime()));
+            newZ.add(new SimpleLogObject("Time,rotZ", rotated[2], z.get(i).getTime()));
+        }
+        
+        //save to dataset
+        chartManager.getDataMap().put(newX);
+        chartManager.getDataMap().put(newY);
+        chartManager.getDataMap().put(newZ);
+        
+    }
+    
+    private double[][] getRotMax() {
+        //https://books.google.ie/books?id=VTy6BQAAQBAJ&pg=PA7&lpg=PA7&dq=pre-rotation,+tilt+post-rotation+matrices&source=bl&ots=Py9GXtE7Io&sig=xfur3P7sv_XaR9ihOAsPXvgGiWw&hl=en&sa=X&ved=0ahUKEwiCmc3V0YfLAhXFPRoKHZuODpMQ6AEIKDAC#v=onepage&q&f=false
+        //inputs xyz
+        //input as a array
+        double x = -.21316;
+        double y = .11;
+        double z = -.94276;
+        double[] input = new double[] {x, y, z};
+        //theta = cos^-1(z)
+        double theta = 1/Math.cos(z);
+        //phi = tan^-1(x/y)
+        double phi = 1/Math.tan(x/y);
+        //rTheta mat
+        double[][] rTheta = {
+            {Math.cos(theta), Math.sin(theta), 0},
+            {-1 * Math.sin(theta), Math.cos(theta), 0},
+            {0, 0, 1}
+        };
+        //rPhi mat
+        double[][] rPhi = {
+            {Math.cos(phi), 0, -Math.sin(phi)},
+            {0, 1, 0},
+            {Math.sin(phi), 0, Math.cos(phi)}
+        };
+        //do rTheta * rPhi * input
+        double[][] rThetaCrossrPhi = Mathematics.multiplyMatrices3(rTheta, rPhi);
+        double[] primes = Mathematics.multiplyVector3(input, rThetaCrossrPhi);
+        //get alpha from primes calculated
+        double alpha = 1/Math.tan(primes[1]/primes[0]);
+        //create rAlpha mat
+        double[][] rAlpha = {
+            {Math.cos(alpha), 0, -Math.sin(alpha)},
+            {0, 1, 0},
+            {Math.sin(alpha), 0, Math.cos(alpha)}
+        };
+        
+        //do rAlpha * rTheta * rPhi which gives rotation matrix
+        return Mathematics.multiplyMatrices3(Mathematics.multiplyMatrices3(rAlpha, rTheta), rPhi);
+        
+    }
+   
     public void applyPostProcessing() {
         //if nothing was loaded do not try to do math channels
         if(chartManager.getDataMap().isEmpty())
@@ -1431,7 +1752,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         //Perform Operations
         //TODO: FILTERING
-        EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", chartManager.getDataMap(), "CoolantCelcius");
+        if(chartManager.getDataMap().tags.contains("Time,Coolant")) {
+            EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", chartManager.getDataMap(), "CoolantCelcius");
+        }
         
         //Create Distance Channels for all datasets that do not contain "Time"
         for(int i = 0; i < chartManager.getDataMap().table.length; i++) {
@@ -1642,245 +1965,267 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     //open file
     private void openFile(String[] filepaths) {
+        
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        //holds the context to give into the swing worker
+        DataAnalyzer me = this;
        
-        boolean first = true;
-        for(String filepath : filepaths) {
-            if(!first) {
-                DataAnalyzer da = new DataAnalyzer();
-                //begin file operation
-                openingAFile = true;
-                //Scanner to handle the file
-                Scanner scanner = null;
-                try {
-                    scanner = new Scanner(new File(filepath));
-                } catch(FileNotFoundException e) {
-                    //error message displayed
-                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
-                }
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            public Void doInBackground() {
+                boolean first = true;
+                for(String filepath : filepaths) {
+                    if(!first) {
+                        DataAnalyzer da = new DataAnalyzer();
+                        //begin file operation
+                        openingAFile = true;
+                        //Scanner to handle the file
+                        Scanner scanner = null;
+                        try {
+                            scanner = new Scanner(new File(filepath));
+                        } catch(FileNotFoundException e) {
+                            //error message displayed
+                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                        }
 
-                //if we failed to open the file exit
-                if(scanner == null) {
-                    return;
-                }
+                        //if we failed to open the file exit
+                        if(scanner == null) {
+                            return null;
+                        }
 
-                //is the current item a marker
-                boolean isMarker = false;
-                //current tag
-                String tag = "";
-                // While there is a next line
-                //handles csv data and markers
-                while (scanner.hasNextLine()) {
-                    // Store the line
-                    String line = scanner.nextLine();
-                    // If the line represents an END of the current tag
-                    if (line.equals("END")) {
-                        isMarker = false;
-                        // Necessary so that END statements don't get added to 'tags' ArrayList
-                    } else if(line.isEmpty()) {
-                        continue;
-                    }
-                    else if(line.equals("MARKERS")) {
-                        isMarker = true;
-                    } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                        break;
-                    } else if (Character.isLetter(line.charAt(0))) {
-                        // If the first character is a letter
-                        // Then add the line to the tags list
-                        tag = line;
-                    } else if (Character.isDigit(line.charAt(0))) {
-                        if(!isMarker) {
-                            // If the first character is a digit
-                            // Then divide the list in 2 values by ,
-                            final String DELIMITER = ",";
-                            String[] values = line.split(DELIMITER);
-                            // And add the values to the hashmap with their correct tag
-                            // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                            if(tag.contains("Time"))
-                                chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                            else
-                                chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                        } else {
-                            String[] split = line.split(",");
-                            if(split.length == 2) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                            } else if(split.length == 1) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                        //is the current item a marker
+                        boolean isMarker = false;
+                        //current tag
+                        String tag = "";
+                        // While there is a next line
+                        //handles csv data and markers
+                        while (scanner.hasNextLine()) {
+                            // Store the line
+                            String line = scanner.nextLine();
+                            // If the line represents an END of the current tag
+                            if (line.equals("END")) {
+                                isMarker = false;
+                                // Necessary so that END statements don't get added to 'tags' ArrayList
+                            } else if(line.isEmpty()) {
+                                continue;
+                            }
+                            else if(line.equals("MARKERS")) {
+                                isMarker = true;
+                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                                break;
+                            } else if (Character.isLetter(line.charAt(0))) {
+                                // If the first character is a letter
+                                // Then add the line to the tags list
+                                tag = line;
+                            } else if (Character.isDigit(line.charAt(0))) {
+                                if(!isMarker) {
+                                    // If the first character is a digit
+                                    // Then divide the list in 2 values by ,
+                                    final String DELIMITER = ",";
+                                    String[] values = line.split(DELIMITER);
+                                    // And add the values to the hashmap with their correct tag
+                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                                    if(tag.contains("Time"))
+                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                                    else
+                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                                } else {
+                                    String[] split = line.split(",");
+                                    if(split.length == 2) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                                    } else if(split.length == 1) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                    }
+                                }
                             }
                         }
-                    }
-                }
 
-                //string builder for creating string of data
-                StringBuilder vd = new StringBuilder("");
-                while(scanner.hasNextLine()) {
-                    //get next line
-                    String line = scanner.nextLine();
-                    if(line.equals("LAPDATA"))
-                        break;
-                    //append the next line followed by a new line char
-                    vd.append(line);
-                    vd.append("\n");
-                }
+                        //string builder for creating string of data
+                        StringBuilder vd = new StringBuilder("");
+                        while(scanner.hasNextLine()) {
+                            //get next line
+                            String line = scanner.nextLine();
+                            if(line.equals("LAPDATA"))
+                                break;
+                            //append the next line followed by a new line char
+                            vd.append(line);
+                            vd.append("\n");
+                        }
 
-                //for all the lines for lapdata
-                while(scanner.hasNextLine()) {
-                    //get the next line
-                    String line = scanner.nextLine();
-                    if(line.isEmpty())
-                        continue;
+                        //for all the lines for lapdata
+                        while(scanner.hasNextLine()) {
+                            //get the next line
+                            String line = scanner.nextLine();
+                            if(line.isEmpty())
+                                continue;
 
-                    //holds the data
-                    long lapStart;
-                    long lapStop;
-                    int lapNumber;
-                    String lapLabel;
-                    //parse data from string
-                    lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                    lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                    lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                    lapLabel = line.substring(line.indexOf(')')+1);
-                    //save data
-                    if (lapLabel.trim().length() > 0)
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
-                    else
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
-                }
-
-                //give the data to the vehicleData class to create
-                chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                //we are finished with file operation
-                openingAFile = false;
-
-                //update lap data
-                Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
-            } else {
-                //begin file operation
-                openingAFile = true;
-                //Scanner to handle the file
-                Scanner scanner = null;
-                try {
-                    scanner = new Scanner(new File(filepath));
-                } catch(FileNotFoundException e) {
-                    //error message displayed
-                    new MessageBox(this, "Error: File could not be opened", true).setVisible(true);
-                }
-
-                //if we failed to open the file exit
-                if(scanner == null) {
-                    return;
-                }
-
-                //is the current item a marker
-                boolean isMarker = false;
-                //current tag
-                String tag = "";
-                // While there is a next line
-                //handles csv data and markers
-                while (scanner.hasNextLine()) {
-                    // Store the line
-                    String line = scanner.nextLine();
-                    // If the line represents an END of the current tag
-                    if (line.equals("END")) {
-                        isMarker = false;
-                        // Necessary so that END statements don't get added to 'tags' ArrayList
-                    } else if(line.isEmpty()) {
-                        continue;
-                    }
-                    else if(line.equals("MARKERS")) {
-                        isMarker = true;
-                    } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                        break;
-                    } else if (Character.isLetter(line.charAt(0))) {
-                        // If the first character is a letter
-                        // Then add the line to the tags list
-                        tag = line;
-                    } else if (Character.isDigit(line.charAt(0))) {
-                        if(!isMarker) {
-                            // If the first character is a digit
-                            // Then divide the list in 2 values by ,
-                            final String DELIMITER = ",";
-                            String[] values = line.split(DELIMITER);
-                            // And add the values to the hashmap with their correct tag
-                            // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                            if(tag.contains("Time"))
-                                chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                            //holds the data
+                            long lapStart;
+                            long lapStop;
+                            int lapNumber;
+                            String lapLabel;
+                            //parse data from string
+                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                            lapLabel = line.substring(line.indexOf(')')+1);
+                            //save data
+                            if (lapLabel.trim().length() > 0)
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
                             else
-                                chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                        } else {
-                            String[] split = line.split(",");
-                            if(split.length == 2) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                            } else if(split.length == 1) {
-                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                v.setPaint(Color.BLUE);
-                                chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                        }
+
+                        //give the data to the vehicleData class to create
+                        chartManager.getVehicleData().applyVehicleData(vd.toString());
+
+                        //we are finished with file operation
+                        openingAFile = false;
+
+                        //update lap data
+                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+                    } else {
+                        //begin file operation
+                        openingAFile = true;
+                        //Scanner to handle the file
+                        Scanner scanner = null;
+                        try {
+                            scanner = new Scanner(new File(filepath));
+                        } catch(FileNotFoundException e) {
+                            //error message displayed
+                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                        }
+
+                        //if we failed to open the file exit
+                        if(scanner == null) {
+                            return null;
+                        }
+
+                        //is the current item a marker
+                        boolean isMarker = false;
+                        //current tag
+                        String tag = "";
+                        // While there is a next line
+                        //handles csv data and markers
+                        while (scanner.hasNextLine()) {
+                            // Store the line
+                            String line = scanner.nextLine();
+                            // If the line represents an END of the current tag
+                            if (line.equals("END")) {
+                                isMarker = false;
+                                // Necessary so that END statements don't get added to 'tags' ArrayList
+                            } else if(line.isEmpty()) {
+                                continue;
+                            }
+                            else if(line.equals("MARKERS")) {
+                                isMarker = true;
+                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                                break;
+                            } else if (Character.isLetter(line.charAt(0))) {
+                                // If the first character is a letter
+                                // Then add the line to the tags list
+                                tag = line;
+                            } else if (Character.isDigit(line.charAt(0))) {
+                                if(!isMarker) {
+                                    // If the first character is a digit
+                                    // Then divide the list in 2 values by ,
+                                    final String DELIMITER = ",";
+                                    String[] values = line.split(DELIMITER);
+                                    // And add the values to the hashmap with their correct tag
+                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                                    if(tag.contains("Time"))
+                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                                    else
+                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                                } else {
+                                    String[] split = line.split(",");
+                                    if(split.length == 2) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                                    } else if(split.length == 1) {
+                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                        v.setPaint(Color.BLUE);
+                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                    }
+                                }
                             }
                         }
+
+                        //string builder for creating string of data
+                        StringBuilder vd = new StringBuilder("");
+                        while(scanner.hasNextLine()) {
+                            //get next line
+                            String line = scanner.nextLine();
+                            if(line.equals("LAPDATA"))
+                                break;
+                            //append the next line followed by a new line char
+                            vd.append(line);
+                            vd.append("\n");
+                        }
+
+                        //for all the lines for lapdata
+                        while(scanner.hasNextLine()) {
+                            //get the next line
+                            String line = scanner.nextLine();
+                            if(line.isEmpty())
+                                continue;
+
+                            if(line.equals(("FILENOTES"))) {
+                                break;
+                            }
+
+                            //holds the data
+                            long lapStart;
+                            long lapStop;
+                            int lapNumber;
+                            String lapLabel;
+                            //parse data from string
+                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                            lapLabel = line.substring(line.indexOf(')')+1);
+                            //save data
+                            if (lapLabel.trim().length() > 0)
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+                            else
+                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                        }
+
+                        //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                        while(scanner.hasNextLine()) {
+                            fileNotes += scanner.nextLine();
+                        }
+
+                        //give the data to the vehicleData class to create
+                        chartManager.getVehicleData().applyVehicleData(vd.toString());
+
+                        //we are finished with file operation
+                        openingAFile = false;
+
+                        //update lap data
+                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
                     }
-                }
-
-                //string builder for creating string of data
-                StringBuilder vd = new StringBuilder("");
-                while(scanner.hasNextLine()) {
-                    //get next line
-                    String line = scanner.nextLine();
-                    if(line.equals("LAPDATA"))
-                        break;
-                    //append the next line followed by a new line char
-                    vd.append(line);
-                    vd.append("\n");
-                }
-
-                //for all the lines for lapdata
-                while(scanner.hasNextLine()) {
-                    //get the next line
-                    String line = scanner.nextLine();
-                    if(line.isEmpty())
-                        continue;
-                    
-                    if(line.equals(("FILENOTES"))) {
-                        break;
-                    }
-
-                    //holds the data
-                    long lapStart;
-                    long lapStop;
-                    int lapNumber;
-                    String lapLabel;
-                    //parse data from string
-                    lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                    lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                    lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                    lapLabel = line.substring(line.indexOf(')')+1);
-                    //save data
-                    if (lapLabel.trim().length() > 0)
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
-                    else
-                        chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
                 }
                 
-                //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
-                while(scanner.hasNextLine()) {
-                    fileNotes += scanner.nextLine();
-                }
-
-                //give the data to the vehicleData class to create
-                chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                //we are finished with file operation
-                openingAFile = false;
-
-                //update lap data
-                Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+                return null;
             }
-        }
+
+            @Override
+            public void done() {
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+        
+        
     }
     
     /**
@@ -1888,43 +2233,131 @@ public class DataAnalyzer extends javax.swing.JFrame {
      * @param filepaths 
      */
     private void openPE3Files(File[] files) throws FileNotFoundException {
-        //handle the first file to not open a new screen
-        boolean first = true;
         
-        //for each file
-        for(File file : files) {
-            //if its the first file we don't need to do this in a new window.
-            if(first) {
-                //Create way to read file
-                Scanner scan = new Scanner(file);
-                //get the first line which tells us the order of parameters
-                String header = scan.nextLine();
-                //store these as an array of keys
-                String[] keys = header.split(",");
-                //for each remaining line
-                while(scan.hasNextLine()) {
-                    //get the next line
-                    String line = scan.nextLine();
-                    //if its empty move forward which will skip corrupted lines or end
-                    if(line.isEmpty())
-                        continue;
-                    
-                    //all the data should be split by commas in the same order as the header
-                    String[] data = line.split(",");
-                    //the first element is time
-                    double timeInSeconds = Double.parseDouble(data[0]);
-                    
-                    long time = (long) (timeInSeconds*1000);
-                    //for each of the remaining columns
-                    for(int i = 1; i < data.length; i++) {
-                        //add this element to the datamap
-                        chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+        //ask for post processing
+        boolean applyPostProcessing = askForPostProcessing();
+        
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            
+            public Void doInBackground() throws FileNotFoundException {
+                //handle the first file to not open a new screen
+                boolean first = true;
+
+                //holds number of files opened
+                int num = 0;
+
+                //for each file
+                for(File file : files) {
+                    //if its the first file we don't need to do this in a new window.
+                    if(first) {
+                        //Create way to read file
+                        Scanner scan = new Scanner(file);
+                        //get the first line which tells us the order of parameters
+                        String header = scan.nextLine();
+                        //store these as an array of keys
+                        String[] keys = header.split(",");
+                        //for each remaining line
+                        while(scan.hasNextLine()) {
+                            //get the next line
+                            String line = scan.nextLine();
+                            //if its empty move forward which will skip corrupted lines or end
+                            if(line.isEmpty())
+                                continue;
+
+                            //all the data should be split by commas in the same order as the header
+                            String[] data = line.split(",");
+                            //if line does not match the format of the header, skip
+                            if(data.length != keys.length)
+                                continue;
+                            //the first element is time
+                            double timeInSeconds = Double.parseDouble(data[0]);
+
+                            long time = (long) (timeInSeconds*1000);
+                            //for each of the remaining columns
+                            for(int i = 1; i < data.length; i++) {
+                                //add this element to the datamap
+                                chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+                            }
+
+                        }
+
+                        //set title
+                        setTitle("DataAnalyzer - " + file.getName());
+
+                        //no longer first
+                        first = false;
+                        num++;
+
+                        //apply post processing
+                        if(applyPostProcessing) {
+                            applyPE3PostProcessing();
+                            applyPostProcessing();
+                        }
+
                     }
-                    
+                    else {
+                        DataAnalyzer dataAnalyzer = new DataAnalyzer();
+                        //Create way to read file
+                        Scanner scan = new Scanner(file);
+                        //get the first line which tells us the order of parameters
+                        String header = scan.nextLine();
+                        //store these as an array of keys
+                        String[] keys = header.split(",");
+                        //for each remaining line
+                        while(scan.hasNextLine()) {
+                            //get the next line
+                            String line = scan.nextLine();
+                            //if its empty move forward which will skip corrupted lines or end
+                            if(line.isEmpty())
+                                continue;
+
+                            //all the data should be split by commas in the same order as the header
+                            String[] data = line.split(",");
+                            //the first element is time
+                            double timeInSeconds = Double.parseDouble(data[0]);
+
+                            long time = (long) (timeInSeconds*1000);
+                            //for each of the remaining columns
+                            for(int i = 1; i < data.length; i++) {
+                                //add this element to the datamap
+                                dataAnalyzer.chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
+                            }
+
+                        }
+
+                        //set title
+                        dataAnalyzer.setTitle("DataAnalyzer - " + file.getName());
+
+                        //apply post processing
+                        if(applyPostProcessing) {
+                            dataAnalyzer.applyPE3PostProcessing();
+                            dataAnalyzer.applyPostProcessing();
+                        }
+
+                        //set visible and location
+                        dataAnalyzer.setVisible(true);
+                        dataAnalyzer.setLocation(100 * num, 100 * num);
+
+                        //opened another file
+                        num++;
+                    }
+
                 }
                 
+                return null;
             }
-        }
+
+            public void done() {
+                //Destroy the Loading Dialog
+                loading.stop();
+            }
+        };
+        
+        worker.execute();
+        
     }
     
     //returns chartManager
@@ -2009,7 +2442,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenuItem checkVitals_menuitem;
     private javax.swing.JMenuItem closeMenuItem;
+    private javax.swing.JMenuItem darkTheme_menuitem;
+    private javax.swing.JMenuItem defaultTheme_menuitem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem editVehicleMenuItem;
     private javax.swing.JMenuItem engineChartSetup;
@@ -2020,6 +2456,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem fullscreenMenuItem;
     private javax.swing.JMenuItem importECUDataMenuItem;
     private javax.swing.JMenuItem importVehicleMenuItem;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newImportMenuItem;
@@ -2035,6 +2472,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
     private javax.swing.JMenuItem trackMapMenuItem;
+    private javax.swing.JMenuItem systemTheme_menuitem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
     private javax.swing.JMenuItem twoVerticalMenuItem;
     private javax.swing.JMenu vehicleMenu;
@@ -2080,5 +2518,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             TAG.add(elem);
             return this;
         } 
+    }
+    
+    //Enumeration definition for Theme
+    public enum Theme {
+        DEFAULT, SYSTEM, DARK;
     }
 }

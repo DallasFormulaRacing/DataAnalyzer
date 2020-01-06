@@ -97,6 +97,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
         insertMathChannelMenu = new javax.swing.JMenu();
         cToFMathChannelMenuItem = new javax.swing.JMenuItem();
         fToCMathChannelMenuItem = new javax.swing.JMenuItem();
+        analogToOilPressure_menuitem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -160,6 +161,10 @@ public class MathChannelDialog extends javax.swing.JFrame {
             }
         });
         insertMathChannelMenu.add(fToCMathChannelMenuItem);
+
+        analogToOilPressure_menuitem.setText("Analog to Oil Pressure");
+        analogToOilPressure_menuitem.setToolTipText("");
+        insertMathChannelMenu.add(analogToOilPressure_menuitem);
 
         jMenuBar1.add(insertMathChannelMenu);
 
@@ -255,7 +260,10 @@ public class MathChannelDialog extends javax.swing.JFrame {
         //remove all spaces from string.
         String eq = equationField.getText();
         //Check the validity of the string
-        EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText(), minBound, maxBound);
+        if(minTextField.getText().isEmpty() && maxTextField.getText().isEmpty())
+            EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText());
+        else
+            EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText(), minBound, maxBound);
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
@@ -299,6 +307,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem analogToOilPressure_menuitem;
     private javax.swing.JList<String> availableVariablesList;
     private javax.swing.JMenuItem cToFMathChannelMenuItem;
     private javax.swing.JTextPane channelTitleText;

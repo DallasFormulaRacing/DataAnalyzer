@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.DataAnalyzer.Theme;
 import dataanalyzer.dialog.ApplyFilteringDialog;
 import dataanalyzer.dialog.LapDataDialog;
 import dataanalyzer.dialog.StaticMarkersFrame;
@@ -85,7 +86,7 @@ public class ChartAssembly implements ChartMouseListener {
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
     
-    ChartTheme currentTheme = new StandardChartTheme("JFree");
+    ChartTheme currentTheme;
     
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
@@ -96,6 +97,16 @@ public class ChartAssembly implements ChartMouseListener {
         chartFrame = new ChartFrame();
         chartFrame.setSize(new Dimension(800,600));
         chartFrame.setResizable(true);
+        //set necessary theme
+        if(((DataAnalyzer)this.manager.getParentFrame()).currTheme == Theme.DARK) {
+            currentTheme = StandardChartTheme.createDarknessTheme();
+        } else {
+            StandardChartTheme temp = new StandardChartTheme("JFree");
+            temp.setPlotBackgroundPaint(Color.WHITE);
+            temp.setDomainGridlinePaint(Color.GRAY);
+            temp.setRangeGridlinePaint(Color.GRAY);
+            currentTheme = temp;   
+        }
         addMenuBar();
         showEmptyGraph();
         createOverlay();
@@ -133,6 +144,9 @@ public class ChartAssembly implements ChartMouseListener {
                 true,
                 false
         );
+        
+        //apply the current theme
+        currentTheme.apply(chart);
 
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
@@ -389,7 +403,7 @@ public class ChartAssembly implements ChartMouseListener {
     private void createOverlay() {
         // Create the global object crosshairs
         yCrosshairs = new ArrayList<>();
-        overlay = new MyCrosshairOverlay();
+        overlay = new MyCrosshairOverlay(this);
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
         overlay.addDomainCrosshair(xCrosshair);
@@ -424,7 +438,7 @@ public class ChartAssembly implements ChartMouseListener {
         title += tags[0].split(",")[0];
         
         //reset overlays
-        overlay = new MyCrosshairOverlay();
+        overlay = new MyCrosshairOverlay(this);
         overlay.rangeMarkersActive = ((DataAnalyzer) manager.getParentFrame()).rangeMarkersActive;
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
@@ -455,6 +469,9 @@ public class ChartAssembly implements ChartMouseListener {
         // Create a new JFreeChart with the XYPlot
         JFreeChart chart = new JFreeChart(title, chartFrame.getFont(), plot, true);
         chart.setBackgroundPaint(Color.WHITE);
+        
+        //only apply the theme if its dark
+        currentTheme.apply(chart);
         
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
@@ -503,7 +520,7 @@ public class ChartAssembly implements ChartMouseListener {
         title += tags[0].split(",")[0];
         
         //reset overlays
-        overlay = new MyCrosshairOverlay();
+        overlay = new MyCrosshairOverlay(this);
         this.xCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
         this.xCrosshair.setLabelVisible(true);
         overlay.addDomainCrosshair(xCrosshair);
@@ -533,6 +550,9 @@ public class ChartAssembly implements ChartMouseListener {
         // Create a new JFreeChart with the XYPlot
         JFreeChart chart = new JFreeChart(title, chartFrame.getFont(), plot, true);
         chart.setBackgroundPaint(Color.WHITE);
+        
+        //apply current theme
+        currentTheme.apply(chart);
         
         // Instantiate chart panel object from the object created from ChartFactory
         chartPanel = new ChartPanel(chart);
@@ -618,6 +638,9 @@ public class ChartAssembly implements ChartMouseListener {
         
         //creates a custom histogram
         JFreeChart chart = createMyHistogram(title, xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
+        
+        //apply current theme
+        currentTheme.apply(chart);
 
         //apply histogram to chart panel
         chartPanel = new ChartPanel(chart);
@@ -1413,6 +1436,26 @@ public class ChartAssembly implements ChartMouseListener {
     public void setChartFrame(JInternalFrame chartFrame) {
         this.chartFrame = chartFrame;
     }
+    
+    /**
+     * Applies a new theme manually, which is called when the overall theme is changed
+     * @param theme new theme to change to
+     */
+    public void applyNewTheme(Theme theme) {
+        //if its a dark theme, apply jfreechart's dark theme
+        if(theme == Theme.DARK) {
+            currentTheme = StandardChartTheme.createDarknessTheme();
+            currentTheme.apply(chartPanel.getChart());
+        } else {
+            //else apply its standard light theme
+            StandardChartTheme temp = new StandardChartTheme("JFree");
+            temp.setPlotBackgroundPaint(Color.WHITE);
+            temp.setDomainGridlinePaint(Color.GRAY);
+            temp.setRangeGridlinePaint(Color.GRAY);
+            currentTheme = temp;
+            currentTheme.apply(chartPanel.getChart());
+        }
+    }
 
     public MyCrosshairOverlay getOverlay() {
         return overlay;
@@ -1433,19 +1476,42 @@ public class ChartAssembly implements ChartMouseListener {
         */
         private final List<Crosshair> shadowD, shadowR;
         protected boolean rangeMarkersActive;
+        //holds the parent chartassembly
+        private final ChartAssembly parent;
 
+        /**
+         * @deprecated Please provide a parent
+         */
         public MyCrosshairOverlay() {
             super();
             shadowD = new ArrayList<>();
             shadowR = new ArrayList<>();
             rangeMarkersActive = true;
+            parent = null;
         }
         
+        /**
+         * Constructors an overlay object with a parent that it belongs to
+         * @param parent 
+         */
+        public MyCrosshairOverlay(ChartAssembly parent) {
+            super();
+            this.parent = parent;
+            shadowD = new ArrayList<>();
+            shadowR = new ArrayList<>();
+            rangeMarkersActive = true;
+        }
+        
+        /**
+         * @deprecated Please provide a parent
+         * @param range provide if range markers are already disabled
+         */
         public MyCrosshairOverlay(boolean range) {
             super();
             shadowD = new ArrayList<>();
             shadowR = new ArrayList<>();
             rangeMarkersActive = range;
+            parent = null;
         }
 
         @Override
@@ -1483,6 +1549,9 @@ public class ChartAssembly implements ChartMouseListener {
             for( Crosshair c : shadowD ) {
                 if( !c.isVisible() )
                     continue;
+                //set the color to white if we transition to dark theme
+                if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
+                    c.setLabelBackgroundPaint(Color.WHITE);
                 double x = c.getValue();
                 double xx = dAxis.valueToJava2D(x, dataArea, dAxisEdge);
                 if (plot.getOrientation() == PlotOrientation.VERTICAL) {
@@ -1500,6 +1569,9 @@ public class ChartAssembly implements ChartMouseListener {
                     Crosshair c = shadowR.get(i);
                     if( !c.isVisible() )
                         continue;
+                    //set the color to white if we transition to dark theme
+                    if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
+                        c.setLabelBackgroundPaint(Color.WHITE);
                     double y = c.getValue();
                     double yy = rAxis.valueToJava2D(y, dataArea, rAxisEdge);
                     if (plot.getOrientation() == PlotOrientation.VERTICAL) {
