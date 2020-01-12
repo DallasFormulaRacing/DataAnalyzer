@@ -6,6 +6,7 @@
 package dataanalyzer;
 
 import dataanalyzer.DataAnalyzer.Theme;
+import java.awt.Color;
 import javax.swing.Box;
 
 /**
@@ -38,12 +39,51 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     }
     
     /**
+     * Creates new form GPSGraphInternalFrame
+     * 
+     * @param dataAnalyzer current DataAnalyzer frame
+     * @param theme theme of parent view
+     */
+    public GPSGraphInternalFrame(DataAnalyzer dataAnalyzer, Theme theme) {
+        //sets class variables
+        this.hasData = false;
+        this.dataAnalyzer = dataAnalyzer;
+        
+        //sets the content panel of the frame to a GPSGraphPanel
+        this.panel = new GPSGraphPanel();
+        this.setContentPane(panel);
+        
+        //initializes GPSGraphInternalFrame
+        initComponents();
+    }
+    /**
      * Creates new form GPSGraphFrame with a DataAnalyzer frame
      *
      * @param dataAnalyzer current DataAnalyzer frame
      * @param dataMap log data for the car's ECU stored in a CategoricalHashMap
      */
     public GPSGraphInternalFrame(DataAnalyzer dataAnalyzer, CategoricalHashMap dataMap) {
+        //sets class variables
+        this.dataAnalyzer = dataAnalyzer;
+        this.hasData = true;
+        this.dataMap = dataMap;
+        
+        //sets the content panel of the frame to a GPSGraphPanel
+        this.panel = new GPSGraphPanel(dataMap);
+        this.setContentPane(panel);
+        
+        //initializes GPSGraphInternalFrame
+        initComponents();
+    }
+    
+    /**
+     * Creates new form GPSGraphFrame with a DataAnalyzer frame
+     *
+     * @param dataAnalyzer current DataAnalyzer frame
+     * @param dataMap log data for the car's ECU stored in a CategoricalHashMap
+     * @param theme theme of parent view
+     */
+    public GPSGraphInternalFrame(DataAnalyzer dataAnalyzer, CategoricalHashMap dataMap, Theme theme) {
         //sets class variables
         this.dataAnalyzer = dataAnalyzer;
         this.hasData = true;
@@ -128,7 +168,6 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
 
     private void speedOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedOverlayJMenuItemActionPerformed
         panel.setOverlay("Time,Speed");
-        this.setContentPane(panel);
     }//GEN-LAST:event_speedOverlayJMenuItemActionPerformed
 
     private void noOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noOverlayJMenuItemActionPerformed
