@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.DataAnalyzer.Theme;
 import javax.swing.Box;
 
 /**
@@ -58,6 +59,10 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     
     public void setXCor (double xCor) {
         panel.setXCor(xCor);
+    }
+    
+    public void setTheme(Theme theme){
+        panel.setTheme(theme);
     }
 
     /**
@@ -122,13 +127,12 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void speedOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedOverlayJMenuItemActionPerformed
-        panel = new GPSGraphPanel(dataMap, "Time,Speed");
+        panel.setOverlay("Time,Speed");
         this.setContentPane(panel);
     }//GEN-LAST:event_speedOverlayJMenuItemActionPerformed
 
     private void noOverlayJMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noOverlayJMenuItemActionPerformed
-        panel = new GPSGraphPanel(dataMap);
-        this.setContentPane(panel);
+        panel.setOverlay(null);
     }//GEN-LAST:event_noOverlayJMenuItemActionPerformed
 
 

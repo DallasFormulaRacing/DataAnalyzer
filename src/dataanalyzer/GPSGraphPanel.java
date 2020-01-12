@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.DataAnalyzer.Theme;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -28,6 +29,7 @@ public class GPSGraphPanel extends JPanel{
     private TrackMap tm;
     private String overlayParam;
     private double xCor;
+    private Theme theme;
     
     public GPSGraphPanel(){
         tm = new TrackMap();
@@ -45,7 +47,13 @@ public class GPSGraphPanel extends JPanel{
     
     public void setOverlay(String overlayParam){
         this.overlayParam = overlayParam;
-        tm.setOverlay(this.overlayParam);
+        tm.setOverlay(this.overlayParam, theme);
+        this.repaint();
+    }
+    
+    public void setTheme(Theme theme){
+        this.theme = theme;
+        paintComponent(this.getGraphics());
     }
     
     /*
@@ -73,7 +81,14 @@ public class GPSGraphPanel extends JPanel{
         rh.add(new RenderingHints(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT));
         
         //Enable the beautifying established above
-        g2.setColor(Color.BLACK);
+        if(theme == Theme.DARK){
+            g2.setBackground(Color.BLACK);
+            g2.setColor(Color.WHITE);
+        }else{
+           g2.setBackground(Color.WHITE);
+           g2.setColor(Color.BLACK); 
+        }
+        
         g2.setRenderingHints(rh);
         g2.setStroke(stroke);
         
@@ -225,7 +240,19 @@ class TrackMap extends Polygon{
     }
     
     public void setOverlay(String param){
-        overlay = new Overlay(param);
+        if(param != null){
+            overlay = new Overlay(param);
+        }else{
+            overlay = null;
+        }
+    }
+    
+    public void setOverlay(String param, Theme theme){
+        if(param != null){
+            overlay = new Overlay(param, theme);
+        }else{
+            overlay = null;
+        }
     }
     
     void resize(){
@@ -258,17 +285,37 @@ class TrackMap extends Polygon{
         private ArrayList<SimpleLogObject> logPoints;
         private LinkedList<LogObject> list;
         private Graphics2D g;
+        private float themeOffset;
         
         public Overlay(){
             this.max = Integer.MIN_VALUE;
             this.min = Integer.MAX_VALUE;
             this.logPoints = new ArrayList<>();
+            this.themeOffset = 0.0f;
         }
         
         public Overlay(String param){
             this.max = Integer.MIN_VALUE;
             this.min = Integer.MAX_VALUE;
             this.logPoints = new ArrayList<>();
+            this.themeOffset = 0.0f;
+            
+            try{
+                list = data.getList(param);
+            }catch(Exception e){
+                System.out.println("Please make sure Data map has the appropriate data you are trying to overlay. It seems it is not there");
+                return;
+            }
+            processLog();
+        }
+        
+        public Overlay(String param, Theme theme){
+            this.max = Integer.MIN_VALUE;
+            this.min = Integer.MAX_VALUE;
+            this.logPoints = new ArrayList<>();
+            
+            //If dark theme make the overlay move between red and purple?
+            this.themeOffset = theme == Theme.DARK ? 0.33f : 0.0f;
             
             try{
                 list = data.getList(param);
@@ -321,7 +368,7 @@ class TrackMap extends Polygon{
                 */
                 float hue = (float) ((logPoints.get(i).value - min) / (max - min)) / 3;
                 
-                g2.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
+                g2.setColor(Color.getHSBColor(hue+themeOffset, 1.0f, 1.0f));
                 g2.drawLine(x1,y1,x2,y2);
                 
                 x1 = x2;
