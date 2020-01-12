@@ -1268,6 +1268,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //apply new theme everywhere
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
+        
+        for(GPSGraphInternalFrame trackMap: trackMaps)
+               trackMap.setTheme(currTheme);
     }//GEN-LAST:event_defaultTheme_menuitemActionPerformed
 
     /**
@@ -1292,6 +1295,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //apply new theme everywhere
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
+        
+        for(GPSGraphInternalFrame trackMap: trackMaps)
+               trackMap.setTheme(currTheme);
     }//GEN-LAST:event_systemTheme_menuitemActionPerformed
 
     /**
@@ -1336,6 +1342,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //apply new theme everywhere
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
+        
+        for(GPSGraphInternalFrame trackMap: trackMaps)
+               trackMap.setTheme(currTheme);
     }//GEN-LAST:event_darkTheme_menuitemActionPerformed
 
     private void checkVitals_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkVitals_menuitemActionPerformed
