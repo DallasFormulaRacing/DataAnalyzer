@@ -1209,9 +1209,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //calls the correct constructor based on wheather data has been loaded
         if(chartManager.getDataMap().isEmpty()){
-            trackMapInternalFrame = new GPSGraphInternalFrame(this);
+            trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
         } else {
-            trackMapInternalFrame = new GPSGraphInternalFrame(this, chartManager.getDataMap());
+            trackMapInternalFrame = new GPSGraphInternalFrame(this, chartManager.getDataMap(), currTheme);
         }
         trackMapInternalFrame.setVisible(true);
         
