@@ -53,7 +53,7 @@ public class GPSGraphPanel extends JPanel{
     
     public void setTheme(Theme theme){
         this.theme = theme;
-        paintComponent(this.getGraphics());
+        this.repaint();
     }
     
     /*
@@ -368,7 +368,7 @@ class TrackMap extends Polygon{
                 */
                 float hue = (float) ((logPoints.get(i).value - min) / (max - min)) / 3;
                 
-                g2.setColor(Color.getHSBColor(hue+themeOffset, 1.0f, 1.0f));
+                g2.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
                 g2.drawLine(x1,y1,x2,y2);
                 
                 x1 = x2;
