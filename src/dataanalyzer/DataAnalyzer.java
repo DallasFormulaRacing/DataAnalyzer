@@ -1475,6 +1475,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         ArrayList<String> origtags = new ArrayList<>(); 
         origtags.addAll(chartManager.getDataMap().getTags());
         
+        //for each tag remove [unit]
         for(int i = 0; i < origsize; i++) {
             String[] split = origtags.get(i).split(",");
             String newTag;
@@ -1486,35 +1487,60 @@ public class DataAnalyzer extends javax.swing.JFrame {
             
         }
         
+        //delete the originals
         for(String tag : origtags) {
             chartManager.getDataMap().remove(tag);
         }
+        
+        //to delete tags
+        ArrayList<String> analogToDelete = new ArrayList<>();
+        
+        //get all tags
+        origsize = chartManager.getDataMap().getTags().size();
+        origtags = new ArrayList<>(); 
+        origtags.addAll(chartManager.getDataMap().getTags());
+        
+        //for each of the originals
+        for(int i = 0; i < origsize; i++) {
+            //get the tag and remove '#'
+            String[] split = origtags.get(i).split(",");
+            String newTag = split[1].replace("#", "");
+            //if the tag matches the sequence Analog#[#]
+            if(split[1].matches("Analog#[0-9]+")) {
+                //add a new tag which is the same data with a different tag
+                EquationEvaluater.evaluate("$(" + origtags.get(i) + ")", chartManager.getDataMap(), newTag);
+                //add the current tag so we know to delete it later
+                analogToDelete.add(origtags.get(i));
+            }
+        }
+        
+        //delete all the tags we've held
+        for(String tag : analogToDelete) {
+            chartManager.getDataMap().remove(tag);
+        }
+       
         
         if(chartManager.getDataMap().tags.contains("Time,MeasuredAFR#1") && chartManager.getDataMap().tags.contains("Time,MeasuredAFR#2")) {
             EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", chartManager.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog#5")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog#5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
-        }
-        
-        if(chartManager.getDataMap().tags.contains("Time,Analog#6")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", chartManager.getDataMap(), "Time,yAccel");
-        }
-        
-        if(chartManager.getDataMap().tags.contains("Time,Analog#7")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", chartManager.getDataMap(), "Time,xAccel");
-
-        }
-        if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", chartManager.getDataMap(), "Time,zAccel");
-        }
-        
         //now we have unoriented xyz 
         LinkedList<LogObject> rotXAccel = new LinkedList<>();
         LinkedList<LogObject> rotYAccel = new LinkedList<>();
         LinkedList<LogObject> rotZAccel = new LinkedList<>();
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog6")) {
+            EquationEvaluater.evaluate("((($(Time,Analog6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", chartManager.getDataMap(), "Time,yAccel");
+        }
+        
+        if(chartManager.getDataMap().tags.contains("Time,Analog7")) {
+            EquationEvaluater.evaluate("((($(Time,Analog7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", chartManager.getDataMap(), "Time,xAccel");
+
+        }
+        if(chartManager.getDataMap().tags.contains("Time,Analog8")) {
+            EquationEvaluater.evaluate("((($(Time,Analog8) + .83) / .55) - 3) * 3.7037", chartManager.getDataMap(), "Time,zAccel");
+        }
         
         //get x y z data as arrays
         ArrayList<LogObject> x,y,z;
@@ -1637,6 +1663,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", chartManager.getDataMap(), "Time,SuckySucky");
         }
         
+        if(chartManager.getDataMap().tags.contains("Time,Analog1")) {
+            EquationEvaluater.evaluate("($(Time,Analog1)-.5)*1250", chartManager.getDataMap(), "Time,BrakePressureFront");
+        }
+        if(chartManager.getDataMap().tags.contains("Time,Analog2")) {
+            EquationEvaluater.evaluate("($(Time,Analog2)-.5)*1250", chartManager.getDataMap(), "Time,BrakePressureRear");
+        }
+        
         //Create Average of Analog in 5v form
         if(chartManager.getDataMap().tags.contains("Time,Analog3") && chartManager.getDataMap().tags.contains("Time,Analog4")) {
             EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", chartManager.getDataMap(), "Time,Lamda5VAveraged");
@@ -1650,6 +1683,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", chartManager.getDataMap(), "Time,GearRatio", 0, 10);
         }
         
+        if(chartManager.getDataMap().tags.contains("Time,Analog5")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
+        }
+        
         
         //average the 5V output to AFR
         //convert to AFR
@@ -1657,21 +1694,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("2 * $(Time,Lamda5VAveraged) + 10", chartManager.getDataMap(), "Time,AFRAveraged");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog1")) {
-            EquationEvaluater.evaluate("(($(Time,Analog1)-.5)*(5000-0))/(4.5-.5)", chartManager.getDataMap(), "Time,BrakePressureFront");
-        }
-        if(chartManager.getDataMap().tags.contains("Time,Analog2")) {
-            EquationEvaluater.evaluate("(($(Time,Analog2)-.5)*(5000-0))/(4.5-.5)", chartManager.getDataMap(), "Time,BrakePressureRear");
-        }
         //TODO: REDO ALL OF THESE VALUES.
         if(chartManager.getDataMap().tags.contains("Time,BrakePressureRear") && chartManager.getDataMap().tags.contains("Time,BrakePressureRear")) {
             //calculate force on caliper pistons
-            EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonFront");
-            EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonRear");
+            //EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonFront");
+            //EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonRear");
             
             //calcuate torque
-            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonFront)*.106588*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueFront");
-            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonRear)*.0823*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueRear");
+            //EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonFront)*.106588*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueFront");
+            //EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonRear)*.0823*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueRear");
             
         }
         //TODO: what if no brakes are applied, divide by 0 error. above 5.1
