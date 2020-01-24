@@ -64,10 +64,16 @@ public class TagChooserPanel extends javax.swing.JPanel {
 
     //returns a dataset selection based on the users selection
     public DatasetSelection getDatasetSelection() {
-        ArrayList<String> tags = new ArrayList<>(Arrays.asList(chosenTags));
+        ArrayList<String> tags = new ArrayList<>();
         ArrayList<Integer> laps = new ArrayList<>();
-        for(int l : chosenLaps)
-            laps.add(l);
+        if(chosenTags != null) {
+            for(String s : chosenTags)
+                tags.add(s);
+        }
+        if(chosenLaps != null) {
+            for(int l : chosenLaps)
+                laps.add(l);
+        }
         DatasetSelection ds = new DatasetSelection(dataset, tags, laps);
         return ds;
     }

@@ -12,6 +12,7 @@ import dataanalyzer.SimpleLogObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * An independent JFrame that contains three lists: Average, Min, Max.
@@ -21,9 +22,9 @@ import java.util.List;
  */
 public class StatisticsFrame extends javax.swing.JFrame {
     
-    private final LinkedList<LinkedList<LogObject>> chosenTags;
+    private final TreeMap<String, LinkedList<LogObject>> chosenTags;
     
-    public StatisticsFrame(LinkedList<LinkedList<LogObject>> chosenTags) {
+    public StatisticsFrame(TreeMap<String, LinkedList<LogObject>> chosenTags) {
         initComponents();
         this.chosenTags = chosenTags;
         calculateStatistics();
@@ -36,13 +37,13 @@ public class StatisticsFrame extends javax.swing.JFrame {
         mins = new ArrayList<>();
         maxs = new ArrayList<>();
         
-        for(LinkedList<LogObject> data : chosenTags) {
+        for(String key : chosenTags.keySet()) {
             //variables that hold average, min, and max
             double avg = 0;
             double min = Double.MAX_VALUE;
             double max = Double.MIN_VALUE;
             int countAdded = 0;
-            String tag = data.getFirst().getTAG();
+            LinkedList<LogObject> data = chosenTags.get(key);
             //for each logobject in the list we got
             for(LogObject lo : data) {
                 //if the LogObject is an instance of a SimpleLogObject
@@ -71,9 +72,9 @@ public class StatisticsFrame extends javax.swing.JFrame {
             //divide average by number of objects we added
             avg /= countAdded;
             //append the string
-            avgs.add(tag.substring(tag.indexOf(',')+1));
-            mins.add(tag.substring(tag.indexOf(',')+1));
-            maxs.add(tag.substring(tag.indexOf(',')+1));
+            avgs.add(key + ":" + String.format("%.2f", avg));
+            mins.add(key + ":" + min);
+            maxs.add(key + ":" + max);
         }
         
         //set the lists
@@ -137,16 +138,16 @@ public class StatisticsFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addGap(18, 18, 18)
+                    .addComponent(jLabel1)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addGap(18, 18, 18)
+                    .addComponent(jLabel2)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(

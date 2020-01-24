@@ -5,6 +5,7 @@
  */
 package dataanalyzer;
 
+import com.arib.categoricalhashtable.CategoricalHashTable;
 import dataanalyzer.DatasetSelection;
 import dataanalyzer.CategorizedValueMarker;
 import dataanalyzer.Dataset;
@@ -15,6 +16,8 @@ import dataanalyzer.SimpleLogObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.TreeMap;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.data.statistics.SimpleHistogramBin;
 import org.jfree.data.statistics.SimpleHistogramDataset;
 import org.jfree.data.xy.XYSeries;
@@ -38,6 +41,10 @@ public class Selection {
     
     public void addDatasetSelection(DatasetSelection ds) {
         datasetSelections.add(ds);
+    }
+    
+    public void clearSelections() {
+        datasetSelections = new LinkedList<>();
     }
     
     public ArrayList<String> getUniqueTags() {
@@ -127,7 +134,7 @@ public class Selection {
                     //if no laps were selected
                     if(ds.selectedLaps == null || ds.selectedLaps.isEmpty()) {
                         //create a series for this dataset+tag
-                        XYSeries series = new XYSeries("D:"+ds.dataset.getName() + "-"+uniqueTag);
+                        XYSeries series = new XYSeries("D:"+ds.dataset.getName() + "-"+ uniqueTag);
                         //for each log object
                         LinkedList<LogObject> dataLinked = ds.dataset.getDataMap().getList(uniqueTag);
                         //copy to a arraylist for a better runtime letter
@@ -247,11 +254,15 @@ public class Selection {
         
         //for each dataset, get its selection tags, and get its markers
         LinkedList<LinkedList<CategorizedValueMarker>> allMarkers = new LinkedList<>();
+        //for each tag
         for(String tag : getUniqueTags()) {
+            //holds markers associated with this tag
             LinkedList<CategorizedValueMarker> tagMarkers = new LinkedList<>();
+            //for each dataselection, get the static markers associated with this tag
             for(DatasetSelection datasetSelection : datasetSelections) {
                 if(datasetSelection.selectedTags.contains(tag)) {
-                    tagMarkers.addAll(datasetSelection.dataset.getStaticMarkers().getList(tag));
+                    if(datasetSelection.dataset.getStaticMarkers().getList(tag) != null)
+                        tagMarkers.addAll(datasetSelection.dataset.getStaticMarkers().getList(tag));
                 }
             }
             allMarkers.addLast(tagMarkers);
@@ -261,4 +272,132 @@ public class Selection {
         return allMarkers;
     }
     
+    /**
+     * Gets all datasets that were selected
+     * @return 
+     */
+    public LinkedList<Dataset> getAllSelectedDatasets() {
+        LinkedList<Dataset> datasets = new LinkedList<>();
+        //for each dataset selection, add the dataset
+        for(DatasetSelection sel : datasetSelections) {
+            datasets.add(sel.dataset);
+        }
+        //return all added datasets
+        return datasets;
+    }
+    
+    public TreeMap<CategorizedValueMarker, Double> getAllValuedMarkers() {
+        TreeMap<CategorizedValueMarker, Double> map = new TreeMap<>();
+        //for each tag
+        for(String tag : getUniqueTags()) {
+            //holds markers associated with this tag
+            LinkedList<CategorizedValueMarker> tagMarkers = new LinkedList<>();
+            //for each dataselection, get the static markers associated with this tag
+            for(DatasetSelection datasetSelection : datasetSelections) {
+                if(datasetSelection.selectedTags.contains(tag)) {
+                    CategoricalHashTable<CategorizedValueMarker> staticMarkers = datasetSelection.dataset.getStaticMarkers();
+                    //for each marker, (which should be unique, at least multiple instances of the same data)
+                    for(CategorizedValueMarker marker : staticMarkers.getList(tag)) {
+                        map.put(marker, getValueAt(marker.getMarker().getValue(), datasetSelection.dataset.getDataMap().getList(tag)));
+                    }
+                }
+            }
+        }
+        
+        return map;
+    }
+    
+    public void addMarker(ValueMarker marker) {
+        addMarker(marker, "");
+    }
+    
+    public void addMarker(ValueMarker marker, String notes) {
+        for(DatasetSelection ds : datasetSelections) {
+            for(String tag : ds.selectedTags) {
+                ds.dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, marker, notes));
+            }
+        }
+    }
+    
+    public void addLap(Lap l) {
+        //for each dataset selection
+        for(DatasetSelection ds : datasetSelections) {
+            //add the created lap
+            ds.dataset.getLapBreaker().add(l);
+            //apply the lap to the dataset
+            Lap.applyToDataset(ds.dataset.getDataMap(), ds.dataset.getLapBreaker());
+        }
+    }
+    
+    /**
+     * Returns the value at a given point.
+     * Handles children to return accurate values for simple and functionof objects
+     * @param x domain value
+     * @param data list of data
+     * @return corresponding y value for given x
+     */
+    private double getValueAt(double x, LinkedList<LogObject> data) {
+        double lastDiff = Double.MAX_VALUE;
+        double valueToReturn = Double.NaN;
+        //for each object, check if this is correct object, if so: return value
+        for(LogObject lo : data) {
+            if(lo instanceof SimpleLogObject) {
+                if(Math.abs(lo.getTime() - x) < lastDiff) {
+                    valueToReturn = ((SimpleLogObject) lo).getValue();
+                    lastDiff = Math.abs(lo.getTime() - x);
+                } else {
+                    return valueToReturn;
+                }
+            } else if(lo instanceof FunctionOfLogObject) {
+                if(Math.abs(((FunctionOfLogObject) lo).getX()-x) < lastDiff) { 
+                    valueToReturn = ((FunctionOfLogObject) lo).getValue();
+                    lastDiff = Math.abs(((FunctionOfLogObject) lo).getX()-x);
+                } else {
+                    return valueToReturn;
+                }
+            }
+        }
+        
+        //return NaN for not value found
+        return valueToReturn;
+    }
+    
+    /**
+     * Gets the list of objects for the selected tags for each respective dataset
+     * @return list of lists of selected tags keyed by name
+     */
+    public TreeMap<String, LinkedList<LogObject>> getSelectedLists() {
+        TreeMap<String, LinkedList<LogObject>> toReturn = new TreeMap<>();
+        //for each dataset selection
+        for(DatasetSelection ds : datasetSelections) {
+            //for each selected tag of this dataset
+            for(String tag : ds.selectedTags) {
+                //get the data categorized by this tag
+                LinkedList<LogObject> all = ds.dataset.getDataMap().getList(tag);
+                //if there are no selected laps, then just add the whole data
+                if(ds.selectedLaps.isEmpty()) {
+                    toReturn.put("D:" + ds.dataset.getName() + "T:"+tag, all);
+                } 
+                //else add data for each lap
+                else {
+                    //for each lap in this selection
+                    for(Integer l : ds.selectedLaps) {
+                        //this holds the list of data objects that belong to this dataset, tag, and lap
+                        LinkedList<LogObject> ofLap = new LinkedList<>();
+                        //for each object in the complete set for this dataset and tag
+                        for(LogObject lo : all) {
+                            //if this object belongs to this lap add it
+                            if(lo.getLaps().contains(l))
+                                ofLap.add(lo);
+                        }
+                        //when finished add this to the list of list of objects toReturn
+                        toReturn.put("D:" + ds.dataset.getName() + " T:" + tag + " L:" + l, ofLap);
+                    }
+                }
+            }
+        }
+        
+        //return the generated map
+        return toReturn;
+    }
 }

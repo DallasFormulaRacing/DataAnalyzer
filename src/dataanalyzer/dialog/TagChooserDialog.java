@@ -156,9 +156,12 @@ public class TagChooserDialog extends javax.swing.JDialog {
 
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
         //for each active panel, get its selections.
+        selection.clearSelections();
         for(TagChooserPanel panel : activePanels) {
             selection.addDatasetSelection(panel.getDatasetSelection());
         }
+        running = false;
+        this.dispose();
     }//GEN-LAST:event_applyButtonActionPerformed
        
     /**

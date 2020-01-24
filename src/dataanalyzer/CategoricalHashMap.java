@@ -14,7 +14,7 @@ import java.util.LinkedList;
  */
 public class CategoricalHashMap {
     
-    private ArrayList<HashMapTagSizeListener> listeners;
+    private ArrayList<SizeListener> listeners;
     ArrayList<String> tags;
     
     //Actual table
@@ -171,12 +171,12 @@ public class CategoricalHashMap {
     }
     
     private void broadcastSizeChange() {
-        for(HashMapTagSizeListener listener : listeners) {
+        for(SizeListener listener : listeners) {
             listener.sizeUpdate();
         }
     }
     
-    public void addTagSizeChangeListener(HashMapTagSizeListener e) {
+    public void addTagSizeChangeListener(SizeListener e) {
         listeners.add(e);
     }
     

@@ -16,6 +16,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,11 +25,14 @@ import java.io.FileWriter;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -105,17 +110,81 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //set the opened file path to empty string to prevent null pointer exceptions
         openedFilePath = "";
         
-        //disable new import button
-        newImportMenuItem.setVisible(false);
-        
-        //on new element entry of dataMap, update the view
-        chartManager.getDataMap().addTagSizeChangeListener(new HashMapTagSizeListener() {
+        chartManager.addDatasetSizeChangeListener(new SizeListener() {
             @Override
             public void sizeUpdate() {
-                if(!openingAFile)
-                    Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
+                initializeDatasetMenu();
             }
         });
+    }
+    
+    private void initializeDatasetMenu() {
+        datasetMenu.removeAll();
+        for(Dataset dataset : chartManager.getDatasets())
+            datasetMenu.add(createDatasetMenu(dataset));
+    }
+    
+    private JMenu createDatasetMenu(Dataset dataset) {
+        JMenu datasetSubMenu = new JMenu(dataset.getName());
+        
+        //Engine Menu
+        JMenu engineMenu = new JMenu("Engine");
+        JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
+        engineChartSetup.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setupEngineCharts(dataset);
+            }
+        });
+        JMenuItem lambdaMap = new JMenuItem("Show Lambda Map");
+        lambdaMap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showLambdaMap(dataset);
+            }
+        });
+        engineMenu.add(engineChartSetup);
+        engineMenu.add(lambdaMap);
+        
+        //Create vehicle menu
+        JMenu vehicleMenu = new JMenu("Vehicle");
+        JMenuItem newVehicle = new JMenuItem("New Vehicle");
+        JMenuItem editVehicle = new JMenuItem("Edit Vehicle");
+        JMenuItem importVehicle = new JMenuItem("Import Vehicle");
+        JMenuItem saveVehicle = new JMenuItem("Save Vehicle");
+        newVehicle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                newVehicle(dataset);
+            }
+        });
+        editVehicle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editVehicle(dataset);
+            }
+        });
+        importVehicle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                importVehicle(dataset);
+            }
+        });
+        saveVehicle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveVehicle(dataset);
+            }
+        });
+        vehicleMenu.add(newVehicle);
+        vehicleMenu.add(importVehicle);
+        vehicleMenu.add(editVehicle);
+        vehicleMenu.add(saveVehicle);
+        
+        datasetSubMenu.add(engineMenu);
+        datasetSubMenu.add(vehicleMenu);
+        
+        return datasetSubMenu;
     }
     
     private void clearAllCharts() {
@@ -169,12 +238,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void initComponents() {
 
         fileChooser = new javax.swing.JFileChooser();
-        jMenuItem2 = new javax.swing.JMenuItem();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newWindowMenuItem = new javax.swing.JMenuItem();
-        newImportMenuItem = new javax.swing.JMenuItem();
-        importECUDataMenuItem = new javax.swing.JMenuItem();
         openBtn = new javax.swing.JMenuItem();
         saveMenuButton = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -196,16 +262,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
-        vehicleMenu = new javax.swing.JMenu();
-        newVehicleMenuItem = new javax.swing.JMenuItem();
-        saveVehicleMenuItem = new javax.swing.JMenuItem();
-        importVehicleMenuItem = new javax.swing.JMenuItem();
-        editVehicleMenuItem = new javax.swing.JMenuItem();
-        engineMenu = new javax.swing.JMenu();
-        engineChartSetup = new javax.swing.JMenuItem();
-        showLambdaMap = new javax.swing.JMenuItem();
-
-        jMenuItem2.setText("jMenuItem2");
+        datasetMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
@@ -221,22 +278,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         fileMenu.add(newWindowMenuItem);
-
-        newImportMenuItem.setText("New Import");
-        newImportMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newImportMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(newImportMenuItem);
-
-        importECUDataMenuItem.setText("Import PE3 data");
-        importECUDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importECUDataMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(importECUDataMenuItem);
 
         openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
@@ -409,61 +450,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         menuBar.add(viewMenu);
 
-        vehicleMenu.setText("Vehicle");
-
-        newVehicleMenuItem.setText("New Vehicle");
-        newVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newVehicleMenuItemActionPerformed(evt);
-            }
-        });
-        vehicleMenu.add(newVehicleMenuItem);
-
-        saveVehicleMenuItem.setText("Save Vehicle");
-        saveVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveVehicleMenuItemActionPerformed(evt);
-            }
-        });
-        vehicleMenu.add(saveVehicleMenuItem);
-
-        importVehicleMenuItem.setText("Import Vehicle");
-        importVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importVehicleMenuItemActionPerformed(evt);
-            }
-        });
-        vehicleMenu.add(importVehicleMenuItem);
-
-        editVehicleMenuItem.setText("Edit Vehicle");
-        editVehicleMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editVehicleMenuItemActionPerformed(evt);
-            }
-        });
-        vehicleMenu.add(editVehicleMenuItem);
-
-        menuBar.add(vehicleMenu);
-
-        engineMenu.setText("Engine");
-
-        engineChartSetup.setText("Setup Charts");
-        engineChartSetup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                engineChartSetupActionPerformed(evt);
-            }
-        });
-        engineMenu.add(engineChartSetup);
-
-        showLambdaMap.setText("Show Lambda Map");
-        showLambdaMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showLambdaMapActionPerformed(evt);
-            }
-        });
-        engineMenu.add(showLambdaMap);
-
-        menuBar.add(engineMenu);
+        datasetMenu.setText("Dataset");
+        datasetMenu.setToolTipText("");
+        menuBar.add(datasetMenu);
 
         setJMenuBar(menuBar);
 
@@ -493,7 +482,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                                 filePath.length());
 
                         // approve selection if it is a .csv file
-                        if (!(fileExtension.equals(".dfr") || fileExtension.equals(".csv") || fileExtension.equals(".txt"))) {
+                        if (!(fileExtension.equals(".dfr") || 
+                                fileExtension.equals(".csv") || 
+                                fileExtension.equals(".txt") || 
+                                fileExtension.equals(".dfrasm"))) {
                             toApprove = false;
                             // display error message - that selection should not be approve
                             new MessageBox(DataAnalyzer.this, "Error: Selection could not be approved", true).setVisible(true);
@@ -540,7 +532,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     onlyDFRFiles = false;
                     break;
                 }
-                        
+                
             }
             
             boolean applyPostProcessing = false;
@@ -550,12 +542,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 applyPostProcessing = askForPostProcessing();
 
                 //ask the user to import a vehicle. if any but cancel pressed continue
-                boolean shouldContinue = askForVehicle();
-                if(!shouldContinue)
-                    return;
+
+                /**
+                 * No longer asking for vehicle. The user will setup their preferred
+                 * vehicle through a settings screen that will auto apply to each
+                 * dataset automatically.
+                 */
+//                boolean shouldContinue = askForVehicle();
+//                if(!shouldContinue)
+//                    return;
             }
             
             File[] chosenFiles = fileChooser.getSelectedFiles();
+            boolean multipleWindows = true;
+            if(chosenFiles.length > 1)
+                multipleWindows = createConfirmDialog("Multiple Windows?", "Should these files be opened in independent windows?");
             //should we create a new window?
             boolean toCreateNewWindow = false;
             //holds new window number opened
@@ -566,8 +567,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 if(toCreateNewWindow) {
                     //new window object
                     DataAnalyzer da = new DataAnalyzer();
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName().substring(0, chosenFile.getName().lastIndexOf('.')));
+                    try {
+                        da.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                        continue;
+                    }
                     //set vehicle data
-                    da.getChartManager().setVehicleData(chartManager.getVehicleData()); //TODO: May need to clone
+                    da.getChartManager().getMainDataset().setVehicleData(chartManager.getMainDataset().getVehicleData());
                     //get file path
                     String chosenFilePath = chosenFile.getAbsolutePath();
                     //set the file path for that object
@@ -579,20 +588,31 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     
                     //if its a created file
                     if(fileExtension.equals(".dfr")) {
-                        da.openFile(chosenFilePath);
+                        da.openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        da.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
                     }
                     //if its a new import
                     else {
                         //if its a csv
                         if(fileExtension.equals(".csv")) {
-                            //make the new window import a CSV
-                            da.openCSV(chosenFilePath);
+                            //make the new window import a PE3 file
+                            try {
+                                da.openPE3Files(dataset, chosenFile);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                                continue;
+                            }
                         //else if its a TXT make the new window import a CSV
                         } else if (fileExtension.equals(".txt")) {
-                            da.openTXT(chosenFilePath);
+                            da.openTXT(dataset, chosenFilePath);
                         }
                         if(applyPostProcessing)
-                            da.applyPostProcessing();
+                            da.applyPostProcessing(dataset);
                     }
                     
                     da.setVisible(true);
@@ -604,6 +624,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     da.setLocation(100*windowCount, 100*windowCount);
                 //if we are not to create a new window
                 } else {
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName());
+                    try {
+                        this.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                        continue;
+                    }
                     //get file path
                     String chosenFilePath = chosenFile.getAbsolutePath();
                     //set this windows last opened filepath to the current filepath
@@ -613,24 +641,36 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //get file extension
                     String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
                     
-                    //if its a created file
+                    //if its a created file or assembly
                     if(fileExtension.equals(".dfr")) {
-                        openFile(chosenFilePath);
+                        openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        this.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
                     }
                     //if its a new import
                     else {
                         //if its a csv
                         if(fileExtension.equals(".csv")) {
-                            //make the new window import a CSV
-                            openCSV(chosenFilePath);
+                            //make the new window import a PE3 file
+                            try {
+                                openPE3Files(dataset, chosenFile);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                                continue;
+                            }
                         //else if its a TXT make the new window import a CSV
                         } else if (fileExtension.equals(".txt")) {
-                            openTXT(chosenFilePath);
+                            openTXT(dataset, chosenFilePath);
                         }
                         if(applyPostProcessing)
-                            applyPostProcessing();
+                            applyPostProcessing(dataset);
                     }
-                    toCreateNewWindow = true;
+                    if(multipleWindows)
+                        toCreateNewWindow = true;
                 }
                 windowCount++;
             }
@@ -639,7 +679,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_openBtnClicked
 
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
-        new MathChannelDialog(chartManager.getDataMap(), chartManager.getVehicleData()).setVisible(true);
+        new MathChannelDialog(chartManager.getDatasets()).setVisible(true);
     }//GEN-LAST:event_addMathChannel
 
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
@@ -677,144 +717,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_fullscreenMenuItemActionPerformed
 
-    private void newImportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newImportMenuItemActionPerformed
-        // Open a separate dialog to select a .csv file
-        fileChooser = new JFileChooser() {
-
-            // Override approveSelection method because we only want to approve
-            //  the selection if its is a .csv file.
-            @Override
-            public void approveSelection() {
-//                File chosenFile = getSelectedFile();
-                File[] chosenFiles = getSelectedFiles();
-                boolean toApprove = true;
-                for(File chosenFile : chosenFiles) {
-                    // Make sure that the chosen file exists
-                    if (chosenFile.exists()) {
-                        // Get the file extension to make sure it is .csv
-                        String filePath = chosenFile.getAbsolutePath();
-                        int lastIndex = filePath.lastIndexOf(".");
-                        String fileExtension = filePath.substring(lastIndex,
-                                filePath.length());
-
-                        // approve selection if it is a .csv file
-                        if (fileExtension.equals(".csv") || fileExtension.equals(".txt")) {
-//                            setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
-//                            super.approveSelection();
-                        } else {
-                            toApprove = false;
-                            // display error message - that selection should not be approved
-                            new MessageBox(DataAnalyzer.this, "Error: Wrong File Type", true).setVisible(true);
-                            this.cancelSelection();
-                        }
-
-                    }
-                }
-                
-                if(toApprove) {
-                    if(chosenFiles.length > 0) {
-                        if(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/') != -1) {
-                            setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0]
-                                    .getAbsolutePath().substring(fileChooser.getSelectedFiles()[0].getAbsolutePath().lastIndexOf('/')));
-                        } else {
-                            setTitle("DataAnalyzer - " + fileChooser.getSelectedFiles()[0].getAbsolutePath());
-                        }
-                        super.approveSelection();
-                    }
-                }
-            }
-        };
-        
-        //see if approved
-        fileChooser.setMultiSelectionEnabled(true);
-        int choice = fileChooser.showOpenDialog(null);
-        //if approved
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            //ask for post processing
-            boolean applyPostProcessing = askForPostProcessing();
-            
-            //ask the user to import a vehicle. if any but cancel pressed continue
-            boolean shouldContinue = askForVehicle();
-            if(shouldContinue) {
-                //get array of chosenFiles
-                File[] chosenFiles = fileChooser.getSelectedFiles();
-                if(chosenFiles.length > 1) {
-                    //TODO: show progress bar
-                }
-                //should we create a new window?
-                boolean toCreateNewWindow = false;
-                //holds new window number opened
-                int windowCount = 0;
-                //for each file
-                for(File chosenFile : chosenFiles) {
-                    //if we need to create a new window
-                    if(toCreateNewWindow) {
-                        //new window object
-                        DataAnalyzer da = new DataAnalyzer();
-                        //set vehicle data
-                        da.getChartManager().setVehicleData(chartManager.getVehicleData()); //TODO: May need to clone
-                        //get file path
-                        String chosenFilePath = chosenFile.getAbsolutePath();
-                        //set the file path for that object
-                        da.openedFilePath = chosenFilePath;
-                        //get index of the last .
-                        int lastIndex = openedFilePath.lastIndexOf(".");
-                        //get file extension
-                        String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
-                        //if its a csv
-                        if(fileExtension.equals(".csv")) {
-                            //make the new window import a CSV
-                            da.openCSV(chosenFilePath);
-                        //else if its a TXT make the new window import a CSV
-                        } else if (fileExtension.equals(".txt")) {
-                            da.openTXT(chosenFilePath);
-                        }
-                        if(applyPostProcessing)
-                            da.applyPostProcessing();
-                        da.setVisible(true);
-                        da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
-                        if(chosenFilePath.lastIndexOf('/') != -1) {
-                            da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
-                        } else {
-                            da.setTitle("DataAnalyzer - " + chosenFilePath);
-                        }
-                        da.setLocation(100*windowCount, 100*windowCount);
-                    //if we are not to create a new window
-                    } else {
-                        //get file path
-                        String chosenFilePath = chosenFile.getAbsolutePath();
-                        //set this windows last opened filepath to the current filepath
-                        openedFilePath = chosenFilePath;
-                        //get the index of last .
-                        int lastIndex = openedFilePath.lastIndexOf(".");
-                        //get file extension
-                        String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
-                        //if CSV
-                        if(fileExtension.equals(".csv")) {
-                            //import CSV
-                            openCSV(chosenFilePath);
-                        //if TXT
-                        } else if (fileExtension.equals(".txt")) {
-                            //import TXT
-                            openTXT(chosenFilePath);
-                        }
-                        if(applyPostProcessing)
-                            applyPostProcessing();
-                        toCreateNewWindow = true;
-                    }
-                    windowCount++;
-                }
-            }
-        }
-    }//GEN-LAST:event_newImportMenuItemActionPerformed
-
-    private void newVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVehicleMenuItemActionPerformed
+    private void newVehicle(Dataset dataset) {
         //open vehicle data dialog
-        new VehicleDataDialog(this, true, chartManager.getVehicleData(), "Create").setVisible(true);
-    }//GEN-LAST:event_newVehicleMenuItemActionPerformed
-
-    private void importVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importVehicleMenuItemActionPerformed
-        //open file for vehicleData
+        new VehicleDataDialog(this, true, dataset.getVehicleData(), "Create").setVisible(true);
+    }
+    
+    private void importVehicle(Dataset dataset) {
+         //open file for vehicleData
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
 
@@ -848,20 +757,19 @@ public class DataAnalyzer extends javax.swing.JFrame {
         int choice = fileChooser.showOpenDialog(null);
         if (choice == JFileChooser.APPROVE_OPTION) {
             String chosenFilePath = fileChooser.getSelectedFile().getAbsolutePath();
-            importVehicleData(chosenFilePath);
+            importVehicleData(chosenFilePath, dataset);
         }
-    }//GEN-LAST:event_importVehicleMenuItemActionPerformed
-
-    private void editVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editVehicleMenuItemActionPerformed
-        //open VehicleDataDialog
-        new VehicleDataDialog(this, true, chartManager.getVehicleData(), "Apply").setVisible(true);
-    }//GEN-LAST:event_editVehicleMenuItemActionPerformed
-
-    private void saveVehicleMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveVehicleMenuItemActionPerformed
+    }
+    
+    private void saveVehicle(Dataset dataset) {
         //save vehicle dynamic data
-        saveVehicleData("");
-    }//GEN-LAST:event_saveVehicleMenuItemActionPerformed
-
+        saveVehicleData("", dataset);
+    }
+    
+    private void editVehicle(Dataset dataset) {
+        //open VehicleDataDialog
+        new VehicleDataDialog(this, true, dataset.getVehicleData(), "Apply").setVisible(true);
+    }
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
         //save file with no known file path. Will force method to open file chooser
         saveFile("");
@@ -869,7 +777,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     //Export the data into a CSV file to use with other programs.
     private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
-        String data = hashMapToCSV(chartManager.getDataMap().getTags());
+        String data = datasetToCSV();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
         //set the directory
@@ -982,71 +890,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         fileNotes = reference.get();
     }//GEN-LAST:event_addNotesMenuItemActionPerformed
 
-    private void importECUDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importECUDataMenuItemActionPerformed
-        //open file for vehicleData
-        // Open a separate dialog to select a .csv file
-        fileChooser = new JFileChooser() {
-
-            // Override approveSelection method because we only want to approve
-            //  the selection if its is a .csv file.
-            @Override
-            public void approveSelection() {
-                File[] chosenFiles = getSelectedFiles();
-
-                // Make sure that the chosen file exists
-                if (allExist(chosenFiles)) {
-
-                    // approve selection if it is a .csv file
-                    if (allAreCSV(chosenFiles)) {
-                        super.approveSelection();
-                    } else {
-                        //inform the user of a selection error.
-                        Toast.makeToast(DataAnalyzer.this, "Not a CSV file!", Toast.DURATION_MEDIUM);
-                    }
-
-                } else {
-                    Toast.makeToast(DataAnalyzer.this, "How in the hell did you choose a file that doesnt exist?", Toast.DURATION_LONG);
-                }
-            }
-            
-            private boolean allExist(File[] files) {
-                for (File file : files) {
-                    if(!file.exists())
-                        return false;
-                }
-                return true;
-            }
-            
-            private boolean allAreCSV(File[] files) {
-                for(File file : files) {
-                    String filePath = file.getAbsolutePath();
-                    int lastIndex = filePath.lastIndexOf(".");
-                    if(lastIndex == -1)
-                        return false;
-                    String fileExtension = filePath.substring(lastIndex,
-                            filePath.length());
-                    
-                    if(!fileExtension.equals(".csv"))
-                        return false;
-                }
-                
-                return true;
-            }
-        };
-
-        fileChooser.setMultiSelectionEnabled(true);
-        // showOpenDialog returns the chosen option and if it as an approve
-        //  option then the file should be imported and opened
-        int choice = fileChooser.showOpenDialog(null);
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            try {
-                openPE3Files(fileChooser.getSelectedFiles());
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }//GEN-LAST:event_importECUDataMenuItemActionPerformed
-
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
         for(ChartAssembly assembly : chartManager.getCharts())
@@ -1055,92 +898,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //reinitialize the initial basic view.
         initializeBasicView();
     }//GEN-LAST:event_singleViewMenuItemActionPerformed
-
-    private void engineChartSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_engineChartSetupActionPerformed
-        //delete all current charts
-        clearAllCharts();
-        
-        //create main graph which will show overlay between RPM, TPS, and Lambda
-        Dimension frameSize = this.getSize();
-        ChartAssembly main = chartManager.addChart();
-        main.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 * 2 - 22);
-        main.getChartFrame().setLocation(0, 0);
-        
-        //create fuel open time below main frame
-        ChartAssembly fot = chartManager.addChart();
-        fot.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
-        fot.getChartFrame().setLocation(0, frameSize.height / 3 * 2 - 22 + 1);
-        
-        //create RPM chart
-        ChartAssembly rpm = chartManager.addChart();
-        rpm.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 11);
-        rpm.getChartFrame().setLocation(frameSize.width / 2 + 1, 0);
-        
-        //create TPS chart
-        ChartAssembly tps = chartManager.addChart();
-        tps.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 11);
-        tps.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 - 11 + 1);
-        
-        //create Lambda chart
-        ChartAssembly lambda = chartManager.addChart();
-        lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
-        lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
-        
-        //set charts data
-
-        //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
-        if(chartManager.getDataMap().getTags().contains("Time,AFRAveraged") && 
-                chartManager.getDataMap().getTags().contains("Time,TPS") && 
-                chartManager.getDataMap().getTags().contains("Time,RPM")) {
-            
-            main.selectedTags = new String[] {"Time,RPM", "Time,TPS", "Time,AFRAveraged"};
-            main.selectedLaps = new int[0];
-            
-            main.setChart(main.selectedTags, main.selectedLaps);
-        }
-        
-        //if RPM data exists, put it on the rpm chart
-        if(chartManager.getDataMap().getTags().contains("Time,RPM")) {
-            rpm.selectedTags = new String[] {"Time,RPM"};
-            rpm.selectedLaps = new int[0];
-            
-            rpm.setChart(rpm.selectedTags, rpm.selectedLaps);
-        }
-       
-        //if tps data exists, put it on the tps chart
-        if(chartManager.getDataMap().getTags().contains("Time,TPS")) {
-            tps.selectedTags = new String[] {"Time,TPS"};
-            tps.selectedLaps = new int[0];
-            
-            tps.setChart(tps.selectedTags, tps.selectedLaps);
-        }
-        
-        //if AFR data exists, put it on the lambda chart
-        if(chartManager.getDataMap().getTags().contains("Time,AFRAveraged")) {
-            lambda.selectedTags = new String[] {"Time,AFRAveraged"};
-            lambda.selectedLaps = new int[0];
-            
-            lambda.setChart(lambda.selectedTags, lambda.selectedLaps);
-        }
-        
-        //if fuel open time data exists, put it on the fuel open time chart
-        if(chartManager.getDataMap().getTags().contains("Time,FuelOpenTime")) {
-            fot.selectedTags = new String[] {"Time,FuelOpenTime"};
-            fot.selectedLaps = new int[0];
-            
-            fot.setChart(fot.selectedTags, fot.selectedLaps);
-        }
-        
-        
-    }//GEN-LAST:event_engineChartSetupActionPerformed
-
-    private void showLambdaMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaMapActionPerformed
-        if(chartManager.getDataMap().isEmpty()){
-            new LambdaMap().setVisible(true);
-        } else {
-            new LambdaMap(chartManager.getDataMap()).setVisible(true);
-        }
-    }//GEN-LAST:event_showLambdaMapActionPerformed
 
     /**
      * Apply the default theme
@@ -1254,6 +1011,120 @@ public class DataAnalyzer extends javax.swing.JFrame {
             ca.applyNewTheme(currTheme);
     }//GEN-LAST:event_darkTheme_menuitemActionPerformed
   
+    private void showLambdaMap(Dataset dataset) {
+        if(dataset.getDataMap().isEmpty()) {
+            new LambdaMap().setVisible(true);
+        } else {
+            new LambdaMap(dataset.getDataMap()).setVisible(true);
+        }
+    }
+    
+    private void setupEngineCharts(Dataset dataset) {
+                //delete all current charts
+        clearAllCharts();
+        
+        //create main graph which will show overlay between RPM, TPS, and Lambda
+        Dimension frameSize = this.getSize();
+        ChartAssembly main = chartManager.addChart();
+        main.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 * 2 - 22);
+        main.getChartFrame().setLocation(0, 0);
+        
+        //create fuel open time below main frame
+        ChartAssembly fot = chartManager.addChart();
+        fot.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
+        fot.getChartFrame().setLocation(0, frameSize.height / 3 * 2 - 22 + 1);
+        
+        //create RPM chart
+        ChartAssembly rpm = chartManager.addChart();
+        rpm.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 11);
+        rpm.getChartFrame().setLocation(frameSize.width / 2 + 1, 0);
+        
+        //create TPS chart
+        ChartAssembly tps = chartManager.addChart();
+        tps.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 11);
+        tps.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 - 11 + 1);
+        
+        //create Lambda chart
+        ChartAssembly lambda = chartManager.addChart();
+        lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
+        lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
+        
+        //set charts data
+
+        //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
+        if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
+                dataset.getDataMap().getTags().contains("Time,TPS") && 
+                dataset.getDataMap().getTags().contains("Time,RPM")) {
+            
+            //create a dataset selection for this selection
+            DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,RPM", "Time,TPS", "Time,AFRAveraged"})), 
+                    new ArrayList<>());
+            //create selection object and assign created dataset selection to it
+            Selection selection = new Selection();
+            selection.addDatasetSelection(ds);
+            //assign this selection to our chart assembly
+            main.selection = selection;
+            main.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+        
+        //if RPM data exists, put it on the rpm chart
+        if(dataset.getDataMap().getTags().contains("Time,RPM")) {
+            //create a dataset selection for this selection
+            DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,RPM"})), 
+                    new ArrayList<>());
+            //create selection object and assign created dataset selection to it
+            Selection selection = new Selection();
+            selection.addDatasetSelection(ds);
+            //assign this selection to our chart assembly
+            rpm.selection = selection;
+            rpm.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+       
+        //if tps data exists, put it on the tps chart
+        if(dataset.getDataMap().getTags().contains("Time,TPS")) {
+            //create a dataset selection for this selection
+            DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,TPS"})), 
+                    new ArrayList<>());
+            //create selection object and assign created dataset selection to it
+            Selection selection = new Selection();
+            selection.addDatasetSelection(ds);
+            //assign this selection to our chart assembly
+            tps.selection = selection;
+            tps.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+        
+        //if AFR data exists, put it on the lambda chart
+        if(dataset.getDataMap().getTags().contains("Time,AFRAveraged")) {
+            //create a dataset selection for this selection
+            DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,AFRAveraged"})), 
+                    new ArrayList<>());
+            //create selection object and assign created dataset selection to it
+            Selection selection = new Selection();
+            selection.addDatasetSelection(ds);
+            //assign this selection to our chart assembly
+            lambda.selection = selection;
+            lambda.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+        
+        //if fuel open time data exists, put it on the fuel open time chart
+        if(dataset.getDataMap().getTags().contains("Time,FuelOpenTime")) {
+            //create a dataset selection for this selection
+            DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,FuelOpenTime"})), 
+                    new ArrayList<>());
+            //create selection object and assign created dataset selection to it
+            Selection selection = new Selection();
+            selection.addDatasetSelection(ds);
+            //assign this selection to our chart assembly
+            fot.selection = selection;
+            fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+    }
+    
     public void invertRangeMarkersActive() {
         //invert showing range markers
         rangeMarkersActive = !rangeMarkersActive;
@@ -1270,7 +1141,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
-    private void importVehicleData(String filepath) {
+    private void importVehicleData(String filepath, Dataset dataset) {
         //create scanner to read file
         Scanner scanner = null;
         try {
@@ -1295,13 +1166,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //give the data to the vehicleData class to create
-        chartManager.getVehicleData().applyVehicleData(sb.toString());
+        dataset.getVehicleData().applyVehicleData(sb.toString());
         
     }
     
-    private void saveVehicleData(String filename) {
+    private void saveVehicleData(String filename, Dataset dataset) {
         //get the string of the data
-        String sb = chartManager.getVehicleData().getStringOfData();
+        String sb = dataset.getVehicleData().getStringOfData();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
         //set the directory
@@ -1373,12 +1244,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
     }
     
-    public void applyPE3PostProcessing() {
+    public void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
         
-        int origsize = chartManager.getDataMap().getTags().size();
+        int origsize = dataset.getDataMap().getTags().size();
         ArrayList<String> origtags = new ArrayList<>(); 
-        origtags.addAll(chartManager.getDataMap().getTags());
+        origtags.addAll(dataset.getDataMap().getTags());
         
         for(int i = 0; i < origsize; i++) {
             String[] split = origtags.get(i).split(",");
@@ -1387,33 +1258,33 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 newTag = split[1].substring(1, split[1].indexOf('[', 2));
             else
                 newTag = split[1].substring(1, split[1].length() - 1);
-            EquationEvaluater.evaluate("$(" + origtags.get(i) + ")", chartManager.getDataMap(), newTag);
+            EquationEvaluater.evaluate("$(" + origtags.get(i) + ")", dataset.getDataMap(), newTag);
             
         }
         
         for(String tag : origtags) {
-            chartManager.getDataMap().remove(tag);
+            dataset.getDataMap().remove(tag);
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,MeasuredAFR#1") && chartManager.getDataMap().tags.contains("Time,MeasuredAFR#2")) {
-            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", chartManager.getDataMap(), "Time,AFRAveraged");
-            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
+        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2")) {
+            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog#5")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog#5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
+        if(dataset.getDataMap().tags.contains("Time,Analog#5")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#5) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog#6")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", chartManager.getDataMap(), "Time,yAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#6")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,yAccel");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog#7")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", chartManager.getDataMap(), "Time,xAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#7")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,xAccel");
 
         }
-        if(chartManager.getDataMap().tags.contains("Time,Analog#8")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037 * (0 - 1)", chartManager.getDataMap(), "Time,zAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#8")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037 * (0 - 1)", dataset.getDataMap(), "Time,zAccel");
         }
         
         //now we have unoriented xyz 
@@ -1423,9 +1294,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //get x y z data as arrays
         ArrayList<LogObject> x,y,z;
-        x = new ArrayList<>(chartManager.getDataMap().getList("Time,xAccel"));
-        y = new ArrayList<>(chartManager.getDataMap().getList("Time,yAccel"));
-        z = new ArrayList<>(chartManager.getDataMap().getList("Time,zAccel"));
+        x = new ArrayList<>(dataset.getDataMap().getList("Time,xAccel"));
+        y = new ArrayList<>(dataset.getDataMap().getList("Time,yAccel"));
+        z = new ArrayList<>(dataset.getDataMap().getList("Time,zAccel"));
         
         //desired calibration
         double[] desired = new double[3];
@@ -1467,9 +1338,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //save to dataset
-        chartManager.getDataMap().put(newX);
-        chartManager.getDataMap().put(newY);
-        chartManager.getDataMap().put(newZ);
+        dataset.getDataMap().put(newX);
+        dataset.getDataMap().put(newY);
+        dataset.getDataMap().put(newZ);
         
     }
     
@@ -1514,90 +1385,90 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
    
-    public void applyPostProcessing() {
+    public void applyPostProcessing(Dataset dataset) {
         //if nothing was loaded do not try to do math channels
-        if(chartManager.getDataMap().isEmpty())
+        if(dataset.getDataMap().isEmpty())
             return;
         
         //load wheelspeed averages
         
         //calculate front wheel speed averages
-        if(chartManager.getDataMap().tags.contains("Time,WheelspeedFR") && chartManager.getDataMap().tags.contains("Time,WheelspeedFL"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedFR)) + ($(Time,WheelspeedFL)) / 2", chartManager.getDataMap(), "Time,WheelspeedFront");
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedFR") && dataset.getDataMap().tags.contains("Time,WheelspeedFL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFR)) + ($(Time,WheelspeedFL)) / 2", dataset.getDataMap(), "Time,WheelspeedFront");
         
         //calculate rear wheel speed averages
-        if(chartManager.getDataMap().tags.contains("Time,WheelspeedRR") && chartManager.getDataMap().tags.contains("Time,WheelspeedRL"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedRR)) + ($(Time,WheelspeedRL)) / 2", chartManager.getDataMap(), "Time,WheelspeedRear");
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedRR") && dataset.getDataMap().tags.contains("Time,WheelspeedRL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRR)) + ($(Time,WheelspeedRL)) / 2", dataset.getDataMap(), "Time,WheelspeedRear");
         
         //calculate full average
-        if(chartManager.getDataMap().tags.contains("Time,WheelspeedRear") && chartManager.getDataMap().tags.contains("Time,WheelspeedFront"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedRear)) + ($(Time,WheelspeedFront)) / 2", chartManager.getDataMap(), "Time,WheelspeedAvg");
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear") && dataset.getDataMap().tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRear)) + ($(Time,WheelspeedFront)) / 2", dataset.getDataMap(), "Time,WheelspeedAvg");
         
         //Create time vs distance
-        if(chartManager.getDataMap().tags.contains("Time,WheelspeedFront"))
-            EquationEvaluater.evaluate("($(Time,WheelspeedFront) + (2 * 3.14159 * 10.2)", chartManager.getDataMap(), "Time,Distance");
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedFront"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFront) + (2 * 3.14159 * 10.2)", dataset.getDataMap(), "Time,Distance");
         
         //Create sucky sucky in asain accent
-        if(chartManager.getDataMap().tags.contains("Time,Barometer") && chartManager.getDataMap().tags.contains("Time,MAP")) {
-            EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", chartManager.getDataMap(), "Time,SuckySucky");
+        if(dataset.getDataMap().tags.contains("Time,Barometer") && dataset.getDataMap().tags.contains("Time,MAP")) {
+            EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", dataset.getDataMap(), "Time,SuckySucky");
         }
         
         //Create Average of Analog in 5v form
-        if(chartManager.getDataMap().tags.contains("Time,Analog3") && chartManager.getDataMap().tags.contains("Time,Analog4")) {
-            EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", chartManager.getDataMap(), "Time,Lamda5VAveraged");
+        if(dataset.getDataMap().tags.contains("Time,Analog3") && dataset.getDataMap().tags.contains("Time,Analog4")) {
+            EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", dataset.getDataMap(), "Time,Lamda5VAveraged");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,TransmissionTeeth")) {
-            EquationEvaluater.evaluate("($(Time,TransmissionTeeth)/23)*(23/27)*60", chartManager.getDataMap(), "Time,TransRPM");
+        if(dataset.getDataMap().tags.contains("Time,TransmissionTeeth")) {
+            EquationEvaluater.evaluate("($(Time,TransmissionTeeth)/23)*(23/27)*60", dataset.getDataMap(), "Time,TransRPM");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,TransRPM") && chartManager.getDataMap().tags.contains("Time,RPM")) {
-            EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", chartManager.getDataMap(), "Time,GearRatio", 0, 10);
+        if(dataset.getDataMap().tags.contains("Time,TransRPM") && dataset.getDataMap().tags.contains("Time,RPM")) {
+            EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataset.getDataMap(), "Time,GearRatio", 0, 10);
         }
         
         
         //average the 5V output to AFR
         //convert to AFR
-        if(chartManager.getDataMap().tags.contains("Time,Lamda5VAveraged")) {
-            EquationEvaluater.evaluate("2 * $(Time,Lamda5VAveraged) + 10", chartManager.getDataMap(), "Time,AFRAveraged");
+        if(dataset.getDataMap().tags.contains("Time,Lamda5VAveraged")) {
+            EquationEvaluater.evaluate("2 * $(Time,Lamda5VAveraged) + 10", dataset.getDataMap(), "Time,AFRAveraged");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog1")) {
-            EquationEvaluater.evaluate("(($(Time,Analog1)-.5)*(5000-0))/(4.5-.5)", chartManager.getDataMap(), "Time,BrakePressureFront");
+        if(dataset.getDataMap().tags.contains("Time,Analog1")) {
+            EquationEvaluater.evaluate("(($(Time,Analog1)-.5)*(5000-0))/(4.5-.5)", dataset.getDataMap(), "Time,BrakePressureFront");
         }
-        if(chartManager.getDataMap().tags.contains("Time,Analog2")) {
-            EquationEvaluater.evaluate("(($(Time,Analog2)-.5)*(5000-0))/(4.5-.5)", chartManager.getDataMap(), "Time,BrakePressureRear");
+        if(dataset.getDataMap().tags.contains("Time,Analog2")) {
+            EquationEvaluater.evaluate("(($(Time,Analog2)-.5)*(5000-0))/(4.5-.5)", dataset.getDataMap(), "Time,BrakePressureRear");
         }
         //TODO: REDO ALL OF THESE VALUES.
-        if(chartManager.getDataMap().tags.contains("Time,BrakePressureRear") && chartManager.getDataMap().tags.contains("Time,BrakePressureRear")) {
+        if(dataset.getDataMap().tags.contains("Time,BrakePressureRear") && dataset.getDataMap().tags.contains("Time,BrakePressureRear")) {
             //calculate force on caliper pistons
-            EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonFront");
-            EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonRear");
+            EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", dataset.getDataMap(), "Time,ForceOnCaliperPistonFront");
+            EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", dataset.getDataMap(), "Time,ForceOnCaliperPistonRear");
             
             //calcuate torque
-            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonFront)*.106588*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueFront");
-            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonRear)*.0823*2)", chartManager.getDataMap(), "Time,EffectiveBrakeTorqueRear");
+            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonFront)*.106588*2)", dataset.getDataMap(), "Time,EffectiveBrakeTorqueFront");
+            EquationEvaluater.evaluate("($(Time,ForceOnCaliperPistonRear)*.0823*2)", dataset.getDataMap(), "Time,EffectiveBrakeTorqueRear");
             
         }
         //TODO: what if no brakes are applied, divide by 0 error. above 5.1
-        if(chartManager.getDataMap().tags.contains("Time,EffectiveBrakeTorqueFront") && chartManager.getDataMap().tags.contains("Time,EffectiveBrakeTorqueRear")) {
-            EquationEvaluater.evaluate("$(Time,EffectiveBrakeTorqueFront)/($(Time,EffectiveBrakeTorqueFront) + $(Time,EffectiveBrakeTorqueRear))", chartManager.getDataMap(), "Time,BrakeBalance", 0, 1);
+        if(dataset.getDataMap().tags.contains("Time,EffectiveBrakeTorqueFront") && dataset.getDataMap().tags.contains("Time,EffectiveBrakeTorqueRear")) {
+            EquationEvaluater.evaluate("$(Time,EffectiveBrakeTorqueFront)/($(Time,EffectiveBrakeTorqueFront) + $(Time,EffectiveBrakeTorqueRear))", dataset.getDataMap(), "Time,BrakeBalance", 0, 1);
         }
 
         //Perform Operations
         //TODO: FILTERING
-        if(chartManager.getDataMap().tags.contains("Time,Coolant")) {
-            EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", chartManager.getDataMap(), "CoolantCelcius");
+        if(dataset.getDataMap().tags.contains("Time,Coolant")) {
+            EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataset.getDataMap(), "CoolantCelcius");
         }
         
         //Create Distance Channels for all datasets that do not contain "Time"
-        for(int i = 0; i < chartManager.getDataMap().table.length; i++) {
-            if(chartManager.getDataMap().table[i] != null && !chartManager.getDataMap().table[i].isEmpty() && chartManager.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
-                if(!chartManager.getDataMap().table[i].getFirst().getTAG().equals("Time,Distance"))
-                    EquationEvaluater.evaluate("$(" + chartManager.getDataMap().table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", 
-                            chartManager.getDataMap(), 
-                            chartManager.getDataMap().table[i].getFirst().getTAG().substring(chartManager.getDataMap().table[i].getFirst().getTAG().indexOf(",") + 1, 
-                            chartManager.getDataMap().table[i].getFirst().getTAG().length()));
+        for(int i = 0; i < dataset.getDataMap().table.length; i++) {
+            if(dataset.getDataMap().table[i] != null && !dataset.getDataMap().table[i].isEmpty() && dataset.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
+                if(!dataset.getDataMap().table[i].getFirst().getTAG().equals("Time,Distance"))
+                    EquationEvaluater.evaluate("$(" + dataset.getDataMap().table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", 
+                            dataset.getDataMap(), 
+                            dataset.getDataMap().table[i].getFirst().getTAG().substring(dataset.getDataMap().table[i].getFirst().getTAG().indexOf(",") + 1, 
+                            dataset.getDataMap().table[i].getFirst().getTAG().length()));
             }
         }
         
@@ -1605,14 +1476,20 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = false;
     }
     
-    //TODO: REDO TO MATCH PE3 STYLE
-    public String hashMapToCSV(ArrayList<String> tags) {
+    /**
+     * No longer used. Requires a dataset, exports one String for each dataset.
+     * @param dataset
+     * @deprecated 
+     * @param tags
+     * @return 
+     */
+    public String hashMapToCSV(Dataset dataset, ArrayList<String> tags) {
         //output String
         StringBuilder out = new StringBuilder();
         //for each tag
         for(String tag : tags) {
             //get the tags data
-            LinkedList<LogObject> los = chartManager.getDataMap().getList(tag);
+            LinkedList<LogObject> los = dataset.getDataMap().getList(tag);
             //append the tag and a new line
             out.append(tag);
             out.append("\n");
@@ -1629,58 +1506,76 @@ public class DataAnalyzer extends javax.swing.JFrame {
         return out.toString();
     }
     
-    //saves the file to the disk
-    private void saveCSV(String filename) {
-        //get the string of the data
-        String sb = getStringOfData();
-        //open the file choser
-        JFileChooser chooser = new JFileChooser();
-        //set the directory
-        chooser.setCurrentDirectory(new File(filename));
-        //variable that holds result
-        int retrival = chooser.showSaveDialog(null);
-        //if its approved
-        if (retrival == JFileChooser.APPROVE_OPTION) {
-            //if the selected file is a .csv file
-            if(!chooser.getSelectedFile().toString().contains(".csv")){
-                //try to open a file writer
-                try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".csv")) {
-                    //write the data
-                    fw.write(sb);
-                    //close the file writer
-                    fw.close();
-                //exception handling
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
-             //if its not a csv file
-            } else {
-                //try to write a file without an extension, it will not be openable unless converted later
-                try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
-                    //write the data
-                    fw.write(sb);
-                    //close the writer
-                    fw.close();
-                //exception handling
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                }
+    /**
+     * Exports the data for the whole dataset
+     * @return 
+     */
+    public String datasetToCSV() {
+        //the output string
+        StringBuilder output = new StringBuilder();
+        
+        //a list of the lists of data
+        ArrayList<ArrayList<LogObject>> data = new ArrayList<>();
+        
+        //for each dataset, generate the header and get the datalists as an arraylist
+        for(Dataset dataset : getChartManager().getDatasets()) {
+            String header = "";
+            //get header for each tag
+            for(String tag : dataset.getDataMap().getTags()) {
+                //add the dataset name if there is more than one dataset
+                if(getChartManager().getDatasets().size() != 1)
+                    header += dataset.getName() + "-" + tag + ",";
+                else
+                    header += tag + ",";
+                //store this list as an arraylist
+                data.add(new ArrayList<>(dataset.getDataMap().getList(tag)));
             }
-            
+            //add the header
+            output.append(header);
+            output.append("\n");
         }
         
+        //current index of the list
+        int index = 0;
+        //holds if we still have data to look at
+        boolean stillHaveData = true;
+        //while we still have data
+        while(stillHaveData) {
+            //declare we dont have any data
+            stillHaveData = false;
+            //for each datalist
+            for(ArrayList<LogObject> list : data) {
+                try {
+                    //try to get the item at the current index, throw exception if out of bounds
+                    output.append(list.get(index));
+                    //if this index was valid, there may be another value, declare there is more data
+                    stillHaveData = true;
+                } catch(IndexOutOfBoundsException e) {
+                    //output nothing if there is no data
+                }
+                finally {
+                    //finally output a comma to end this
+                    output.append(",");
+                }
+            }
+            //end the line after we have gotten an item from each datalist
+            output.append("\n");
+        }
+        
+        //return the generated string
+        return output.toString();
     }
     
-    private String getStringOfData() {
+    private String getStringOfData(Dataset dataset) {
         StringBuilder toReturn = new StringBuilder();
         
         //for each tag of data
-        for(String tag : chartManager.getDataMap().tags) {
+        for(String tag : dataset.getDataMap().tags) {
             //output the tag
             toReturn.append(tag);
             toReturn.append("\n");
             //get the list of data for the current tag
-            List<LogObject> data = chartManager.getDataMap().getList(tag);
+            List<LogObject> data = dataset.getDataMap().getList(tag);
             //for each data element
             for(LogObject lo : data) {
                 //output the data
@@ -1690,7 +1585,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //output MARKERS
             toReturn.append("MARKERS\n");
             //get the markers for the current tag
-            List<CategorizedValueMarker> markers = chartManager.getStaticMarkers().getList(tag);
+            List<CategorizedValueMarker> markers = dataset.getStaticMarkers().getList(tag);
             //if the markers exist
             if(markers != null) {
                 //for each marker we have output it
@@ -1709,22 +1604,27 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
     
-    //save file
     private void saveFile(String filename) {
+        saveFile(chartManager.getMainDataset(), filename);
+    }
+    //save file
+    private void saveFile(Dataset dataset, String filename) {
         //add normal data
-        StringBuilder sb = new StringBuilder(getStringOfData());
+        StringBuilder sb = new StringBuilder();
+        //append log data
+        sb.append(getStringOfData(dataset));
         //append vehicle dynamic data
         sb.append("VEHICLEDYNAMICDATA");
         sb.append("\n");
-        sb.append(chartManager.getVehicleData().getStringOfData());
+        sb.append(dataset.getVehicleData().getStringOfData());
         //append lap data
         sb.append("LAPDATA");
         sb.append("\n");
-        sb.append(Lap.getStringOfData(chartManager.getLapBreaker()));
+        sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
         if(!fileNotes.isEmpty()) {
             sb.append("FILENOTES\n");
             sb.append(fileNotes);
-        }
+            }
         
         String chosenFileName = "";
         
@@ -1792,9 +1692,99 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
+    private void saveFileAssembly(String filename) {
+         //add normal data
+        StringBuilder sb = new StringBuilder();
+        
+        for(Dataset dataset : getChartManager().getDatasets()) {
+            sb.append(dataset.getName());
+            sb.append("\n");
+            //append log data
+            sb.append(getStringOfData(dataset));
+            //append vehicle dynamic data
+            sb.append("VEHICLEDYNAMICDATA");
+            sb.append("\n");
+            sb.append(dataset.getVehicleData().getStringOfData());
+            //append lap data
+            sb.append("LAPDATA");
+            sb.append("\n");
+            sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
+            if(!fileNotes.isEmpty()) {
+                sb.append("FILENOTES\n");
+                sb.append(fileNotes);
+            }
+            sb.append("ENDDATASET");
+        }
+        
+        String chosenFileName = "";
+        
+        //if a filename was not provided
+        if(filename.isEmpty() || !filename.contains(".dfrasm")) {
+            //open the filechooser at the default directory
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new File(filename));
+            
+            //result code
+            int result = chooser.showSaveDialog(null);
+            
+            //if approved
+            if(result == JFileChooser.APPROVE_OPTION) {
+                //if the file chosen is missing the .dfr file extension, add then save
+                if(!chooser.getSelectedFile().toString().contains(".dfrasm")) {
+                    //try to open a file writer
+                    try(FileWriter fw = new FileWriter(chooser.getSelectedFile() + ".dfrasm")) {
+                        //write the data
+                        fw.write(sb.toString());
+                        //close the file writer
+                        fw.close();
+                        //Display success Toast
+                        Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
+                        this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                    //exception handling
+                    } catch (IOException e) {
+                        //error message displayed
+                        new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
+                    }
+                }
+                else {
+                    //try to open a file writer
+                    try(FileWriter fw = new FileWriter(chooser.getSelectedFile())) {
+                        //write the data
+                        fw.write(sb.toString());
+                        //close the file writer
+                        fw.close();
+                        //Display Success Toast
+                        Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
+                        this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                    //exception handling
+                    } catch (IOException e) {
+                        //error message displayed
+                        new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
+                    }
+                }
+            } else {
+                //error message displayed
+                new MessageBox(this, "Error: File could not be approved", true).setVisible(true);
+            }
+            
+        } else { //if a filename was already provided
+            //try to write the file
+            try(FileWriter fw = new FileWriter(new File(filename))) {
+                fw.write(sb.toString());
+                fw.close();
+                //Display Success Toast
+                Toast.makeToast(this, "Saved file", Toast.DURATION_LONG);
+                this.setTitle("DataAnalyzer - " + filename);
+            } catch (IOException e) {
+                //error message displayed
+                new MessageBox(this, "Error: File could not be written to", true).setVisible(true);
+            }
+        }
+    }
+    
     //OPEN FILES OF MULTIPLE TYPES
     //THESE ARE MEANT TO OPEN A FILE IN A NEW WINDOW
-    public void openTXT(String filepath) {
+    public void openTXT(Dataset dataset, String filepath) {
         
         openingAFile = true;
         
@@ -1805,7 +1795,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
             public Void doInBackground() {
-                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, 0);
+                TXTParser.parse(dataset.getDataMap(), dataset.getStaticMarkers(), filepath, 0);
                 return null;
             }
 
@@ -1819,7 +1809,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
         worker.execute();
     }
     
-    public void openCSV(String filepath) {
+    /**
+     * Requires a dataset to open a csv to. No longer supporting CSVs
+     * @deprecated 
+     * @param filepath 
+     */
+    public void openCSV(Dataset dataset, String filepath) {
         //begin file operations
         openingAFile = true;
         String tag = "";
@@ -1853,13 +1848,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         // And add the values to the hashmap with their correct tag
                         // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
                         if(tag.contains("Time,"))
-                            chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                            dataset.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
                         else
-                            chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                            dataset.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
                     } else {
                         ValueMarker v = new ValueMarker(Double.parseDouble(line));
                         v.setPaint(Color.BLUE);
-                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                        dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
                     }
                 }
                 
@@ -1872,12 +1867,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
     }
         
-    private void openFile(String filepath) {
-        openFile(new String[] {filepath});
-    }
-    //open file
-    private void openFile(String[] filepaths) {
-        
+    /**
+     * Open File
+     * @param dataset Give a dataset to add to
+     * @param filepath File to open
+     */
+    private void openFile(Dataset dataset, String filepath) {
+            
         //show loading screen
         LoadingDialog loading = new LoadingDialog();
         loading.setVisible(true);
@@ -1887,244 +1883,291 @@ public class DataAnalyzer extends javax.swing.JFrame {
        
         SwingWorker worker = new SwingWorker<Void, Void>() {
             public Void doInBackground() {
-                boolean first = true;
-                for(String filepath : filepaths) {
-                    if(!first) {
-                        DataAnalyzer da = new DataAnalyzer();
-                        //begin file operation
-                        openingAFile = true;
-                        //Scanner to handle the file
-                        Scanner scanner = null;
-                        try {
-                            scanner = new Scanner(new File(filepath));
-                        } catch(FileNotFoundException e) {
-                            //error message displayed
-                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
-                        }
+                //begin file operation
+                openingAFile = true;
+                //Scanner to handle the file
+                Scanner scanner = null;
+                try {
+                    scanner = new Scanner(new File(filepath));
+                } catch(FileNotFoundException e) {
+                    //error message displayed
+                    new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                }
 
-                        //if we failed to open the file exit
-                        if(scanner == null) {
-                            return null;
-                        }
+                //if we failed to open the file exit
+                if(scanner == null) {
+                    return null;
+                }
 
-                        //is the current item a marker
-                        boolean isMarker = false;
-                        //current tag
-                        String tag = "";
-                        // While there is a next line
-                        //handles csv data and markers
-                        while (scanner.hasNextLine()) {
-                            // Store the line
-                            String line = scanner.nextLine();
-                            // If the line represents an END of the current tag
-                            if (line.equals("END")) {
-                                isMarker = false;
-                                // Necessary so that END statements don't get added to 'tags' ArrayList
-                            } else if(line.isEmpty()) {
-                                continue;
-                            }
-                            else if(line.equals("MARKERS")) {
-                                isMarker = true;
-                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                                break;
-                            } else if (Character.isLetter(line.charAt(0))) {
-                                // If the first character is a letter
-                                // Then add the line to the tags list
-                                tag = line;
-                            } else if (Character.isDigit(line.charAt(0))) {
-                                if(!isMarker) {
-                                    // If the first character is a digit
-                                    // Then divide the list in 2 values by ,
-                                    final String DELIMITER = ",";
-                                    String[] values = line.split(DELIMITER);
-                                    // And add the values to the hashmap with their correct tag
-                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                                    if(tag.contains("Time"))
-                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                                    else
-                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                                } else {
-                                    String[] split = line.split(",");
-                                    if(split.length == 2) {
-                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                        v.setPaint(Color.BLUE);
-                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                                    } else if(split.length == 1) {
-                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                        v.setPaint(Color.BLUE);
-                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
-                                    }
-                                }
-                            }
-                        }
-
-                        //string builder for creating string of data
-                        StringBuilder vd = new StringBuilder("");
-                        while(scanner.hasNextLine()) {
-                            //get next line
-                            String line = scanner.nextLine();
-                            if(line.equals("LAPDATA"))
-                                break;
-                            //append the next line followed by a new line char
-                            vd.append(line);
-                            vd.append("\n");
-                        }
-
-                        //for all the lines for lapdata
-                        while(scanner.hasNextLine()) {
-                            //get the next line
-                            String line = scanner.nextLine();
-                            if(line.isEmpty())
-                                continue;
-
-                            //holds the data
-                            long lapStart;
-                            long lapStop;
-                            int lapNumber;
-                            String lapLabel;
-                            //parse data from string
-                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                            lapLabel = line.substring(line.indexOf(')')+1);
-                            //save data
-                            if (lapLabel.trim().length() > 0)
-                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+                //is the current item a marker
+                boolean isMarker = false;
+                //current tag
+                String tag = "";
+                // While there is a next line
+                //handles csv data and markers
+                while (scanner.hasNextLine()) {
+                    // Store the line
+                    String line = scanner.nextLine();
+                    // If the line represents an END of the current tag
+                    if (line.equals("END")) {
+                        isMarker = false;
+                        // Necessary so that END statements don't get added to 'tags' ArrayList
+                    } else if(line.isEmpty()) {
+                        continue;
+                    }
+                    else if(line.equals("MARKERS")) {
+                        isMarker = true;
+                    } else if (line.equals("VEHICLEDYNAMICDATA")) {
+                        break;
+                    } else if (Character.isLetter(line.charAt(0))) {
+                        // If the first character is a letter
+                        // Then add the line to the tags list
+                        tag = line;
+                    } else if (Character.isDigit(line.charAt(0))) {
+                        if(!isMarker) {
+                            // If the first character is a digit
+                            // Then divide the list in 2 values by ,
+                            final String DELIMITER = ",";
+                            String[] values = line.split(DELIMITER);
+                            // And add the values to the hashmap with their correct tag
+                            // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                            if(tag.contains("Time"))
+                                dataset.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
                             else
-                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
-                        }
-
-                        //give the data to the vehicleData class to create
-                        chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                        //we are finished with file operation
-                        openingAFile = false;
-
-                        //update lap data
-                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
-                    } else {
-                        //begin file operation
-                        openingAFile = true;
-                        //Scanner to handle the file
-                        Scanner scanner = null;
-                        try {
-                            scanner = new Scanner(new File(filepath));
-                        } catch(FileNotFoundException e) {
-                            //error message displayed
-                            new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
-                        }
-
-                        //if we failed to open the file exit
-                        if(scanner == null) {
-                            return null;
-                        }
-
-                        //is the current item a marker
-                        boolean isMarker = false;
-                        //current tag
-                        String tag = "";
-                        // While there is a next line
-                        //handles csv data and markers
-                        while (scanner.hasNextLine()) {
-                            // Store the line
-                            String line = scanner.nextLine();
-                            // If the line represents an END of the current tag
-                            if (line.equals("END")) {
-                                isMarker = false;
-                                // Necessary so that END statements don't get added to 'tags' ArrayList
-                            } else if(line.isEmpty()) {
-                                continue;
-                            }
-                            else if(line.equals("MARKERS")) {
-                                isMarker = true;
-                            } else if (line.equals("VEHICLEDYNAMICDATA")) {
-                                break;
-                            } else if (Character.isLetter(line.charAt(0))) {
-                                // If the first character is a letter
-                                // Then add the line to the tags list
-                                tag = line;
-                            } else if (Character.isDigit(line.charAt(0))) {
-                                if(!isMarker) {
-                                    // If the first character is a digit
-                                    // Then divide the list in 2 values by ,
-                                    final String DELIMITER = ",";
-                                    String[] values = line.split(DELIMITER);
-                                    // And add the values to the hashmap with their correct tag
-                                    // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                                    if(tag.contains("Time"))
-                                        chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
-                                    else
-                                        chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                                } else {
-                                    String[] split = line.split(",");
-                                    if(split.length == 2) {
-                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                        v.setPaint(Color.BLUE);
-                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
-                                    } else if(split.length == 1) {
-                                        ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
-                                        v.setPaint(Color.BLUE);
-                                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
-                                    }
-                                }
+                                dataset.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                        } else {
+                            String[] split = line.split(",");
+                            if(split.length == 2) {
+                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                v.setPaint(Color.BLUE);
+                                dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                            } else if(split.length == 1) {
+                                ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                v.setPaint(Color.BLUE);
+                                dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
                             }
                         }
-
-                        //string builder for creating string of data
-                        StringBuilder vd = new StringBuilder("");
-                        while(scanner.hasNextLine()) {
-                            //get next line
-                            String line = scanner.nextLine();
-                            if(line.equals("LAPDATA"))
-                                break;
-                            //append the next line followed by a new line char
-                            vd.append(line);
-                            vd.append("\n");
-                        }
-
-                        //for all the lines for lapdata
-                        while(scanner.hasNextLine()) {
-                            //get the next line
-                            String line = scanner.nextLine();
-                            if(line.isEmpty())
-                                continue;
-
-                            if(line.equals(("FILENOTES"))) {
-                                break;
-                            }
-
-                            //holds the data
-                            long lapStart;
-                            long lapStop;
-                            int lapNumber;
-                            String lapLabel;
-                            //parse data from string
-                            lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
-                            lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
-                            lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
-                            lapLabel = line.substring(line.indexOf(')')+1);
-                            //save data
-                            if (lapLabel.trim().length() > 0)
-                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
-                            else
-                                chartManager.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
-                        }
-
-                        //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
-                        while(scanner.hasNextLine()) {
-                            fileNotes += scanner.nextLine();
-                        }
-
-                        //give the data to the vehicleData class to create
-                        chartManager.getVehicleData().applyVehicleData(vd.toString());
-
-                        //we are finished with file operation
-                        openingAFile = false;
-
-                        //update lap data
-                        Lap.applyToDataset(chartManager.getDataMap(), chartManager.getLapBreaker());
                     }
                 }
+
+                //string builder for creating string of data
+                StringBuilder vd = new StringBuilder("");
+                while(scanner.hasNextLine()) {
+                    //get next line
+                    String line = scanner.nextLine();
+                    if(line.equals("LAPDATA"))
+                        break;
+                    //append the next line followed by a new line char
+                    vd.append(line);
+                    vd.append("\n");
+                }
+
+                //for all the lines for lapdata
+                while(scanner.hasNextLine()) {
+                    //get the next line
+                    String line = scanner.nextLine();
+                    if(line.isEmpty())
+                        continue;
+
+                    if(line.equals(("FILENOTES"))) {
+                        break;
+                    }
+
+                    //holds the data
+                    long lapStart;
+                    long lapStop;
+                    int lapNumber;
+                    String lapLabel;
+                    //parse data from string
+                    lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                    lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                    lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                    lapLabel = line.substring(line.indexOf(')')+1);
+                    //save data
+                    if (lapLabel.trim().length() > 0)
+                        dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+                    else
+                        dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                }
+
+                //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                while(scanner.hasNextLine()) {
+                    fileNotes += scanner.nextLine();
+                }
+
+                //give the data to the vehicleData class to create
+                dataset.getVehicleData().applyVehicleData(vd.toString());
+
+                //we are finished with file operation
+                openingAFile = false;
+
+                //update lap data
+                Lap.applyToDataset(dataset.getDataMap(), dataset.getLapBreaker());
+                
+                return null;
+            }
+
+            @Override
+            public void done() {
+                loading.stop();
+            }
+        };
+        
+        worker.execute();  
+    }
+    
+    /**
+     * Opens a .dfrasm file. Will create and add Datasets on its own instead of
+     * asking to which dataset to open to.
+     */
+    private void openFileAssembly(String filepath) {
+        //show loading screen
+        LoadingDialog loading = new LoadingDialog();
+        loading.setVisible(true);
+        
+        //holds the context to give into the swing worker
+        DataAnalyzer me = this;
+       
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+            public Void doInBackground() throws DuplicateDatasetNameException {
+                //begin file operation
+                openingAFile = true;
+                //Scanner to handle the file
+                Scanner scanner = null;
+                try {
+                    scanner = new Scanner(new File(filepath));
+                } catch(FileNotFoundException e) {
+                    //error message displayed
+                    new MessageBox(me, "Error: File could not be opened", true).setVisible(true);
+                }
+
+                //if we failed to open the file exit
+                if(scanner == null) {
+                    return null;
+                }
+                
+                //dataset that we are currently modifying.
+                Dataset dataset = new Dataset();
+                
+                //iterates on the datasets in the assembly
+                while(scanner.hasNextLine()) {
+                    //is the current item a marker
+                    boolean isMarker = false;
+                    //current tag
+                    String tag = "";
+                    //pull first line which should be dataset name
+                    dataset.setName(scanner.nextLine());
+                    String line = scanner.nextLine();
+                    
+                    while(!line.equals("VEHICLEDYNAMICDATA")) {
+                        // If the line represents an END of the current tag
+                        if (line.equals("END")) {
+                            isMarker = false;
+                            // Necessary so that END statements don't get added to 'tags' ArrayList
+                        } else if(line.isEmpty()) {
+                            continue;
+                        }
+                        else if(line.equals("MARKERS")) {
+                            isMarker = true;
+                        } else if (Character.isLetter(line.charAt(0))) {
+                            // If the first character is a letter
+                            // Then add the line to the tags list
+                            tag = line;
+                        } else if (Character.isDigit(line.charAt(0))) {
+                            if(!isMarker) {
+                                // If the first character is a digit
+                                // Then divide the list in 2 values by ,
+                                final String DELIMITER = ",";
+                                String[] values = line.split(DELIMITER);
+                                // And add the values to the hashmap with their correct tag
+                                // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
+                                if(tag.contains("Time"))
+                                    dataset.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0])));
+                                else
+                                    dataset.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
+                            } else {
+                                String[] split = line.split(",");
+                                if(split.length == 2) {
+                                    ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                    v.setPaint(Color.BLUE);
+                                    dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, v, split[1]));
+                                } else if(split.length == 1) {
+                                    ValueMarker v = new ValueMarker(Double.parseDouble(split[0]));
+                                    v.setPaint(Color.BLUE);
+                                    dataset.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
+                                }
+                            }
+                        }
+                        
+                        //get next line when we are doing with this one
+                        line = scanner.nextLine();
+                    }
+                    
+                    //flush the line that says VEHICLEDYNAMICDATA
+                    scanner.nextLine();
+                    
+                    //string builder for creating string of data
+                    StringBuilder vd = new StringBuilder("");
+                    
+                    while(!line.equals("LAPDATA")) {
+                    
+                        //append the next line followed by a new line char
+                        vd.append(line);
+                        vd.append("\n");
+                        //get next line
+                        line = scanner.nextLine();
+                    }
+                    
+                    //flush the line that says LAPDATA
+                    scanner.nextLine();
+                    
+                    //for all the lines for lapdata
+                    while(!line.equals("FILENOTES")) {
+                        if(line.isEmpty())
+                            continue;
+
+                        //holds the data
+                        long lapStart;
+                        long lapStop;
+                        int lapNumber;
+                        String lapLabel;
+                        //parse data from string
+                        lapNumber = Integer.parseInt(line.substring(0, line.indexOf('(')));
+                        lapStart = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(',')));
+                        lapStop = Integer.parseInt(line.substring(line.indexOf(',')+1, line.indexOf(')')));
+                        lapLabel = line.substring(line.indexOf(')')+1);
+                        //save data
+                        if (lapLabel.trim().length() > 0)
+                            dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
+                        else
+                            dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                    }
+                    
+                    //flish the file notes line
+                    line = scanner.nextLine();
+                    
+                    //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                    while(!line.equals("ENDDATASET")) {
+                        fileNotes += scanner.nextLine();
+                    }
+                    
+                    //give the data to the vehicleData class to create
+                    dataset.getVehicleData().applyVehicleData(vd.toString());
+                        
+                    //update lap data
+                    Lap.applyToDataset(dataset.getDataMap(), dataset.getLapBreaker());
+                    
+                    try {
+                        if(!dataset.getDataMap().getTags().isEmpty())
+                            chartManager.addDataset(dataset);
+                    } catch(DuplicateDatasetNameException e) {
+                        new MessageBox(me, "Duplicate dataset! Couldnt add: " + e.getDatasetName(), false).setVisible(true);
+                    }
+                    dataset = new Dataset();
+                }
+
+                //we are finished with file operation
+                openingAFile = false;
                 
                 return null;
             }
@@ -2137,14 +2180,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         worker.execute();
         
-        
     }
-    
+        
     /**
      * Opens files that are formatted in PE3 style.
      * @param filepaths 
      */
-    private void openPE3Files(File[] files) throws FileNotFoundException {
+    private void openPE3Files(Dataset dataset, File file) throws FileNotFoundException {
         
         //ask for post processing
         boolean applyPostProcessing = askForPostProcessing();
@@ -2155,105 +2197,42 @@ public class DataAnalyzer extends javax.swing.JFrame {
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
             public Void doInBackground() throws FileNotFoundException {
-                //handle the first file to not open a new screen
-                boolean first = true;
+                //Create way to read file
+                Scanner scan = new Scanner(file);
+                //get the first line which tells us the order of parameters
+                String header = scan.nextLine();
+                //store these as an array of keys
+                String[] keys = header.split(",");
+                //for each remaining line
+                while(scan.hasNextLine()) {
+                    //get the next line
+                    String line = scan.nextLine();
+                    //if its empty move forward which will skip corrupted lines or end
+                    if(line.isEmpty())
+                        continue;
 
-                //holds number of files opened
-                int num = 0;
+                    //all the data should be split by commas in the same order as the header
+                    String[] data = line.split(",");
+                    //the first element is time
+                    double timeInSeconds = Double.parseDouble(data[0]);
 
-                //for each file
-                for(File file : files) {
-                    //if its the first file we don't need to do this in a new window.
-                    if(first) {
-                        //Create way to read file
-                        Scanner scan = new Scanner(file);
-                        //get the first line which tells us the order of parameters
-                        String header = scan.nextLine();
-                        //store these as an array of keys
-                        String[] keys = header.split(",");
-                        //for each remaining line
-                        while(scan.hasNextLine()) {
-                            //get the next line
-                            String line = scan.nextLine();
-                            //if its empty move forward which will skip corrupted lines or end
-                            if(line.isEmpty())
-                                continue;
-
-                            //all the data should be split by commas in the same order as the header
-                            String[] data = line.split(",");
-                            //the first element is time
-                            double timeInSeconds = Double.parseDouble(data[0]);
-
-                            long time = (long) (timeInSeconds*1000);
-                            //for each of the remaining columns
-                            for(int i = 1; i < data.length; i++) {
-                                //add this element to the datamap
-                                chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-                            }
-
-                        }
-
-                        //set title
-                        setTitle("DataAnalyzer - " + file.getName());
-
-                        //no longer first
-                        first = false;
-                        num++;
-
-                        //apply post processing
-                        if(applyPostProcessing) {
-                            applyPE3PostProcessing();
-                            applyPostProcessing();
-                        }
-
-                    }
-                    else {
-                        DataAnalyzer dataAnalyzer = new DataAnalyzer();
-                        //Create way to read file
-                        Scanner scan = new Scanner(file);
-                        //get the first line which tells us the order of parameters
-                        String header = scan.nextLine();
-                        //store these as an array of keys
-                        String[] keys = header.split(",");
-                        //for each remaining line
-                        while(scan.hasNextLine()) {
-                            //get the next line
-                            String line = scan.nextLine();
-                            //if its empty move forward which will skip corrupted lines or end
-                            if(line.isEmpty())
-                                continue;
-
-                            //all the data should be split by commas in the same order as the header
-                            String[] data = line.split(",");
-                            //the first element is time
-                            double timeInSeconds = Double.parseDouble(data[0]);
-
-                            long time = (long) (timeInSeconds*1000);
-                            //for each of the remaining columns
-                            for(int i = 1; i < data.length; i++) {
-                                //add this element to the datamap
-                                dataAnalyzer.chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-                            }
-
-                        }
-
-                        //set title
-                        dataAnalyzer.setTitle("DataAnalyzer - " + file.getName());
-
-                        //apply post processing
-                        if(applyPostProcessing) {
-                            dataAnalyzer.applyPE3PostProcessing();
-                            dataAnalyzer.applyPostProcessing();
-                        }
-
-                        //set visible and location
-                        dataAnalyzer.setVisible(true);
-                        dataAnalyzer.setLocation(100 * num, 100 * num);
-
-                        //opened another file
-                        num++;
+                    long time = (long) (timeInSeconds*1000);
+                    //for each of the remaining columns
+                    for(int i = 1; i < data.length; i++) {
+                        //add this element to the datamap
+                        dataset.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
                     }
 
+                }
+
+                //set title
+                setTitle("DataAnalyzer - " + file.getName());
+
+
+                //apply post processing
+                if(applyPostProcessing) {
+                    applyPE3PostProcessing(dataset);
+                    applyPostProcessing(dataset);
                 }
                 
                 return null;
@@ -2282,7 +2261,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
             public Void doInBackground() {
-                TXTParser.parse(chartManager.getDataMap(), chartManager.getStaticMarkers(), filepath, getLastTime());
+                TXTParser.parse(chartManager.getMainDataset().getDataMap(), chartManager.getMainDataset().getStaticMarkers(), filepath, getLastTime(chartManager.getMainDataset()));
                 return null;
             }
 
@@ -2295,64 +2274,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         worker.execute();
     }
-    
-    public void importCSV(String filepath) {
-        //begin file operations
-        openingAFile = true;
-        long startTime = getLastTime();
-        String tag = "";
-        try {
-            // Create a new file from the filepath
-            File file = new File(filepath);
-            // Scan the file
-            Scanner sc = new Scanner(file);
-            
-            //ArrayList of tags to regenerate 
-            
-            boolean isMarker = false;
-            // While there is a next line
-            while (sc.hasNextLine()) {
-                // Store the line
-                String line = sc.nextLine();
-                // If the line represents an END of the current tag
-                if (line.equals("END")) {
-                    isMarker = false;
-                    // Necessary so that END statements don't get added to 'tags' ArrayList
-                } else if(line.equals("MARKERS")) {
-                    isMarker = true;
-                } else if (Character.isLetter(line.charAt(0))) {
-                    // If the first character is a letter
-                    // Then add the line to the tags list
-                    tag = line;
-                } else if (Character.isDigit(line.charAt(0))) {
-                    if(!isMarker) {
-                        // If the first character is a digit
-                        // Then divide the list in 2 values by ,
-                        final String DELIMITER = ",";
-                        String[] values = line.split(DELIMITER);
-                        // And add the values to the hashmap with their correct tag
-                        // dataMap.put(new SimpleLogObject(“TAG HERE”, VALUE HERE, TIME VALUE HERE));
-                        if(tag.contains("Time,"))
-                            chartManager.getDataMap().put(new SimpleLogObject(tag, Double.parseDouble(values[1]), Long.parseLong(values[0]) + startTime));
-                        else
-                            chartManager.getDataMap().put(new FunctionOfLogObject(tag, Double.parseDouble(values[1]), Double.parseDouble(values[0])));
-                    } else {
-                        ValueMarker v = new ValueMarker(Double.parseDouble(line));
-                        v.setPaint(Color.BLUE);
-                        chartManager.getStaticMarkers().put(new CategorizedValueMarker(tag, v));
-                    }
-                }
-                
-            }
-        } catch (FileNotFoundException x) {
-            // Error message displayed
-            new MessageBox(this, "Error: File not found", true).setVisible(true);
-        }
-    }
-    
-    public long getLastTime() {
+
+    public long getLastTime(Dataset dataset) {
         //get the datamap
-        CategoricalHashMap datamap = chartManager.getDataMap();
+        CategoricalHashMap datamap = dataset.getDataMap();
         String toUse = "";
         //find the first tag that goes has a time domain
         for(String tag : datamap.tags) {
@@ -2375,11 +2300,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
         return chartManager;
     }
     
+    public boolean isOpeningAFile() {
+        return openingAFile;
+    }
+    
     /**
      * Ask the user if they want to create a vehicle before the auto dataset creation takes place
      * @return returns true if not cancel false if cancel was pressed.
      */
-    private boolean askForVehicle() {
+    private boolean askForVehicle(Dataset dataset) {
         //holds the return code by reference
         ReturnCode returnCode = new ReturnCode();
         //create the Dialog to ask the user
@@ -2398,13 +2327,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         boolean toReturn = true;
         
         //create a vehicle data dialog just in case we need it, for proper encapsulation
-        VehicleDataDialog vdd = new VehicleDataDialog(this, true, chartManager.getVehicleData(), "Create");
+        VehicleDataDialog vdd = new VehicleDataDialog(this, true, dataset.getVehicleData(), "Create");
         //depending on our return code
         switch(returnCode.getCode()) {
             //if the user cancelled, display the cancel message
             case AskVehicleDialog.OPTION_CANCEL : Toast.makeToast(this, "Opening File Cancelled.", Toast.DURATION_MEDIUM); toReturn = false; break;
             //if the user said they would import a vehicle open the file chooser. 
-            case AskVehicleDialog.OPTION_IMPORT : importVehicleMenuItemActionPerformed(null); break;
+            case AskVehicleDialog.OPTION_IMPORT : importVehicle(dataset); break;
             //if the user said they would create a new vehicle, show the vehicle data dialog
             case AskVehicleDialog.OPTION_NEW    : vdd.setVisible(true); break;
             //if the user said no, import the file
@@ -2444,35 +2373,25 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addNotesMenuItem;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem darkTheme_menuitem;
+    private javax.swing.JMenu datasetMenu;
     private javax.swing.JMenuItem defaultTheme_menuitem;
     private javax.swing.JMenu editMenu;
-    private javax.swing.JMenuItem editVehicleMenuItem;
-    private javax.swing.JMenuItem engineChartSetup;
-    private javax.swing.JMenu engineMenu;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
-    private javax.swing.JMenuItem importECUDataMenuItem;
-    private javax.swing.JMenuItem importVehicleMenuItem;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenuItem newImportMenuItem;
-    private javax.swing.JMenuItem newVehicleMenuItem;
     private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JMenuItem openBtn;
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
-    private javax.swing.JMenuItem saveVehicleMenuItem;
-    private javax.swing.JMenuItem showLambdaMap;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
     private javax.swing.JMenuItem systemTheme_menuitem;
     private javax.swing.JMenuItem twoHorizontalMenuItem;
     private javax.swing.JMenuItem twoVerticalMenuItem;
-    private javax.swing.JMenu vehicleMenu;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
     
