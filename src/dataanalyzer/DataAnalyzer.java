@@ -528,7 +528,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 int lastIndex = filePath.lastIndexOf(".");
                 String fileExtension = filePath.substring(lastIndex,
                         filePath.length());
-                if(!fileExtension.equals(".dfr")) {
+                if(!fileExtension.equals(".dfr") && !fileExtension.equals(".dfrasm")) {
                     onlyDFRFiles = false;
                     break;
                 }
@@ -683,7 +683,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }//GEN-LAST:event_addMathChannel
 
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
-        saveFile(openedFilePath);
+        if(getChartManager().getDatasets().size() > 1) {
+            saveFileAssembly("");
+        } else {
+            saveFile(openedFilePath);
+        }
     }//GEN-LAST:event_saveMenuButtonClicked
 
     private void fullscreenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fullscreenMenuItemActionPerformed
@@ -772,7 +776,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
         //save file with no known file path. Will force method to open file chooser
-        saveFile("");
+        if(getChartManager().getDatasets().size() > 1) {
+            saveFileAssembly("");
+        } else {
+            saveFile(openedFilePath);
+        }
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
     //Export the data into a CSV file to use with other programs.
@@ -1713,7 +1721,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 sb.append("FILENOTES\n");
                 sb.append(fileNotes);
             }
+            sb.append("\n");
             sb.append("ENDDATASET");
+            sb.append("\n");
         }
         
         String chosenFileName = "";
@@ -2104,7 +2114,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     }
                     
                     //flush the line that says VEHICLEDYNAMICDATA
-                    scanner.nextLine();
+                    line = scanner.nextLine();
                     
                     //string builder for creating string of data
                     StringBuilder vd = new StringBuilder("");
@@ -2119,7 +2129,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     }
                     
                     //flush the line that says LAPDATA
-                    scanner.nextLine();
+                    line = scanner.nextLine();
                     
                     //for all the lines for lapdata
                     while(!line.equals("FILENOTES")) {
