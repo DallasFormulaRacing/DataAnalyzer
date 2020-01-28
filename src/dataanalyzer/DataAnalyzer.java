@@ -128,6 +128,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private JMenu createDatasetMenu(Dataset dataset) {
         JMenu datasetSubMenu = new JMenu(dataset.getName());
         
+        JMenu vitals = new JMenu("Vitals");
+        vitals.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new VitalsDialog(DataAnalyzer.this, true, dataset.getDataMap()).setVisible(true);
+            }
+        });
+        
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -252,7 +260,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
         addNotesMenuItem = new javax.swing.JMenuItem();
-        checkVitals_menuitem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
@@ -265,8 +272,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
         datasetMenu = new javax.swing.JMenu();
-
-        jMenuItem1.setText("jMenuItem1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
@@ -365,14 +370,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         editMenu.add(addNotesMenuItem);
-
-        checkVitals_menuitem.setText("Check Vitals");
-        checkVitals_menuitem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkVitals_menuitemActionPerformed(evt);
-            }
-        });
-        editMenu.add(checkVitals_menuitem);
 
         menuBar.add(editMenu);
 
@@ -1030,10 +1027,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
     }//GEN-LAST:event_darkTheme_menuitemActionPerformed
-
-    private void checkVitals_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkVitals_menuitemActionPerformed
-        new VitalsDialog(this, true, chartManager.getDataMap()).setVisible(true);
-    }//GEN-LAST:event_checkVitals_menuitemActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -1308,22 +1301,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         if(dataset.getDataMap().tags.contains("Time,Analog#7")) {
             EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,xAccel");
-
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8")) {
+        if(dataset.getDataMap().tags.contains("Time,Analog#8"))
             EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,zAccel");
         
-        if(chartManager.getDataMap().tags.contains("Time,WSFL")) {
-            EquationEvaluater.evaluate("($(Time,WSFL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedFL");
+        if(dataset.getDataMap().tags.contains("Time,WSFL")) {
+            EquationEvaluater.evaluate("($(Time,WSFL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL");
         }
         //delete frequency signal
-        chartManager.getDataMap().remove("Time,WSFL");
+        dataset.getDataMap().remove("Time,WSFL");
         
-        if(chartManager.getDataMap().tags.contains("Time,WSRL")) {
-            EquationEvaluater.evaluate("($(Time,WSRL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedRL");
+        if(dataset.getDataMap().tags.contains("Time,WSRL")) {
+            EquationEvaluater.evaluate("($(Time,WSRL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRL");
         }
         //delete frequency signal
-        chartManager.getDataMap().remove("Time,WSRL");
+        dataset.getDataMap().remove("Time,WSRL");
         
         //now we have unoriented xyz 
         LinkedList<LogObject> rotXAccel = new LinkedList<>();
@@ -1451,11 +1443,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", dataset.getDataMap(), "Time,SuckySucky");
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog1")) {
-            EquationEvaluater.evaluate("($(Time,Analog1)-.5)*1250", chartManager.getDataMap(), "Time,BrakePressureFront");
+        if(dataset.getDataMap().tags.contains("Time,Analog1")) {
+            EquationEvaluater.evaluate("($(Time,Analog1)-.5)*1250", dataset.getDataMap(), "Time,BrakePressureFront");
         }
-        if(chartManager.getDataMap().tags.contains("Time,Analog2")) {
-            EquationEvaluater.evaluate("($(Time,Analog2)-.5)*1250", chartManager.getDataMap(), "Time,BrakePressureRear");
+        if(dataset.getDataMap().tags.contains("Time,Analog2")) {
+            EquationEvaluater.evaluate("($(Time,Analog2)-.5)*1250", dataset.getDataMap(), "Time,BrakePressureRear");
         }
         
         //Create Average of Analog in 5v form
@@ -1471,8 +1463,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataset.getDataMap(), "Time,GearRatio", 0, 10);
         }
         
-        if(chartManager.getDataMap().tags.contains("Time,Analog5")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
+        if(dataset.getDataMap().tags.contains("Time,Analog5")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog5) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure");
         }
         
         
@@ -2242,7 +2234,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
             public Void doInBackground() throws FileNotFoundException {
-<<<<<<< HEAD
                 //Create way to read file
                 Scanner scan = new Scanner(file);
                 //get the first line which tells us the order of parameters
@@ -2267,62 +2258,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     for(int i = 1; i < data.length; i++) {
                         //add this element to the datamap
                         dataset.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-=======
-                //handle the first file to not open a new screen
-                boolean first = true;
-
-                //holds number of files opened
-                int num = 0;
-
-                //for each file
-                for(File file : files) {
-                    //if its the first file we don't need to do this in a new window.
-                    if(first) {
-                        //Create way to read file
-                        Scanner scan = new Scanner(file);
-                        //get the first line which tells us the order of parameters
-                        String header = scan.nextLine();
-                        //store these as an array of keys
-                        String[] keys = header.split(",");
-                        //for each remaining line
-                        while(scan.hasNextLine()) {
-                            //get the next line
-                            String line = scan.nextLine();
-                            //if its empty move forward which will skip corrupted lines or end
-                            if(line.isEmpty())
-                                continue;
-
-                            //all the data should be split by commas in the same order as the header
-                            String[] data = line.split(",");
-                            //if line does not match the format of the header, skip
-                            if(data.length != keys.length)
-                                continue;
-                            //the first element is time
-                            double timeInSeconds = Double.parseDouble(data[0]);
-
-                            long time = (long) (timeInSeconds*1000);
-                            //for each of the remaining columns
-                            for(int i = 1; i < data.length; i++) {
-                                //add this element to the datamap
-                                chartManager.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
-                            }
-
-                        }
-
-                        //set title
-                        setTitle("DataAnalyzer - " + file.getName());
-
-                        //no longer first
-                        first = false;
-                        num++;
-
-                        //apply post processing
-                        if(applyPostProcessing) {
-                            applyPE3PostProcessing();
-                            applyPostProcessing();
-                        }
-
->>>>>>> master
                     }
 
                 }
@@ -2473,7 +2408,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
-    private javax.swing.JMenuItem checkVitals_menuitem;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem darkTheme_menuitem;
     private javax.swing.JMenu datasetMenu;
@@ -2483,13 +2417,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fullscreenMenuItem;
-<<<<<<< HEAD
-=======
-    private javax.swing.JMenuItem importECUDataMenuItem;
-    private javax.swing.JMenuItem importVehicleMenuItem;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
->>>>>>> master
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JMenuItem openBtn;
