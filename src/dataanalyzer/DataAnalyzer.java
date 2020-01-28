@@ -1525,6 +1525,18 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", chartManager.getDataMap(), "Time,Lambda");
         }
         
+        if(chartManager.getDataMap().tags.contains("Time,WSFL")) {
+            EquationEvaluater.evaluate("($(Time,WSFL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedFL");
+        }
+        //delete frequency signal
+        chartManager.getDataMap().remove("Time,WSFL");
+        
+        if(chartManager.getDataMap().tags.contains("Time,WSRL")) {
+            EquationEvaluater.evaluate("($(Time,WSRL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedRL");
+        }
+        //delete frequency signal
+        chartManager.getDataMap().remove("Time,WSRL");
+        
         //now we have unoriented xyz 
         LinkedList<LogObject> rotXAccel = new LinkedList<>();
         LinkedList<LogObject> rotYAccel = new LinkedList<>();
