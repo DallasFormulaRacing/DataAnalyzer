@@ -1770,10 +1770,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             sb.append("LAPDATA");
             sb.append("\n");
             sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
-            if(!fileNotes.isEmpty()) {
-                sb.append("FILENOTES\n");
-                sb.append(fileNotes);
-            }
+            sb.append("FILENOTES\n");
+            sb.append(fileNotes);
             sb.append("\n");
             sb.append("ENDDATASET");
             sb.append("\n");
