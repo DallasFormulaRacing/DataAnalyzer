@@ -297,6 +297,8 @@ public class Selection {
                 if(datasetSelection.selectedTags.contains(tag)) {
                     CategoricalHashTable<CategorizedValueMarker> staticMarkers = datasetSelection.dataset.getStaticMarkers();
                     //for each marker, (which should be unique, at least multiple instances of the same data)
+                    if(staticMarkers.getList(tag) == null)
+                        continue;
                     for(CategorizedValueMarker marker : staticMarkers.getList(tag)) {
                         map.put(marker, getValueAt(marker.getMarker().getValue(), datasetSelection.dataset.getDataMap().getList(tag)));
                     }
@@ -322,10 +324,13 @@ public class Selection {
     public void addLap(Lap l) {
         //for each dataset selection
         for(DatasetSelection ds : datasetSelections) {
-            //add the created lap
-            ds.dataset.getLapBreaker().add(l);
-            //apply the lap to the dataset
-            Lap.applyToDataset(ds.dataset.getDataMap(), ds.dataset.getLapBreaker());
+            //check that the lap is within the limits.
+            if(l.start < ds.dataset.getDataTimeLength() && l.stop < ds.dataset.getDataTimeLength()) {
+                //add the created lap
+                ds.dataset.getLapBreaker().add(l);
+                //apply the lap to the dataset
+                Lap.applyToDataset(ds.dataset.getDataMap(), ds.dataset.getLapBreaker());
+            }
         }
     }
     

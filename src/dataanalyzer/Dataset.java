@@ -36,7 +36,7 @@ public class Dataset {
      */
     public Dataset() {
         name = "A dataset has no name";
-        dataMap = new CategoricalHashMap();
+        dataMap = new CategoricalHashMap(80);
         staticMarkers = new CategoricalHashTable<>();
         vehicleData = new VehicleData();
         lapBreaker = new ArrayList<>();
@@ -91,7 +91,15 @@ public class Dataset {
 
     public void setLapBreaker(ArrayList<Lap> lapBreaker) {
         this.lapBreaker = lapBreaker;
-    }    
+    }
+    
+    /**
+     * returns the last time stamp recorded
+     * @return 
+     */
+    public long getDataTimeLength() {
+        return dataMap.getList("Time,RPM").getLast().time;
+    }
     
     /**
      * TODO: Some notes for me to spitball and list

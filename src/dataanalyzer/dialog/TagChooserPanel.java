@@ -59,6 +59,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.dataset = dataset;
         initComponents();
+        datasetNameLabel.setText(dataset.getName());
         fillDataList(dataset.getDataMap().getTags());
     }
 
@@ -94,6 +95,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
         dataList = new javax.swing.JList<>();
         jScrollPane2 = new javax.swing.JScrollPane();
         lapList = new javax.swing.JList<>();
+        datasetNameLabel = new javax.swing.JLabel();
 
         searchField.setToolTipText("Search");
         searchField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -137,6 +139,8 @@ public class TagChooserPanel extends javax.swing.JPanel {
         });
         jScrollPane2.setViewportView(lapList);
 
+        datasetNameLabel.setText("jLabel1");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -147,13 +151,18 @@ public class TagChooserPanel extends javax.swing.JPanel {
                     .addComponent(searchField)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(datasetNameLabel)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(5, 5, 5)
+                .addContainerGap(9, Short.MAX_VALUE)
+                .addComponent(datasetNameLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -161,7 +170,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -613,6 +622,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> categoryList;
     private javax.swing.JList<String> dataList;
+    private javax.swing.JLabel datasetNameLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

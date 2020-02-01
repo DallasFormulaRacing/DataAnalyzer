@@ -418,11 +418,14 @@ public class ChartAssembly implements ChartMouseListener {
             plot.setRenderer(i, getNewRenderer(i));
             // Makes sure that the Y-values for each dataset are proportional to the data inside it
             plot.mapDatasetToRangeAxis(i, i);
-            //add a crosshair for this tag
-            Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            yCrosshair.setLabelVisible(true);
-            overlay.addRangeCrosshair(yCrosshair);
-            yCrosshairs.add(yCrosshair);
+            for(int s = 0; s < seriesCollection[i].getSeriesCount(); s++) {
+                //add a crosshair for this tag
+                Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+                yCrosshair.setValue(1000*s);
+                yCrosshair.setLabelVisible(true);
+                overlay.addRangeCrosshair(yCrosshair);
+                yCrosshairs.add(yCrosshair);
+            }
         }
         
         // Just show the X-Axis data type (Time, Distance, etc)
@@ -495,10 +498,13 @@ public class ChartAssembly implements ChartMouseListener {
             // Makes sure that the Y-values for each dataset are proportional to the data inside it
             plot.mapDatasetToRangeAxis(i, i);
             //add a crosshair for this tag
-            Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            yCrosshair.setLabelVisible(true);
-            overlay.addRangeCrosshair(yCrosshair);
-            yCrosshairs.add(yCrosshair);
+            for(int s = 0; s < seriesCollection[i].getSeriesCount(); s++) {
+                Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+                yCrosshair.setValue(1000*s);
+                yCrosshair.setLabelVisible(true);
+                overlay.addRangeCrosshair(yCrosshair);
+                yCrosshairs.add(yCrosshair);
+            }
         }
         
         // Just show the X-Axis data type (Time, Distance, etc)
@@ -687,7 +693,7 @@ public class ChartAssembly implements ChartMouseListener {
          */
         
         //if we are creating a lap
-        if(manager.getLapBreakerActive() > 0) { 
+        if(manager.getLapBreakerActive() >= 0) { 
             //if we are doing the start
             if(manager.getLapBreakerActive() == 0) {
                 //round start time
@@ -716,7 +722,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
 
                 //if the lap was cancelled
-                if(!manager.getNewLap().lapLabel.equals("!#@$LAPCANCELLED")) {
+                if(manager.getNewLap().lapLabel.equals("!#@$LAPCANCELLED")) {
                     manager.setLapBreakerActive(-1);
                     manager.setNewLap(new Lap());
                 } else {
@@ -764,9 +770,13 @@ public class ChartAssembly implements ChartMouseListener {
             XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
             for(int j = 0; j < plot.getSeriesCount(); j++) {
                 // Get the y value for the current series.
-                double val = DatasetUtilities.findYValue(col, j, xCor);
-                // Add the value to the list
-                yCors.add(val);
+                try {
+                    double val = DatasetUtilities.findYValue(col, j, xCor);
+                    // Add the value to the list
+                    yCors.add(val);
+                } catch(IllegalArgumentException e) {
+                    
+                }
             }
         }
 
@@ -1089,28 +1099,40 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
             if(rangeMarkersActive) {
-                int N = plot.getRangeAxisCount();
-                for( int i = 0; i < N; i++ ) {
+                //holds the current index for the crosshairs
+                int crosshairCount = 0;
+                //for each dataset
+                for(int i = 0; i < plot.getDatasetCount(); i++) {
+                    //get the dataset
+                    XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
+                    //each dataset will have a value axis. get this datasets value axis
                     ValueAxis rAxis = plot.getRangeAxis(i);
+                    //get its axis location (left or right)
                     RectangleEdge rAxisEdge = plot.getRangeAxisEdge(i);
-                    Crosshair c = shadowR.get(i);
-                    if( !c.isVisible() )
-                        continue;
-                    //set the color to white if we transition to dark theme
-                    if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
-                        c.setLabelBackgroundPaint(Color.WHITE);
-                    double y = c.getValue();
-                    double yy = rAxis.valueToJava2D(y, dataArea, rAxisEdge);
-                    if (plot.getOrientation() == PlotOrientation.VERTICAL) {
-                        drawHorizontalCrosshair(g2, dataArea, yy, c );
+                    //for each series in this dataset
+                    for(int j = 0; j < col.getSeriesCount(); j++) {
+                        //get the cross hair at this location
+                        Crosshair c = shadowR.get(crosshairCount);
+                        crosshairCount++;
+                        if( !c.isVisible() )
+                            continue;
+                        //set the color to white if we transition to dark theme
+                        if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
+                            c.setLabelBackgroundPaint(Color.WHITE);
+                        double y = c.getValue();
+                        double yy = rAxis.valueToJava2D(y, dataArea, rAxisEdge);
+                        if (plot.getOrientation() == PlotOrientation.VERTICAL) {
+                            drawHorizontalCrosshair(g2, dataArea, yy, c );
+                        }
+                        else {
+                            drawVerticalCrosshair(g2, dataArea, yy, c );
+                        }
                     }
-                    else {
-                        drawVerticalCrosshair(g2, dataArea, yy, c );
-                    }
+
                 }
             }
             g2.setClip(savedClip);
         }
     }
-    
+
 }

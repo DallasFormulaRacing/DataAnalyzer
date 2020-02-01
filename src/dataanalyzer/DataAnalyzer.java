@@ -611,7 +611,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         if(fileExtension.equals(".csv")) {
                             //make the new window import a PE3 file
                             try {
-                                da.openPE3Files(dataset, chosenFile);
+                                da.openPE3Files(dataset, chosenFile, applyPostProcessing);
                             } catch (FileNotFoundException e) {
                                 Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
                                 continue;
@@ -620,7 +620,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             da.openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing)
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
                             da.applyPostProcessing(dataset);
                     }
                     
@@ -666,7 +666,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         if(fileExtension.equals(".csv")) {
                             //make the new window import a PE3 file
                             try {
-                                openPE3Files(dataset, chosenFile);
+                                openPE3Files(dataset, chosenFile, applyPostProcessing);
                             } catch (FileNotFoundException e) {
                                 Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
                                 continue;
@@ -675,7 +675,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing)
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
                             applyPostProcessing(dataset);
                     }
                     if(multipleWindows)
@@ -2178,6 +2178,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber, lapLabel));
                         else
                             dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
+                        line = scanner.nextLine();
                     }
                     
                     //flish the file notes line
@@ -2185,7 +2186,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     
                     //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
                     while(!line.equals("ENDDATASET")) {
-                        fileNotes += scanner.nextLine();
+                        fileNotes += line;
+                        line = scanner.nextLine();
                     }
                     
                     //give the data to the vehicleData class to create
@@ -2223,10 +2225,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      * Opens files that are formatted in PE3 style.
      * @param filepaths 
      */
-    private void openPE3Files(Dataset dataset, File file) throws FileNotFoundException {
-        
-        //ask for post processing
-        boolean applyPostProcessing = askForPostProcessing();
+    private void openPE3Files(Dataset dataset, File file, boolean applyPostProcessing) throws FileNotFoundException {
         
         LoadingDialog loading = new LoadingDialog();
         loading.setVisible(true);
@@ -2264,9 +2263,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                 //set title
                 setTitle("DataAnalyzer - " + file.getName());
-
-
-                //apply post processing
+                
                 if(applyPostProcessing) {
                     applyPE3PostProcessing(dataset);
                     applyPostProcessing(dataset);
