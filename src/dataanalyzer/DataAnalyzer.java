@@ -1685,7 +1685,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //calculate full average and tire slip
         if(chartManager.getDataMap().tags.contains("Time,WheelspeedRear") && chartManager.getDataMap().tags.contains("Time,WheelspeedFront")) {
             EquationEvaluater.evaluate("($(Time,WheelspeedRear)) + ($(Time,WheelspeedFront)) / 2", chartManager.getDataMap(), "Time,WheelspeedAvg");
-            EquationEvaluater.evaluate("100 * (($(Time,WheelspeedRear) / $(Time,WheelspeedFront)) - 1)", chartManager.getDataMap(), "Time,WheelspeedAvg");
+            EquationEvaluater.evaluate("100 * (($(Time,WheelspeedRear) / $(Time,WheelspeedFront)) - 1)", chartManager.getDataMap(), "Time,TireSlip");
         }
         
         //Create time vs distance
