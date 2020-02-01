@@ -11,6 +11,7 @@ import dataanalyzer.dialog.MessageBox;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JFrame;
 import org.jfree.chart.*;
 
@@ -21,21 +22,14 @@ import org.jfree.chart.*;
 public class ChartManager {
     
     private final JFrame parent;
-    // Stores the data set for each data type ( RPM vs Time, Distance vs Time....)
-    private CategoricalHashMap dataMap;
     
-    //stores the static markers
-    private CategoricalHashTable<CategorizedValueMarker> staticMarkers;
-    
-    //holds vehicle parameters
-    private VehicleData vehicleData;
-    
-    //stores the laps breaker
-    private ArrayList<Lap> lapBreaker;
     //status of lapBreakerTool
     private int lapBreakerActive;
     //lap that will be created and applied to lapBreaker list
     private Lap newLap;
+    
+    //holds all the datasets in this application instance
+    private LinkedList<Dataset> datasets;
     
     //holds all active charts
     ArrayList<ChartAssembly> charts;
@@ -45,20 +39,20 @@ public class ChartManager {
     //holds charts being swapped;
     ChartAssembly first, second;
     
+    //dataset size change listener
+    private ArrayList<SizeListener> listeners;
+    
     
     public ChartManager(JFrame parent) {
         this.parent = parent;
-        dataMap = new CategoricalHashMap();
-        staticMarkers = new CategoricalHashTable<>();
-        vehicleData = new VehicleData();
-        lapBreaker = new ArrayList<>();
         lapBreakerActive = -1;
         swapActive = -1;
         newLap = new Lap();
         charts = new ArrayList<>();
         first = null;
         second = null;
-        
+        listeners = new ArrayList<>();
+        datasets = new LinkedList<>();
     }
     
     public void updateChartZooms(ChartPanel chartPanel) {
@@ -130,8 +124,76 @@ public class ChartManager {
             second = null;
         }
     }
+
+    public ArrayList<Integer> getUsedLapNumbers() {
+        ArrayList<Integer> usedLapNumbers = new ArrayList<>();
+        for(Dataset dataset : datasets) {
+            for(Lap l : dataset.getLapBreaker()) {
+                if(!usedLapNumbers.contains(l.getLapNumber())) {
+                    usedLapNumbers.add(l.getLapNumber());
+                }
+            }
+        }
+        
+        return usedLapNumbers;
+        
+    }
+    
+    public void addDatasetSizeChangeListener(SizeListener sizeListener) {
+        listeners.add(sizeListener);
+    }
     
     
+    public void addDataset(Dataset d) throws DuplicateDatasetNameException {
+        for(Dataset dataset : getDatasets()) {
+            if(dataset.getName().equals(d.getName())) {
+                throw new DuplicateDatasetNameException(d.getName());
+            }
+        }
+        datasets.add(d);
+        //on new element entry of dataMap, update the view
+        d.getDataMap().addTagSizeChangeListener(new SizeListener() {
+            @Override
+            public void sizeUpdate() {
+                if(!((DataAnalyzer) parent).isOpeningAFile()) {
+                    Lap.applyToDataset(d.getDataMap(), d.getLapBreaker());
+
+                }
+            }
+        });
+        for(SizeListener l : listeners)
+            l.sizeUpdate();
+    }
+    
+    public void removeDataset(String name) {
+        //search for dataset by name and remove it
+        for(int i = 0; i < datasets.size(); i++) {
+            if(datasets.get(i).getName().equals(name)) {
+                datasets.remove(i);
+                for(SizeListener l : listeners)
+                    l.sizeUpdate();
+            }
+        }
+    }
+    
+    public Dataset getDataset(String name) {
+        for(Dataset dataset : datasets) {
+            if(dataset.getName().equals(name))
+                return dataset;
+        }
+        
+        return null;
+    }
+    
+    public void updateDataset(String name, Dataset updated) {
+        for(int i = 0; i < datasets.size(); i++) {
+            if(datasets.get(i).getName().equals(name)) {
+                datasets.set(i, updated);
+                for(SizeListener l : listeners)
+                    l.sizeUpdate();
+            }
+        }
+    }
     
     
     /**
@@ -144,32 +206,8 @@ public class ChartManager {
      * 
      */
     
-    public CategoricalHashMap getDataMap() {
-        return dataMap;
-    }
-
-    public CategoricalHashTable<CategorizedValueMarker> getStaticMarkers() {
-        return staticMarkers;
-    }
-
-    public void setStaticMarkers(CategoricalHashTable<CategorizedValueMarker> staticMarkers) {
-        this.staticMarkers = staticMarkers;
-    }
-
-    public VehicleData getVehicleData() {
-        return vehicleData;
-    }
-
-    public void setVehicleData(VehicleData vehicleData) {
-        this.vehicleData = vehicleData;
-    }
-
-    public ArrayList<Lap> getLapBreaker() {
-        return lapBreaker;
-    }
-
-    public void setLapBreaker(ArrayList<Lap> lapBreaker) {
-        this.lapBreaker = lapBreaker;
+    public Dataset getMainDataset() {
+        return datasets.getFirst();
     }
 
     public int getLapBreakerActive() {
@@ -198,6 +236,14 @@ public class ChartManager {
     
     public int getNumberOfCharts() {
         return charts.size();
+    }
+
+    public LinkedList<Dataset> getDatasets() {
+        return datasets;
+    }
+
+    public void setDatasets(LinkedList<Dataset> datasets) {
+        this.datasets = datasets;
     }
     
     //enables or disables the swapper

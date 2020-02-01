@@ -8,8 +8,10 @@ package dataanalyzer.dialog;
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.CategorizedValueMarker;
+import dataanalyzer.Dataset;
 import dataanalyzer.FunctionOfLogObject;
 import dataanalyzer.LogObject;
+import dataanalyzer.Selection;
 import dataanalyzer.SimpleLogObject;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -17,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.TreeMap;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -27,17 +30,18 @@ import javax.swing.SwingUtilities;
  */
 public class StaticMarkersFrame extends javax.swing.JDialog {
     
-    private CategoricalHashMap dataMap;
-    private String[] tags;
-    private CategoricalHashTable<CategorizedValueMarker> staticMarkers;
-
-    public StaticMarkersFrame(CategoricalHashMap dataMap, String[] tags, CategoricalHashTable<CategorizedValueMarker> staticMarkers, java.awt.Frame parent, boolean modal) {
+    LinkedList<Dataset> datasets;
+    Selection selection;
+    ArrayList<CategorizedValueMarker> currentMarkers;
+    
+    public StaticMarkersFrame(LinkedList<Dataset> datasets, Selection selection, java.awt.Frame parent, boolean modal) {
         super(parent, modal);
-        this.dataMap = dataMap;
-        this.tags = tags;
-        this.staticMarkers = staticMarkers;
+        currentMarkers = new ArrayList<>();
+        this.datasets = datasets;
+        this.selection = selection;
         initComponents();
         populateList();
+        
         staticMarkersList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -50,62 +54,32 @@ public class StaticMarkersFrame extends javax.swing.JDialog {
                     ListModel model = list.getModel();
                     //get indices of items selected
                     int[] selected = list.getSelectedIndices();
-                    //holds how many different domains are in selected
-                    int domainCount = 0;
-                    //check each element, if its a duplicate
+                    
+                    /*
+                    * Okay good. So now what we can do is instead of going through and comparing the strings we are getting from the list model...
+                    * we know have a global variable called currentMarkers that should be holding the listview in the exact same order
+                    * so we take the selection list and pull the elements from there and compare them to get all the same domains. 
+                    */
+                    ArrayList<Double> uniqueDomains = new ArrayList<>();
+                    //add all unique domains to a list
                     for(int i = 0; i < selected.length; i++) {
-                        boolean wasBefore = false;
-                        //check every element before
-                        for(int j = i - 1; j > 0; j--) {
-                            //if prev element and curr element match: fail
-                            String prev = ("" + model.getElementAt(selected[j])).substring(1, ("" + model.getElementAt(selected[j])).indexOf(','));
-                            String curr = ("" + model.getElementAt(selected[i])).substring(1, ("" + model.getElementAt(selected[i])).indexOf(','));
-                            if(prev.equals(curr)) {
-                                wasBefore = true;
-                                break;
-                            }
+                        String curr = ("" + model.getElementAt(selected[i])).substring(1, ("" + model.getElementAt(selected[i])).indexOf(','));
+                        double currVal = Double.parseDouble(curr);
+                        if(!uniqueDomains.contains(currVal)) {
+                            uniqueDomains.add(currVal);
                         }
-
-                        //if we didnt find the same element before, 
-                        if(!wasBefore)
-                            domainCount++;
                     }
 
-                    //
-                    int[] selectedDomains = new int[domainCount];
-                    int k = 0;
-                    //get only 
-                    for(int i = 0; i < selected.length; i++) {
-                        boolean wasBefore = false;
-                        //check every element before
-                        for(int j = i - 1; j > 0; j--) {
-                            //if prev element and curr element match: fail
-                            //if prev element and curr element match: fail
-                            String prev = ("" + model.getElementAt(selected[j])).substring(1, ("" + model.getElementAt(selected[j])).indexOf(','));
-                            String curr = ("" + model.getElementAt(selected[i])).substring(1, ("" + model.getElementAt(selected[i])).indexOf(','));
-                            if(prev.equals(curr)) {
-                                wasBefore = true;
-                                break;
-                            }
-                        }
-
-                        //if we didnt find the same element before, 
-                        if(!wasBefore) {
-                            selectedDomains[k] = selected[i];
-                            k++;
-                        }
-                    }
                     //get tags currently visible
                     //create same length array of CategorizedValueMarkers
                     ArrayList<CategorizedValueMarker> markers = new ArrayList<>();
                     //for each domain selected
-                    for(int i = 0; i < selectedDomains.length; i++) {
-                        //get the corresponding CategorizedValueMarker
-                        for(String tag : tags) {
-                            CategorizedValueMarker currMarker = getMarkerFromString(tag, "" + model.getElementAt(selectedDomains[i]));
-                            if(currMarker != null && !(currMarker.getNotes().matches("Start Lap[0-9]+") || currMarker.getNotes().matches("End Lap[0-9]+"))) {
-                                markers.add(currMarker);
-                            }
+                    for(Double domain : uniqueDomains) {
+                        //for every marker
+                        for(CategorizedValueMarker marker : currentMarkers) {
+                            //if the domain matches, add it to the list of all markers
+                            if(!(marker.getNotes().matches("Start Lap[0-9]+") || marker.getNotes().matches("End Lap[0-9]+")) && marker.getMarker().getValue() == domain)
+                                markers.add(marker);
                         }
                     }
 
@@ -139,25 +113,35 @@ public class StaticMarkersFrame extends javax.swing.JDialog {
         //array list that holds all other markers
         ArrayList<String> otherMarkers = new ArrayList<>();
         
-        //get markers for each tag
-        for(String tag : tags) {
-            LinkedList<LogObject> data = dataMap.getList(tag);
-            LinkedList<CategorizedValueMarker> markers = staticMarkers.getList(tag);
-            if(markers == null)
-                continue;
-            for(CategorizedValueMarker v : markers) {
-                //if its a lap marker, show all other markers first
-                if(v.getNotes().matches("Start Lap[0-9]+") || v.getNotes().matches("End Lap[0-9]+")) {
-                    lapMarkers.add("(" + String.format("%.2f", v.getMarker().getValue()) + ", " +
-                        String.format("%.2f", getValueAt(v.getMarker().getValue(), data)) + 
-                        ") " + v.getNotes());
-                } else {
-                    otherMarkers.add("(" + String.format("%.2f", v.getMarker().getValue()) + ", " +
-                        String.format("%.2f", getValueAt(v.getMarker().getValue(), data)) + 
-                        ") " + v.getNotes());
-                }
+        //holds all the markers from the selection
+        ArrayList<CategorizedValueMarker> newLapMarkers = new ArrayList<>();
+        ArrayList<CategorizedValueMarker> newOtherMarkers = new ArrayList<>();
+        
+        
+        //get map of markers to values
+        TreeMap<CategorizedValueMarker, Double> map = selection.getAllValuedMarkers();
+        //for each marker
+        for(CategorizedValueMarker v : map.keySet()) {
+            //if its a lap marker, show all other markers first
+            if(v.getNotes().matches("Start Lap[0-9]+") || v.getNotes().matches("End Lap[0-9]+")) {
+                lapMarkers.add("(" + String.format("%.2f", v.getMarker().getValue()) + ", " +
+                    String.format("%.2f", map.get(v)) + 
+                    ") " + v.getNotes());
+                newLapMarkers.add(v);
+
+            } else {
+                otherMarkers.add("(" + String.format("%.2f", v.getMarker().getValue()) + ", " +
+                    String.format("%.2f", map.get(v)) + 
+                    ") " + v.getNotes());
+                 newOtherMarkers.add(v);
+
             }
         }
+        
+        //hold the current markers;
+        currentMarkers.clear();
+        currentMarkers.addAll(newOtherMarkers);
+        currentMarkers.addAll(newLapMarkers);
         
         //compile into array of string
         ArrayList<String> allMarkers = new ArrayList<>();
@@ -174,114 +158,40 @@ public class StaticMarkersFrame extends javax.swing.JDialog {
             return;
         //get list and model
         ListModel model = staticMarkersList.getModel();
-        for(String tag : tags) {
-            CategorizedValueMarker marker = getMarkerFromString(tag, "" +
-                    model.getElementAt(staticMarkersList.getSelectedIndex()));
-            if(marker != null)
-                staticMarkers.remove(marker);
+        int[] selected = staticMarkersList.getSelectedIndices();
+
+        //for each selected item
+        for(Integer select : selected) {
+            //get the marker at the selected index
+            CategorizedValueMarker marker = currentMarkers.get(select);
+            //delete it
+            if(marker != null) {
+                for(Dataset dataset : datasets) {
+                    dataset.getStaticMarkers().remove(marker);
+                }
+            }
         }
         populateList();
     }
     
     /**
-     * Returns the value at a given point.
-     * Handles children to return accurate values for simple and functionof objects
-     * @param x domain value
-     * @param data list of data
-     * @return corresponding y value for given x
-     */
-    private double getValueAt(double x, LinkedList<LogObject> data) {
-        double lastDiff = Double.MAX_VALUE;
-        double valueToReturn = Double.NaN;
-        //for each object, check if this is correct object, if so: return value
-        for(LogObject lo : data) {
-            if(lo instanceof SimpleLogObject) {
-                if(lo.getTime() == getRoundedTime(x)) {
-                    return ((SimpleLogObject) lo).getValue();
-                }
-            } else if(lo instanceof FunctionOfLogObject) {
-                //for function of we can't round to the nearest time
-                //so we have to find the closest value
-                if(Math.abs(((FunctionOfLogObject) lo).getX()-x) < lastDiff) { 
-                    valueToReturn = ((FunctionOfLogObject) lo).getValue();
-                } else {
-                    return valueToReturn;
-                }
-            }
-        }
-        
-        //return NaN for not value found
-        return valueToReturn;
-    }
-    
-     /**
-     * 
      * @param TAG TAG of the dataset
      * @param s String collected from list
      * @return CategorizedValueMarker object that has the same domain marker as the string
      */
-    private CategorizedValueMarker getMarkerFromString(String TAG, String s) {
-        for(CategorizedValueMarker marker : staticMarkers.getList(TAG)) {
+    private ArrayList<CategorizedValueMarker> getMarkerFromString(String TAG, String s) {
+        //holds all the matching markers
+        ArrayList<CategorizedValueMarker> matchingMarkers = new ArrayList<>();
+        
+        //for all markers
+        for(CategorizedValueMarker marker : currentMarkers) {
             if(String.format("%.2f", marker.getMarker().getValue()).equals(s.substring(1, s.indexOf(','))))
-                return marker;
+                matchingMarkers.add(marker);
         }
-        return null;
+        
+        return matchingMarkers;
     }
     
-    private long getRoundedTime(double val) {
-        //time to return if its not already a function of time
-        long time = -1;
-        //get the tag of the first chart
-        String TAG = tags[0];
-        //if its a function of time, find nearest 50ms point
-        if(TAG.contains("Time,")) {
-            //get mod of value
-            double mod = val % 50;
-            //if value is less than 25 round down
-            if(mod < 25) {
-                return (long) (val - mod);
-            //else round up
-            } else {
-                return (long) (val + (50 - mod));
-            }
-        //find base function
-        } else {
-            //Round to nearest domain value for the tag we are looking at
-            String finding = TAG;
-            //holds the closest value, holds value and object
-            double closestVal = Double.MAX_VALUE;
-            //for each logobject of the current tag
-            for(LogObject lo : dataMap.getList(finding)) {
-                //if its a functionoflogobject which it should be
-                if(lo instanceof FunctionOfLogObject) {
-                    //calculate the difference between this objects domain and the value the user clicked
-                    if(Math.abs(((FunctionOfLogObject) lo).getX() - val) < closestVal) {
-                        //if its closer, save this as closest
-                        closestVal = Math.abs(((FunctionOfLogObject) lo).getX() - val);
-                    }
-                }
-            }
-            //find what its domain is
-            String goTo = finding.substring(0,finding.indexOf(','));
-            //see if there is a Time, with that domain as its range
-            if(dataMap.getTags().contains("Time," + goTo)) {
-                //get the tag for the function of time
-                String toSearch = "Time," + goTo;
-                //for each logobject of the base function
-                for(LogObject lo : dataMap.getList(toSearch)) {
-                    if(lo instanceof SimpleLogObject) {
-                        if(((SimpleLogObject) lo).getValue() == closestVal) {
-                            return lo.getTime();
-                        }
-                    }
-                }
-            }
-        }
-        //return what we stored as time
-        //this value is either -1 for no value found or the time realted to the other domain the user clicked
-        return time;
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

@@ -9,6 +9,6 @@ package dataanalyzer;
  *
  * @author aribdhuka
  */
-public interface HashMapTagSizeListener {
+public interface SizeListener {
     void sizeUpdate();
 }

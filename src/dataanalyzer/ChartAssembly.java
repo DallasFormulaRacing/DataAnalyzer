@@ -69,6 +69,9 @@ public class ChartAssembly implements ChartMouseListener {
     //parent class to access, lapbreaker, staticmarkers, things that belong to all charts
     private ChartManager manager;
     
+    //Selection for this assembly
+    Selection selection;
+    
     //physical componenets
     ChartPanel chartPanel;
     JInternalFrame chartFrame;
@@ -79,9 +82,8 @@ public class ChartAssembly implements ChartMouseListener {
     Crosshair xCrosshair;
     ArrayList<Crosshair> yCrosshairs;
     
-    //current selected tags and laps
-    String[] selectedTags;
-    int[] selectedLaps;
+    //current selected lists and laps
+    LinkedList<LinkedList<LogObject>> selectedLists;
     
     //boolean holding if a histogram is currently being shown
     boolean showingHistogram;
@@ -90,8 +92,7 @@ public class ChartAssembly implements ChartMouseListener {
     
     public ChartAssembly(ChartManager manager) {        
         this.manager = manager;
-        selectedTags = new String[1];
-        selectedLaps = new int[1];
+        selection = new Selection();
         showingHistogram = false;
         chartPanel = null;
         chartFrame = new ChartFrame();
@@ -172,11 +173,7 @@ public class ChartAssembly implements ChartMouseListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //TODO: OPEN DIALOG WITH TAGS, CHOOSE TAGS/LAPS, THEN APPLY.
-                ArrayList<String> tags = new ArrayList<>();
-                ArrayList<Integer> laps = new ArrayList<>();
-                TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(),
-                        manager.getDataMap(), manager.getLapBreaker(), 
-                        manager.getStaticMarkers(), tags, laps);
+                TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(), manager.getDatasets(), selection);
                 tcd.setVisible(true);
                 
                 //wait for the dialog to finish running
@@ -189,22 +186,8 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 
                 //set the chart with new params
-                if(!tags.isEmpty() && tags.get(0) != null && !tags.get(0).equals("EVENTCANCELLED")) {
-                    selectedTags = new String[tags.size()];
-                    for(int i = 0; i < tags.size(); i++) {
-                            selectedTags[i] = tags.get(i);
-                        }
-                    if(!laps.isEmpty()) {
-                        selectedLaps = new int[laps.size()];
-                        for(int i = 0; i < laps.size(); i++) {
-                            selectedLaps[i] = laps.get(i);
-                        }
-                    } else {
-                        selectedLaps = null;
-                    }
-                    System.out.printf("Tags: %s Laps: %s", Arrays.toString(selectedTags), Arrays.toString(selectedLaps));
-                    setChart(selectedTags, selectedLaps);
-                }
+                if(!selection.getUniqueTags().isEmpty())
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
             }
         });
         data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.ALT_MASK));
@@ -217,7 +200,7 @@ public class ChartAssembly implements ChartMouseListener {
                 if(!showingHistogram)
                     showHistogram();
                 else
-                    setChart(selectedTags, selectedLaps);
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
             }
         });
         histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
@@ -240,7 +223,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 //apply filtering
                 if(rc.getCode() != -1) {
-                    setChart(titleToTag(), selectedLaps, rc.getCode());
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]), rc.getCode());
                 }
             }
         });
@@ -252,9 +235,9 @@ public class ChartAssembly implements ChartMouseListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Launch mini window that shows all static markers for this tag
-                StaticMarkersFrame frame = new StaticMarkersFrame(manager.getDataMap(), selectedTags, manager.getStaticMarkers(), manager.getParentFrame(), true);
+                StaticMarkersFrame frame = new StaticMarkersFrame(selection.getAllSelectedDatasets(), selection, manager.getParentFrame(), true);
                 frame.setVisible(true);
-                drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
+                drawMarkers(chartPanel.getChart().getXYPlot());
             }
         });
         markers.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.ALT_MASK));
@@ -264,7 +247,7 @@ public class ChartAssembly implements ChartMouseListener {
         statistics.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
+                new StatisticsFrame(selection.getSelectedLists()).setVisible(true);
             }
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
@@ -292,11 +275,7 @@ public class ChartAssembly implements ChartMouseListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //TODO: OPEN DIALOG WITH TAGS, CHOOSE TAGS/LAPS, THEN APPLY.
-                ArrayList<String> tags = new ArrayList<>();
-                ArrayList<Integer> laps = new ArrayList<>();
-                TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(),
-                        manager.getDataMap(), manager.getLapBreaker(), 
-                        manager.getStaticMarkers(), tags, laps);
+                TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(), manager.getDatasets(), selection);
                 tcd.setVisible(true);
                 
                 //wait for the dialog to finish running
@@ -309,22 +288,9 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 
                 //set the chart with new params
-                if(!tags.isEmpty() && tags.get(0) != null && !tags.get(0).equals("EVENTCANCELLED")) {
-                    selectedTags = new String[tags.size()];
-                    for(int i = 0; i < tags.size(); i++) {
-                            selectedTags[i] = tags.get(i);
-                        }
-                    if(!laps.isEmpty()) {
-                        selectedLaps = new int[laps.size()];
-                        for(int i = 0; i < laps.size(); i++) {
-                            selectedLaps[i] = laps.get(i);
-                        }
-                    } else {
-                        selectedLaps = null;
-                    }
-                    System.out.printf("Tags: %s Laps: %s", Arrays.toString(selectedTags), Arrays.toString(selectedLaps));
-                    setChart(selectedTags, selectedLaps);
-                }
+                if(!selection.getUniqueTags().isEmpty())
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+                
             }
         });
         data.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, java.awt.event.InputEvent.ALT_MASK));
@@ -337,7 +303,7 @@ public class ChartAssembly implements ChartMouseListener {
                 if(!showingHistogram)
                     showHistogram();
                 else
-                    setChart(selectedTags, selectedLaps);
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
             }
         });
         histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
@@ -360,7 +326,7 @@ public class ChartAssembly implements ChartMouseListener {
                 }
                 //apply filtering
                 if(rc.getCode() != -1) {
-                    setChart(titleToTag(), selectedLaps, rc.getCode());
+                    setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]), rc.getCode());
                 }
             }
         });
@@ -372,9 +338,9 @@ public class ChartAssembly implements ChartMouseListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Launch mini window that shows all static markers for this tag
-                StaticMarkersFrame frame = new StaticMarkersFrame(manager.getDataMap(), selectedTags, manager.getStaticMarkers(), manager.getParentFrame(), true);
+                StaticMarkersFrame frame = new StaticMarkersFrame(selection.getAllSelectedDatasets(), selection, manager.getParentFrame(), true);
                 frame.setVisible(true);
-                drawMarkers(selectedTags, chartPanel.getChart().getXYPlot());
+                drawMarkers(chartPanel.getChart().getXYPlot());
             }
         });
         markers.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.ALT_MASK));
@@ -384,7 +350,7 @@ public class ChartAssembly implements ChartMouseListener {
         statistics.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new StatisticsFrame(manager.getDataMap(), selectedTags, selectedLaps).setVisible(true);
+                new StatisticsFrame(selection.getSelectedLists()).setVisible(true);
             }
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
@@ -415,24 +381,20 @@ public class ChartAssembly implements ChartMouseListener {
     }
     
     // Displays the data for all selected data types
-    protected void setChart(String[] tags, int[] laps) {
+    protected void setChart(String[] tags) {
 
         // Gets the specific data based on what kind of data we want to show for which 
         XYSeriesCollection[] seriesCollection;
-        if(laps == null || laps.length == 0) {
-            seriesCollection = new XYSeriesCollection[tags.length];
-        } else {
-            seriesCollection = new XYSeriesCollection[tags.length * laps.length];
-        }
         
         String title = "";
         
         // Store data for each data type in different XYSeriesCollection
         // New title for all the Y-Axis labels added together
         for(int i = 0; i < tags.length; i++){
-            seriesCollection[i] = getDataCollection(tags[i], laps);
             title += tags[i].split(",")[1] + " vs ";
         }
+        
+        seriesCollection = selection.getDataCollection();
         
         //add domain
         title += tags[0].split(",")[0];
@@ -456,11 +418,14 @@ public class ChartAssembly implements ChartMouseListener {
             plot.setRenderer(i, getNewRenderer(i));
             // Makes sure that the Y-values for each dataset are proportional to the data inside it
             plot.mapDatasetToRangeAxis(i, i);
-            //add a crosshair for this tag
-            Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            yCrosshair.setLabelVisible(true);
-            overlay.addRangeCrosshair(yCrosshair);
-            yCrosshairs.add(yCrosshair);
+            for(int s = 0; s < seriesCollection[i].getSeriesCount(); s++) {
+                //add a crosshair for this tag
+                Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+                yCrosshair.setValue(1000*s);
+                yCrosshair.setLabelVisible(true);
+                overlay.addRangeCrosshair(yCrosshair);
+                yCrosshairs.add(yCrosshair);
+            }
         }
         
         // Just show the X-Axis data type (Time, Distance, etc)
@@ -487,7 +452,7 @@ public class ChartAssembly implements ChartMouseListener {
         chartFrame.setContentPane(chartPanel);
         
         //draw markers
-        drawMarkers(tags, chart.getXYPlot());
+        drawMarkers(chart.getXYPlot());
         
         //declare that we are not showing a histogram
         showingHistogram = false;
@@ -497,24 +462,19 @@ public class ChartAssembly implements ChartMouseListener {
     }
 
     // Displays the data for all selected data types
-    protected void setChart(String[] tags, int[] laps, int bucketSize) {
+    protected void setChart(String[] tags, int bucketSize) {
 
         // Gets the specific data based on what kind of data we want to show for which 
         XYSeriesCollection[] seriesCollection;
-        if(laps == null || laps.length == 0) {
-            seriesCollection = new XYSeriesCollection[tags.length];
-        } else {
-            seriesCollection = new XYSeriesCollection[tags.length * laps.length];
-        }
         
         String title = "";
         
         // Store data for each data type in different XYSeriesCollection
         // New title for all the Y-Axis labels added together
         for(int i = 0; i < tags.length; i++){
-            seriesCollection[i] = getDataCollection(tags[i], laps, bucketSize);
             title += tags[i].split(",")[1] + " vs ";
         }
+        seriesCollection = selection.getDataCollection(bucketSize);
         
         //add domain
         title += tags[0].split(",")[0];
@@ -538,10 +498,13 @@ public class ChartAssembly implements ChartMouseListener {
             // Makes sure that the Y-values for each dataset are proportional to the data inside it
             plot.mapDatasetToRangeAxis(i, i);
             //add a crosshair for this tag
-            Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            yCrosshair.setLabelVisible(true);
-            overlay.addRangeCrosshair(yCrosshair);
-            yCrosshairs.add(yCrosshair);
+            for(int s = 0; s < seriesCollection[i].getSeriesCount(); s++) {
+                Crosshair yCrosshair = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+                yCrosshair.setValue(1000*s);
+                yCrosshair.setLabelVisible(true);
+                overlay.addRangeCrosshair(yCrosshair);
+                yCrosshairs.add(yCrosshair);
+            }
         }
         
         // Just show the X-Axis data type (Time, Distance, etc)
@@ -569,7 +532,7 @@ public class ChartAssembly implements ChartMouseListener {
         chartFrame.setContentPane(chartPanel);
         
         //draw markers
-        drawMarkers(tags, chart.getXYPlot());
+        drawMarkers(chart.getXYPlot());
         
         //declare that we are not showing a histogram
         showingHistogram = false;
@@ -622,23 +585,21 @@ public class ChartAssembly implements ChartMouseListener {
     
     private void showHistogram() {
         Dimension currSize = chartPanel.getSize();
-        String title = chartPanel.getChart().getTitle().getText();
-        String[] titleSplit = title.split(" vs ");
-        String[] tags = new String[titleSplit.length - 1];
-        for (int i = 0; i < titleSplit.length - 1; i++) {
-            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
-        }
+        String[] tags = selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]);
+
+        if(tags == null || tags[0] == null)
+            return;
         //update laps
-        SimpleHistogramDataset data = getHistogramDataCollection(tags, selectedLaps);
+        SimpleHistogramDataset data = selection.getHistogramDataCollection();
         
         // Gets the independent variable from the title of the data
-        String yAxis = "Milliseconds";
+        String yAxis = tags[0].split(",")[0];
         // Gets the dependent variable from the title of the data
-        String xAxis = title.split(" vs ")[0];  //split title by vs, we get ["RPM", "Time"] or something like that
+        String xAxis = tags[0].split(",")[1];  //split title by vs, we get ["RPM", "Time"] or something like that
         
         //creates a custom histogram
-        JFreeChart chart = createMyHistogram(title, xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
-        
+        JFreeChart chart = createMyHistogram(chartPanel.getChart().getTitle().getText(), xAxis, yAxis, data, PlotOrientation.VERTICAL, true, true, false);
+
         //apply current theme
         currentTheme.apply(chart);
 
@@ -662,26 +623,24 @@ public class ChartAssembly implements ChartMouseListener {
     }
     
     //draw the static markers on the screen
-    private void drawMarkers(String[] tags, XYPlot plot) {
+    private void drawMarkers(XYPlot plot) {
         plot.clearDomainMarkers();
         //which dataset we are on
         int count = 0;
-        for(String tag : tags) {
-            //get the linked list from tag
-            LinkedList<CategorizedValueMarker> markers = manager.getStaticMarkers().getList(tag);
-            //if the linked list is not null
-            if(markers != null) {
+        //get the linked list from tag
+        LinkedList<LinkedList<CategorizedValueMarker>> markerList = selection.getAllMarkers();
+        //if the linked list is not null
+        if(markerList != null && !markerList.isEmpty()) {
+            for(LinkedList<CategorizedValueMarker> markers : markerList) {
                 //draw every domain marker saved for this chart and add it to an array
                 for(CategorizedValueMarker v : markers) {
                     v.getMarker().setPaint(getColorFromIndex(count));
                     plot.addDomainMarker(v.getMarker());
                 }
-
+                //declare we are moving on to the next tag
+                count++;
             }
-            //move to next dataset
-            count++;
-        }      
-        
+        }
     }
      
     // Creates a new render for a new series or data type. Gives a new color
@@ -709,528 +668,78 @@ public class ChartAssembly implements ChartMouseListener {
         }        
         return sx;
     }
-    
-    /**
-     * Generates a XYSeriesCollection based on a list retrieved from a tag
-     * @param tag the tag of the dataset, used to get the data from the CategoricalHashMap
-     * @param laps the laps the user wants to see
-     * @return 
-     */
-    private XYSeriesCollection getDataCollection(String tag, int[] laps) {
 
-        // XY Series Collection allows there to be multiple data lines on the graph
-        XYSeriesCollection graphData = new XYSeriesCollection();
-
-        //if laps were not provided show whole dataset
-        if(laps == null || laps.length == 0) {
-            // Get the list of data elements based on the tag
-            LinkedList<LogObject> data = manager.getDataMap().getList(tag);
-
-            // Declare the series to add the data elements to
-            final XYSeries series = new XYSeries(tag.split(",")[1]);
-
-            //if tag contains time then its not a function of another dataset
-            if(tag.contains("Time,")) {
-                // We could make a XYSeries Array if we wanted to show different lap data
-                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-                // Iterate through each data element in the received dataMap LinkedList
-                for (LogObject d : data) {
-                    //Get the x and y values by seprating them by the comma
-                    String[] values = d.toString().split(",");
-                    //Add the x and y value to the series
-                    series.add(Long.parseLong(values[0]), Double.parseDouble(values[1]));
-                }
-            } else {
-                // We could make a XYSeries Array if we wanted to show different lap data
-                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-                // Iterate through each data element in the received dataMap LinkedList
-                for (LogObject d : data) {
-                    //Get the x and y values by seprating them by the comma
-                    String[] values = d.toString().split(",");
-                    //Add the x and y value to the series
-                    series.add(Double.parseDouble(values[0]), Double.parseDouble(values[1]));
-                }
-            }
-            //add series to collection
-            graphData.addSeries(series);
-        } else { //if lap data was provided
-            //for each lap
-            for(int i = 0; i < laps.length; i++) {
-                Lap currLap = new Lap(0, 0);
-                for(Lap lap : manager.getLapBreaker()) {
-                    if(lap.lapNumber == laps[i]) {
-                        currLap = lap;
-                    }
-                }
-                //create a series with the tag and lap #
-                XYSeries series = new XYSeries(tag.split(",")[1] + "Lap " + laps[i]);
-                //if its a base dataset
-                if(tag.contains("Time,")) {
-                    //for each log object if the log object belongs in this lap add it to the series
-                    for(LogObject lo : manager.getDataMap().getList(tag)) {
-                        if(lo.getLaps().contains(laps[i])) {
-                            //Get the x and y values by seprating them by the comma
-                            String[] values = lo.toString().split(",");
-                            //Add the x and y value to the series
-                            series.add(Long.parseLong(values[0]) - currLap.start, Double.parseDouble(values[1]));
-                        }
-                    }
-                //else its function of another dataset
-                } else {
-                    //for each log object if the log object belongs in this lap, add it to the series
-                    for(LogObject lo : manager.getDataMap().getList(tag)) {
-                        if(lo.getLaps().contains(laps[i])) {
-                            //Get the x and y values by seprating them by the comma
-                            String[] values = lo.toString().split(",");
-                            //Add the x and y value to the series
-                            series.add(Double.parseDouble(values[0]) - currLap.start, Double.parseDouble(values[1]));
-                        }
-                    }
-                }
-                
-                //add to collection
-                graphData.addSeries(series);
-            }
-        }
-
-
-        // Return the XYCollection
-        return graphData;
-    }
-    
-    private XYSeriesCollection getDataCollection(String tag, int[] laps, int bucketSize) {
-
-        // XY Series Collection allows there to be multiple data lines on the graph
-        XYSeriesCollection graphData = new XYSeriesCollection();
-
-        //if laps were not provided show whole dataset
-        if(laps == null || laps.length == 0) {
-            // Get the list of data elements based on the tag
-            LinkedList<LogObject> dataLinked = manager.getDataMap().getList(tag);
-            //copy to a arraylist for a better runtime letter
-            ArrayList<LogObject> data = new ArrayList<>(dataLinked.size());
-            for(LogObject lo : dataLinked) {
-                data.add(lo);
-            }
-
-            // Declare the series to add the data elements to
-            final XYSeries series = new XYSeries(tag.split(",")[1]);
-
-            //if tag contains time then its not a function of another dataset
-            if(tag.contains("Time,")) {
-                // We could make a XYSeries Array if we wanted to show different lap data
-                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-                // Iterate through each data element in the received dataMap LinkedList
-                
-                //for each element
-                for(int i = 0; i < data.size(); i++) {
-                    //modifes the index
-                    int modifier = ((bucketSize - 1) / 2) * -1;
-                    //holds current avg
-                    double avg = 0;
-                    //x to add to series
-                    long x = 0;
-                    //how many indecies we actually used
-                    int usedIndecies = 0;
-                    //while we have not accounted for each item in the bucket
-                    while(modifier <= ((bucketSize - 1) / 2)) {
-                        //make sure the index is correct
-                        if(i + modifier > -1 && i + modifier < data.size()) {
-                            //add this index value's object's value
-                            avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
-                            //increment usedIndevies
-                            usedIndecies++;
-                        }
-                        if(modifier == 0) {
-                            x = Long.parseLong(data.get(i + modifier).toString().split(",")[0]);
-                        }
-                        modifier++;
-                    }
-                    
-                    if(usedIndecies != 0) {
-                        //calculate average
-                        avg /= usedIndecies;
-                        //add that to series
-                        series.add(x, avg);
-                    }
-                }
-            } else {
-                // We could make a XYSeries Array if we wanted to show different lap data
-                // final XYSeries[] series = new XYSeries[laps.length];  <--- if we wanted to show different laps at the same time
-                // Iterate through each data element in the received dataMap LinkedList
-                
-                //for each element
-                for(int i = 0; i < data.size(); i++) {
-                    //modifes the index
-                    int modifier = ((bucketSize - 1) / 2) * -1;
-                    //holds current avg
-                    double avg = 0;
-                    //x to add to series
-                    double x = 0;
-                    //how many indecies we actually used
-                    int usedIndecies = 0;
-                    //while we have not accounted for each item in the bucket
-                    while(modifier <= ((bucketSize - 1) / 2)) {
-                        //make sure the index is correct
-                        if(i + modifier > -1 && i + modifier < data.size()) {
-                            //add this index value's object's value
-                            avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
-                            //increment usedIndevies
-                            usedIndecies++;
-                        }
-                        if(modifier == 0) {
-                            x = Double.parseDouble(data.get(i + modifier).toString().split(",")[0]);
-                        }
-                        modifier++;
-                    }
-                    
-                    if(usedIndecies != 0) {
-                        //calculate average
-                        avg /= usedIndecies;
-                        //add that to series
-                        series.add(x, avg);
-                    }
-                }
-            }
-            //add series to collection
-            graphData.addSeries(series);
-        } else { //if lap data was provided
-            // Get the list of data elements based on the tag
-            LinkedList<LogObject> rawdata = manager.getDataMap().getList(tag);
-            //for each lap
-            for(int l = 0; l < laps.length; l++) {
-                Lap currLap = new Lap(0, 0);
-                for(Lap lap : manager.getLapBreaker()) {
-                    if(lap.lapNumber == laps[l]) {
-                        currLap = lap;
-                    }
-                }
-                
-                //create a dataset of items only of the current lap.
-                LinkedList<LogObject> data = new LinkedList<>();
-                for(LogObject lo : rawdata) {
-                    if(lo.laps.contains(laps[l]))
-                        data.add(lo);
-                }
-                //create a series with the tag and lap #
-                XYSeries series = new XYSeries(tag.split(",")[1] + "Lap " + laps[l]);
-                //if its a base dataset
-                if(tag.contains("Time,")) {
-                    //for each log object if the log object belongs in this lap add it to the series
-                    for(int i = 0; i < data.size(); i++) {
-                        //modifes the index
-                        int modifier = ((bucketSize - 1) / 2) * -1;
-                        //holds current avg
-                        double avg = 0;
-                        //x to add to series
-                        long x = 0;
-                        //how many indecies we actually used
-                        int usedIndecies = 0;
-                        //while we have not accounted for each item in the bucket
-                        while(modifier <= ((bucketSize - 1) / 2)) {
-                            //make sure the index is correct
-                            if(i + modifier > -1 && i + modifier < data.size()) {
-                                //add this index value's object's value
-                                avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
-                                //increment usedIndevies
-                                usedIndecies++;
-                            }
-                            if(modifier == 0) {
-                                x = Long.parseLong(data.get(i + modifier).toString().split(",")[0]);
-                            }
-                            modifier++;
-                        }
-
-                        if(usedIndecies != 0) {
-                            //calculate average
-                            avg /= usedIndecies;
-                            //add that to series
-                            series.add(x - currLap.start, avg);
-                        }
-                    }
-                //else its function of another dataset
-                } else {
-                    //for each element
-                    for(int i = 0; i < data.size(); i++) {
-                        //modifes the index
-                        int modifier = ((bucketSize - 1) / 2) * -1;
-                        //holds current avg
-                        double avg = 0;
-                        //x to add to series
-                        double x = 0;
-                        //how many indecies we actually used
-                        int usedIndecies = 0;
-                        //while we have not accounted for each item in the bucket
-                        while(modifier <= ((bucketSize - 1) / 2)) {
-                            //make sure the index is correct
-                            if(i + modifier > -1 && i + modifier < data.size()) {
-                                //add this index value's object's value
-                                avg += Double.parseDouble(data.get(i + modifier).toString().split(",")[1]);
-                                //increment usedIndevies
-                                usedIndecies++;
-                            }
-                            if(modifier == 0) {
-                                x = Double.parseDouble(data.get(i + modifier).toString().split(",")[0]);
-                            }
-                            modifier++;
-                        }
-
-                        if(usedIndecies != 0) {
-                            //calculate average
-                            avg /= usedIndecies;
-                            //add that to series
-                            series.add(x - currLap.start, avg);
-                        }
-                    }
-                }
-                
-                //add to collection
-                graphData.addSeries(series);
-            }
-        }
-
-        // Return the XYCollection
-        return graphData;
-    }
-    
-    /**
-     * 
-     * @param tags
-     * @param laps
-     * @return 
-     */
-    private SimpleHistogramDataset getHistogramDataCollection(String[] tags, int[] laps) {
-        //collection to return
-        SimpleHistogramDataset dataset = new SimpleHistogramDataset("time");
-        dataset.setAdjustForBinSize(false);
-
-        
-        for(String tag : tags) {
-        //get data from dataset
-            LinkedList<LogObject> data = manager.getDataMap().getList(tag);
-            
-            //if asked for data with laps, complete for each lap
-            if(laps != null) {
-                for(int l = 0; l < laps.length; l++) {
-                    //calculate min and max value of the data 
-                    double min = Double.MAX_VALUE;
-                    double max = Double.MIN_VALUE;
-                    for(LogObject lo : data) {
-                        if(lo.getLaps().contains(laps[l])) {
-                            if(lo instanceof SimpleLogObject) {
-                                if(((SimpleLogObject) lo).getValue() > max)
-                                    max = ((SimpleLogObject) lo).getValue();
-                                if(((SimpleLogObject) lo).getValue() < min)
-                                    min = ((SimpleLogObject) lo).getValue();
-                            }
-                        }
-                    }
-
-                    //get the intervals to work with
-                    double interval = max - min;
-                    interval /= 50;
-
-
-                    //for each of the 50 intervals
-                    for(int i = 1; i < 51; i++) {
-                        SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
-
-
-                        //for each data element
-                        for(LogObject lo : data) {
-                            if(lo.getLaps().contains(laps[l])) {
-                                //if its a simple log object its value can be obtained
-                                if(lo instanceof SimpleLogObject) {
-                                    //if the value of the current object is between the interval we are searching for
-                                    if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                        //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 50);
-                                    }
-                                } else if(lo instanceof FunctionOfLogObject) {
-                                    if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                        //increment the counter
-                                        bin.setItemCount(bin.getItemCount() + 50);
-                                    }
-                                }
-                            }
-                        }
-                        dataset.addBin(bin);
-                    }
-
-
-
-                }
-            } else {
-                //calculate min and max value of the data 
-                double min = Double.MAX_VALUE;
-                double max = Double.MIN_VALUE;
-                for(LogObject lo : data) {
-                    if(lo instanceof SimpleLogObject) {
-                        if(((SimpleLogObject) lo).getValue() > max)
-                            max = ((SimpleLogObject) lo).getValue();
-                        if(((SimpleLogObject) lo).getValue() < min)
-                            min = ((SimpleLogObject) lo).getValue();
-                    }
-                }
-
-                //get the intervals to work with
-                double interval = max - min;
-                interval /= 50;
-
-                //for each of the 50 intervals
-                for(int i = 1; i < 51; i++) {
-                    //A bin for this section
-                    SimpleHistogramBin bin = new SimpleHistogramBin(interval*(i-1) + min, interval*(i) + min - .000001);
-
-                    //for each data element
-                    for(LogObject lo : data) {
-                        //if its a simple log object its value can be obtained
-                        if(lo instanceof SimpleLogObject) {
-                            //if the value of the current object is between the interval we are searching for
-                            if(((SimpleLogObject) lo).getValue() < ((interval * i) + min) && ((SimpleLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                //increment the counter
-                                    bin.setItemCount(bin.getItemCount() + 50);
-                            }
-                        } else if(lo instanceof FunctionOfLogObject) {
-                            if(((FunctionOfLogObject) lo).getValue() < ((interval * i) + min) && ((FunctionOfLogObject) lo).getValue() > ((interval * (i-1)) + min)) {
-                                //increment the counter
-                                    bin.setItemCount(bin.getItemCount() + 50);
-                            }
-                        }
-                    }
-                    //if the counter is not 0, add the median of the interval we are looking for along with the counter to the series.
-                    dataset.addBin(bin);
-
-                }
-
-
-
-            }
-        }
-        return dataset;
-        
-    }
-    
     // When the chart is clicked
     @Override
     public void chartMouseClicked(ChartMouseEvent cme) {
+        //TODO: check for left click only
         //if the swap tool is active, notify the manager
         if(manager.swapActive != -1) {
             manager.chartClicked(this);
+            return;
         }
-        //else handle normal chart clicking duties
-        else {
-            //if the lap breaker hasn't been activiates
-            if(manager.getLapBreakerActive() < 0 && !SwingUtilities.isRightMouseButton(cme.getTrigger())) {
-                // Create a static cursor that isnt cleared every time
-                ValueMarker marker = new ValueMarker(xCrosshair.getValue());
-                //calculate the tag
-                String title = cme.getChart().getTitle().getText();
-                //create array of tags
-                String[] titleSplit = title.split(" vs ");
-                String[] tags = new String[titleSplit.length - 1];
-                for (int i = 0; i < titleSplit.length - 1; i++) {
-                    tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+        
+        //notes to apply to the static marker
+        String notes = "";
+        //value of the static marker
+        double xVal = xCrosshair.getValue();
+        /**
+         * This is how to do domain regulation
+         * getDomain()
+         * if(domain is not time)
+         * convertXToTime()
+         * 
+         * on every lap when a lap is selected with a domain other than time, convert the time to the domain
+         */
+        
+        //if we are creating a lap
+        if(manager.getLapBreakerActive() >= 0) { 
+            //if we are doing the start
+            if(manager.getLapBreakerActive() == 0) {
+                //round start time
+                manager.getNewLap().start = (long) xVal;
+                //move to next task
+                manager.setLapBreakerActive(manager.getLapBreakerActive() + 1);
+                //notes that this marker will become
+                notes = "Lap Start";
+            }
+            //if we are doing the second
+            else if(manager.getLapBreakerActive() == 1) {
+                //get stop position
+                manager.getNewLap().stop = (long) xVal;
+                
+                //launch Lap confirmation dialog
+                //create and run the dialog
+                LapDataDialog ldd = new LapDataDialog(manager.getParentFrame(), true, manager.getNewLap(), manager.getUsedLapNumbers());
+                ldd.setVisible(true);
+                //while the dialog is running
+                while(ldd.isRunning()) {
+                    try {
+                        Thread.currentThread().wait(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
 
-                for(String tag : tags) {
-                    //add to the list of static markers
-                    if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, marker)) == null)
-                        manager.getStaticMarkers().put(new CategorizedValueMarker(tag, marker));
-                }
-
-                //draw markers
-                drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
-            } else {
-                //if lapbreaker has just started
-                if(manager.getLapBreakerActive() == 0) {
-                    //get clicked position and set it as start
-                    manager.getNewLap().start = getRoundedTime(xCrosshair.getValue());
-                    //move to next task
-                    manager.setLapBreakerActive(manager.getLapBreakerActive()+1);
-
-                    ValueMarker startMarker = new ValueMarker(manager.getNewLap().start);
-                    for(String tag : manager.getDataMap().tags) {
-                        if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + manager.getNewLap().lapNumber)) == null)
-                            manager.getStaticMarkers().put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + manager.getNewLap().lapNumber));
-                    }
-
-                    //draw markers
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
-                //if the start has already been defined
-                } else if(manager.getLapBreakerActive() == 1) {
-                    //define the next click as a stop
-                    manager.getNewLap().stop = getRoundedTime(xCrosshair.getValue());
-
-                    //hold the laps start and stop, so we have the value in case its lost
-                    long oldStartTime = manager.getNewLap().start;
-                    long oldStopTime = manager.getNewLap().stop;
-
-                    ValueMarker stopMarker = new ValueMarker(manager.getNewLap().stop);
-
-                    //apply marker to all datasets.
-                    for(String tag : manager.getDataMap().tags) {
-                        //add to the list of static markers
-                        if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + manager.getNewLap().lapNumber)) == null)
-                            manager.getStaticMarkers().put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + manager.getNewLap().lapNumber));
-                    }
-
-                    //draw markers
-                    drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
-
-                    //get the used lap numbers
-                    ArrayList<Integer> usedLaps = new ArrayList<>();
-                    for(Lap l : manager.getLapBreaker()) {
-                        usedLaps.add(l.lapNumber);
-                    }
-                    //create and run the dialog
-                    LapDataDialog ldd = new LapDataDialog(manager.getParentFrame(), true, manager.getNewLap(), usedLaps);
-                    ldd.setVisible(true);
-                    //while the dialog is running
-                    while(ldd.isRunning()) {
-                        try {
-                            Thread.currentThread().wait(100);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-
-                    if(!manager.getNewLap().lapLabel.equals("!#@$LAPCANCELLED")) {
-                        //remove old start and stop markers and add new ones with values from text box
-                        ValueMarker startMarker = new ValueMarker(manager.getNewLap().start);
-                        stopMarker = new ValueMarker(manager.getNewLap().stop);
-
-                        for(String tag : manager.getDataMap().tags) {
-                            manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStartTime));
-                            manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStopTime));
-                            if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, startMarker, "Start Lap" + manager.getNewLap().lapNumber)) == null)
-                                manager.getStaticMarkers().put(new CategorizedValueMarker(tag, startMarker, "Start Lap" + manager.getNewLap().lapNumber));
-                            if(manager.getStaticMarkers().get(new CategorizedValueMarker(tag, stopMarker, "End Lap" + manager.getNewLap().lapNumber)) == null)
-                                manager.getStaticMarkers().put(new CategorizedValueMarker(tag, stopMarker, "End Lap" + manager.getNewLap().lapNumber));
-                        }
-                        //add that to the list of laps
-                        manager.getLapBreaker().add(manager.getNewLap());
-                        //apply the lap data to the datasets
-                        Lap.applyToDataset(manager.getDataMap(), manager.getLapBreaker());
-                        //reset the lapbreaker
-                        manager.setLapBreakerActive(-1);
-
-                        //reset the new lap
-                        manager.setNewLap(new Lap());
-
-                    } else {
-                        //delete previous markers
-                        for(String tag : manager.getDataMap().tags) {
-                            manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStartTime));
-                            manager.getStaticMarkers().remove(getMarkerFromDomainValue(tag, oldStopTime));
-                        }
-                        drawMarkers(titleToTag(), chartPanel.getChart().getXYPlot());
-                    }
+                //if the lap was cancelled
+                if(manager.getNewLap().lapLabel.equals("!#@$LAPCANCELLED")) {
+                    manager.setLapBreakerActive(-1);
+                    manager.setNewLap(new Lap());
+                } else {
+                    selection.addLap(manager.getNewLap());
+                    manager.setLapBreakerActive(-1);
+                    manager.setNewLap(new Lap());
                 }
             }
         }
+    
+        
+        ValueMarker marker = new ValueMarker(xVal);
+        selection.addMarker(marker, notes);
+        
+        drawMarkers(chartPanel.getChart().getXYPlot());
     }
-
+    
     //when the mouse moves over the chart
     @Override
     public void chartMouseMoved(ChartMouseEvent cme) {
@@ -1255,16 +764,19 @@ public class ChartAssembly implements ChartMouseListener {
         XYPlot plot = (XYPlot) chartPanel.getChart().getPlot();
         // Find the y cordinate from the plots data set given a x cordinate and store to list
         ArrayList<Double> yCors = new ArrayList<>();
-        String[] titles = titleToTag();
         // Repeat the loop for each series in the plot
         for (int i = 0; i < plot.getDatasetCount(); i++) {
             //get current data set
             XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
             for(int j = 0; j < plot.getSeriesCount(); j++) {
                 // Get the y value for the current series.
-                double val = DatasetUtilities.findYValue(col, j, xCor);
-                // Add the value to the list
-                yCors.add(val);
+                try {
+                    double val = DatasetUtilities.findYValue(col, j, xCor);
+                    // Add the value to the list
+                    yCors.add(val);
+                } catch(IllegalArgumentException e) {
+                    
+                }
             }
         }
 
@@ -1278,16 +790,26 @@ public class ChartAssembly implements ChartMouseListener {
     }
     
     /**
-     * 
+     * @deprecated 
      * @param TAG TAG of the dataset
      * @param s String collected from list
      * @return CategorizedValueMarker object that has the same domain marker as the string
      */
     private CategorizedValueMarker getMarkerFromString(String TAG, String s) {
-        for(CategorizedValueMarker marker : manager.getStaticMarkers().getList(TAG)) {
-            if(String.format("%.2f", marker.getMarker().getValue()).equals(s.substring(1, s.indexOf(','))))
-                return marker;
+        //for each list of static markers associated with a tag
+        for(LinkedList<CategorizedValueMarker> tagMarkers : selection.getAllMarkers()) {
+            //if the list is not empty and the tag matches with what we are looking for
+            if(!tagMarkers.isEmpty() && tagMarkers.getFirst().getTAG().equals(TAG)) {
+                //for each marker
+                for(CategorizedValueMarker marker : tagMarkers) {
+                    //if it matches, return
+                    if(String.format("%.2f", marker.getMarker().getValue()).equals(s.substring(1, s.indexOf(','))))
+                        return marker;
+                }
+            }
         }
+        
+        //else return null
         return null;
     }
     
@@ -1307,17 +829,28 @@ public class ChartAssembly implements ChartMouseListener {
      * @param domainValue the domain value where the marker is as a double
      * @return CategorizedValueMarker object that has the same domain marker as the provided value
      */
-    private CategorizedValueMarker getMarkerFromDomainValue(String TAG, double domainValue) {
-        for(CategorizedValueMarker marker : manager.getStaticMarkers().getList(TAG)) {
-            if(marker.getMarker().getValue() == domainValue)
-                return marker;
+    private CategorizedValueMarker getMarkerFromDomainValue(String TAG, double domainValue) {    
+        //for each list of static markers associated with a tag
+        for(LinkedList<CategorizedValueMarker> tagMarkers : selection.getAllMarkers()) {
+            //if the list is not empty and the tag matches with what we are looking for
+            if(!tagMarkers.isEmpty() && tagMarkers.getFirst().getTAG().equals(TAG)) {
+                //for each marker
+                for(CategorizedValueMarker marker : tagMarkers) {
+                    //if it matches, return
+                    if(marker.getMarker().getValue() == domainValue)
+                        return marker;
+                }
+            }
         }
+        
+        //else return null
         return null;
     } 
     
     /**
     * Gets the tag from the active chart and formats it into a String array of TAGs
     * @return String of the TAGs of the active charts
+    * @deprecated Do not use this anymore, it will fail with multiple datasets.
     */
     private String[] titleToTag() {
         return titleToTag("");
@@ -1328,6 +861,7 @@ public class ChartAssembly implements ChartMouseListener {
      * Reformats a title into a String array of TAGs
      * @param title String value of the title of a chart
      * @return String value of the TAGs from the title given
+     * @deprecated Do not use this anymore, it will fail with multiple datasets.
      */
     private String[] titleToTag(String title) {
         //if empty get from chart
@@ -1363,11 +897,18 @@ public class ChartAssembly implements ChartMouseListener {
         }
     }
     
-    private long getRoundedTime(double val) {
+    @Deprecated
+    /**
+     * Used to take some value i.e. 2324.24 and convert it to the nearest value
+     * of the logging rate. This now requires a dataset to choose which logging
+     * rate, however it was only used in instances where a dataset was not known.
+     * Should still work provided a dataset. (Untested)
+     */
+    private long getRoundedTime(Dataset dataset, double val) {
         //time to return if its not already a function of time
         long time = -1;
         //get the tag of the first chart
-        String TAG = titleToTag()[0];
+        String TAG = dataset.getDataMap().getTags().get(0);
         //if its a function of time, find nearest 50ms point
         if(TAG.contains("Time,")) {
             //get mod of value
@@ -1386,7 +927,7 @@ public class ChartAssembly implements ChartMouseListener {
             //holds the closest value, holds value and object
             double closestVal = Double.MAX_VALUE;
             //for each logobject of the current tag
-            for(LogObject lo : manager.getDataMap().getList(finding)) {
+            for(LogObject lo : dataset.getDataMap().getList(finding)) {
                 //if its a functionoflogobject which it should be
                 if(lo instanceof FunctionOfLogObject) {
                     //calculate the difference between this objects domain and the value the user clicked
@@ -1399,11 +940,11 @@ public class ChartAssembly implements ChartMouseListener {
             //find what its domain is
             String goTo = finding.substring(0,finding.indexOf(','));
             //see if there is a Time, with that domain as its range
-            if(manager.getDataMap().tags.contains("Time," + goTo)) {
+            if(dataset.getDataMap().tags.contains("Time," + goTo)) {
                 //get the tag for the function of time
                 String toSearch = "Time," + goTo;
                 //for each logobject of the base function
-                for(LogObject lo : manager.getDataMap().getList(toSearch)) {
+                for(LogObject lo : dataset.getDataMap().getList(toSearch)) {
                     if(lo instanceof SimpleLogObject) {
                         if(((SimpleLogObject) lo).getValue() == closestVal) {
                             return lo.getTime();
@@ -1558,29 +1099,40 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
             if(rangeMarkersActive) {
-                int N = plot.getRangeAxisCount();
-                for( int i = 0; i < N; i++ ) {
+                //holds the current index for the crosshairs
+                int crosshairCount = 0;
+                //for each dataset
+                for(int i = 0; i < plot.getDatasetCount(); i++) {
+                    //get the dataset
+                    XYSeriesCollection col = (XYSeriesCollection) plot.getDataset(i);
+                    //each dataset will have a value axis. get this datasets value axis
                     ValueAxis rAxis = plot.getRangeAxis(i);
+                    //get its axis location (left or right)
                     RectangleEdge rAxisEdge = plot.getRangeAxisEdge(i);
-                    Crosshair c = shadowR.get(i);
-                    if( !c.isVisible() )
-                        continue;
-                    //set the color to white if we transition to dark theme
-                    if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
-                        c.setLabelBackgroundPaint(Color.WHITE);
-                    double y = c.getValue();
-                    double yy = rAxis.valueToJava2D(y, dataArea, rAxisEdge);
-                    if (plot.getOrientation() == PlotOrientation.VERTICAL) {
-                        drawHorizontalCrosshair(g2, dataArea, yy, c );
+                    //for each series in this dataset
+                    for(int j = 0; j < col.getSeriesCount(); j++) {
+                        //get the cross hair at this location
+                        Crosshair c = shadowR.get(crosshairCount);
+                        crosshairCount++;
+                        if( !c.isVisible() )
+                            continue;
+                        //set the color to white if we transition to dark theme
+                        if(((DataAnalyzer)this.parent.manager.getParentFrame()).currTheme == Theme.DARK)
+                            c.setLabelBackgroundPaint(Color.WHITE);
+                        double y = c.getValue();
+                        double yy = rAxis.valueToJava2D(y, dataArea, rAxisEdge);
+                        if (plot.getOrientation() == PlotOrientation.VERTICAL) {
+                            drawHorizontalCrosshair(g2, dataArea, yy, c );
+                        }
+                        else {
+                            drawVerticalCrosshair(g2, dataArea, yy, c );
+                        }
                     }
-                    else {
-                        drawVerticalCrosshair(g2, dataArea, yy, c );
-                    }
+
                 }
             }
             g2.setClip(savedClip);
         }
     }
 
-    
 }

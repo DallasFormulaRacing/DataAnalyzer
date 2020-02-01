@@ -6,11 +6,15 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.CategoricalHashMap;
+import dataanalyzer.Dataset;
 import dataanalyzer.EquationEvaluater;
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.VehicleData;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
@@ -24,49 +28,24 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
    
     int lastIndex;
-    CategoricalHashMap dataMap;
-    VehicleData vehicleData;
+    
+    LinkedList<Dataset> datasets;
     
     /**
      * Creates new form MathChannelDialog
      */
-    public MathChannelDialog() {
+    public MathChannelDialog(LinkedList<Dataset> datasets) {
         initComponents();
         lastIndex = 0;
-        dataMap = null;
-        //listen to when the caret is updated
-        equationField.addCaretListener((CaretEvent e) -> {
-            lastIndex = e.getDot();
-        });
-    }
-    
-    public MathChannelDialog(CategoricalHashMap dataMap) {
-        initComponents();
-        lastIndex = 0;
-        this.dataMap = dataMap;
-        vehicleData = new VehicleData();
-        //add the variables into the list
+        this.datasets = datasets;
         configureVariablesList();
+        configureDatasetsList();
         //listen to when the caret is updated
         equationField.addCaretListener((CaretEvent e) -> {
             lastIndex = e.getDot();
         });
     }
     
-    
-    public MathChannelDialog(CategoricalHashMap dataMap, VehicleData vehicleData) {
-        initComponents();
-        lastIndex = 0;
-        this.dataMap = dataMap;
-        this.vehicleData = vehicleData;
-        //add the variables into the list
-        configureVariablesList();
-        //listen to when the caret is updated
-        equationField.addCaretListener((CaretEvent e) -> {
-            lastIndex = e.getDot();
-        });
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -91,6 +70,9 @@ public class MathChannelDialog extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         maxTextField = new javax.swing.JTextPane();
         maxLabelRange = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        appliedDatasets = new javax.swing.JList<>();
+        jLabel3 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMathChannelMenu = new javax.swing.JMenu();
         editMathChannelMenu = new javax.swing.JMenu();
@@ -138,6 +120,15 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
         maxLabelRange.setText("Max:");
 
+        appliedDatasets.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane6.setViewportView(appliedDatasets);
+
+        jLabel3.setText("Applied Datasets");
+
         fileMathChannelMenu.setText("File");
         jMenuBar1.add(fileMathChannelMenu);
 
@@ -176,14 +167,13 @@ public class MathChannelDialog extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jScrollPane2)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(jScrollPane2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(minRangeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -191,11 +181,19 @@ public class MathChannelDialog extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(maxLabelRange)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(createChannelButton))
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(createChannelButton)
+                        .addGap(24, 24, 24))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,19 +209,25 @@ public class MathChannelDialog extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane3)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane3)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(createChannelButton)
                                     .addComponent(minRangeLabel)
                                     .addComponent(maxLabelRange)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(10, 10, 10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(createChannelButton))))
+                        .addGap(8, 8, 8)))
                 .addContainerGap())
         );
 
@@ -260,10 +264,15 @@ public class MathChannelDialog extends javax.swing.JFrame {
         //remove all spaces from string.
         String eq = equationField.getText();
         //Check the validity of the string
-        if(minTextField.getText().isEmpty() && maxTextField.getText().isEmpty())
-            EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText());
+        if(minTextField.getText().isEmpty() && maxTextField.getText().isEmpty()) {
+            for(Dataset dataset : getSelectedDatasets()) {
+                EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+            }
+        }
         else
-            EquationEvaluater.evaluate(eq, dataMap, vehicleData, channelTitleText.getText(), minBound, maxBound);
+            for(Dataset dataset : getSelectedDatasets()) {
+                EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
+            }
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
@@ -281,9 +290,16 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private void configureVariablesList() {
         //set the variables list to all the tags from the datamap
         ArrayList<String> variablesList = new ArrayList<>();
-        variablesList.addAll(dataMap.getTags());
-        variablesList.addAll(vehicleData.getKeySet());
-        availableVariablesList.setListData(variablesList.toArray(new String[dataMap.getTags().size() + vehicleData.getKeySet().size()]));
+        for(Dataset dataset : datasets) {
+            variablesList.addAll(dataset.getDataMap().getTags());
+            variablesList.addAll(dataset.getVehicleData().getKeySet());
+        }
+        //find uniques in the list
+        List<String> variablesUniqueList = variablesList.stream() 
+                                      .distinct() 
+                                      .collect(Collectors.toList());
+        
+        availableVariablesList.setListData(variablesUniqueList.toArray(new String[variablesUniqueList.size()]));
         
         //on click of an item of the variables list
         availableVariablesList.addListSelectionListener((ListSelectionEvent e) -> {
@@ -305,9 +321,51 @@ public class MathChannelDialog extends javax.swing.JFrame {
             }
         });
     }
+    
+    private void configureDatasetsList() {
+        String[] datasetNames = new String[datasets.size()];
+        
+        //holds index for array
+        int index = 0;
+        //for each dataset
+        for(Dataset dataset : datasets) {
+            datasetNames[index] = dataset.getName();
+            index++;
+        }
+        
+        appliedDatasets.setListData(datasetNames);
+    }
+    
+    private LinkedList<Dataset> getSelectedDatasets() {
+        LinkedList<Dataset> selectedDatasets = new LinkedList<>();
+        int[] selected = appliedDatasets.getSelectedIndices();
+        int index = 0;
+        for(Dataset dataset : datasets) {
+            boolean contains = false;
+            
+            //see if the current index is in selected
+            for(Integer i : selected) {
+                if(i == index) {
+                    contains = true;
+                    break;
+                }
+            }
+            
+            //if it is add it to the selected datasets
+            if(contains)
+                selectedDatasets.add(dataset);
+            
+            //increment index
+            index++;
+        }
+        
+        return selectedDatasets;
+        
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem analogToOilPressure_menuitem;
+    private javax.swing.JList<String> appliedDatasets;
     private javax.swing.JList<String> availableVariablesList;
     private javax.swing.JMenuItem cToFMathChannelMenuItem;
     private javax.swing.JTextPane channelTitleText;
@@ -319,12 +377,14 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private javax.swing.JMenu insertMathChannelMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JLabel maxLabelRange;
     private javax.swing.JTextPane maxTextField;
     private javax.swing.JLabel minRangeLabel;

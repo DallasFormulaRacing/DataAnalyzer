@@ -13,7 +13,7 @@ import java.util.Stack;
  */
 //TODO: Need to display errors, need a parent obj
 public class EquationEvaluater {
-
+    
     //if vehicleData is not provided, provide an empty copy
     public static void evaluate(String eq, CategoricalHashMap dataMap, String channelTag) {
         evaluate(eq, dataMap, new VehicleData(), channelTag);

@@ -14,7 +14,7 @@ import org.jfree.chart.plot.ValueMarker;
  * Essentially just ValueMarkers and a String that defines which category they belong to
  * Also holds notes for the marker
  */
-public class CategorizedValueMarker implements CategoricalHashTableInterface {
+public class CategorizedValueMarker implements CategoricalHashTableInterface, Comparable {
     private String TAG;
     private ValueMarker marker;
     private String notes;
@@ -73,5 +73,16 @@ public class CategorizedValueMarker implements CategoricalHashTableInterface {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        //compare tags
+        int tagcomp = this.TAG.compareTo(((CategorizedValueMarker) o).getTAG());
+        if(tagcomp == 0) {
+            return ((int) this.marker.getValue()) - ((int) ((CategorizedValueMarker) o).getMarker().getValue());
+        } else
+            return tagcomp;
+        
     }
 }
