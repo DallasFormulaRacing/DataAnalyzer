@@ -1526,16 +1526,28 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         if(chartManager.getDataMap().tags.contains("Time,WSFL")) {
-            EquationEvaluater.evaluate("($(Time,WSFL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedFL");
+            EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedFL");
         }
         //delete frequency signal
         chartManager.getDataMap().remove("Time,WSFL");
         
         if(chartManager.getDataMap().tags.contains("Time,WSRL")) {
-            EquationEvaluater.evaluate("($(Time,WSRL) / 5.602 / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedRL");
+            EquationEvaluater.evaluate("($(Time,WSRL) / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedRL");
         }
         //delete frequency signal
         chartManager.getDataMap().remove("Time,WSRL");
+        
+        if(chartManager.getDataMap().tags.contains("Time,WSFR")) {
+            EquationEvaluater.evaluate("($(Time,WSFR) / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedFR");
+        }
+        //delete frequency signal
+        chartManager.getDataMap().remove("Time,WSFR");
+        
+        if(chartManager.getDataMap().tags.contains("Time,WSRR")) {
+            EquationEvaluater.evaluate("($(Time,WSRR) / 20) * 3.14159 * 20.2 / 63360 * 3600", chartManager.getDataMap(), "Time,WheelspeedRR");
+        }
+        //delete frequency signal
+        chartManager.getDataMap().remove("Time,WSRR");
         
         //now we have unoriented xyz 
         LinkedList<LogObject> rotXAccel = new LinkedList<>();
@@ -1657,14 +1669,24 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //calculate front wheel speed averages
         if(chartManager.getDataMap().tags.contains("Time,WheelspeedFR") && chartManager.getDataMap().tags.contains("Time,WheelspeedFL"))
             EquationEvaluater.evaluate("($(Time,WheelspeedFR)) + ($(Time,WheelspeedFL)) / 2", chartManager.getDataMap(), "Time,WheelspeedFront");
+        else if(chartManager.getDataMap().tags.contains("Time,WheelspeedFR") && !chartManager.getDataMap().tags.contains("Time,WheelspeedFL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFR))", chartManager.getDataMap(), "Time,WheelspeedFront");
+        else if(!chartManager.getDataMap().tags.contains("Time,WheelspeedFR") && chartManager.getDataMap().tags.contains("Time,WheelspeedFL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedFL))", chartManager.getDataMap(), "Time,WheelspeedFront");
         
         //calculate rear wheel speed averages
         if(chartManager.getDataMap().tags.contains("Time,WheelspeedRR") && chartManager.getDataMap().tags.contains("Time,WheelspeedRL"))
             EquationEvaluater.evaluate("($(Time,WheelspeedRR)) + ($(Time,WheelspeedRL)) / 2", chartManager.getDataMap(), "Time,WheelspeedRear");
+        else if(chartManager.getDataMap().tags.contains("Time,WheelspeedRR") && !chartManager.getDataMap().tags.contains("Time,WheelspeedRL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRR))", chartManager.getDataMap(), "Time,WheelspeedRear");
+        else if(!chartManager.getDataMap().tags.contains("Time,WheelspeedRR") && chartManager.getDataMap().tags.contains("Time,WheelspeedRL"))
+            EquationEvaluater.evaluate("($(Time,WheelspeedRL))", chartManager.getDataMap(), "Time,WheelspeedRear");
         
-        //calculate full average
-        if(chartManager.getDataMap().tags.contains("Time,WheelspeedRear") && chartManager.getDataMap().tags.contains("Time,WheelspeedFront"))
+        //calculate full average and tire slip
+        if(chartManager.getDataMap().tags.contains("Time,WheelspeedRear") && chartManager.getDataMap().tags.contains("Time,WheelspeedFront")) {
             EquationEvaluater.evaluate("($(Time,WheelspeedRear)) + ($(Time,WheelspeedFront)) / 2", chartManager.getDataMap(), "Time,WheelspeedAvg");
+            EquationEvaluater.evaluate("100 * (($(Time,WheelspeedRear) / $(Time,WheelspeedFront)) - 1)", chartManager.getDataMap(), "Time,WheelspeedAvg");
+        }
         
         //Create time vs distance
         if(chartManager.getDataMap().tags.contains("Time,WheelspeedFront"))
@@ -1675,6 +1697,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", chartManager.getDataMap(), "Time,SuckySucky");
         }
         
+        //calculate brake pressures
         if(chartManager.getDataMap().tags.contains("Time,Analog1")) {
             EquationEvaluater.evaluate("($(Time,Analog1)-.5)*1250", chartManager.getDataMap(), "Time,BrakePressureFront");
         }
@@ -1687,14 +1710,20 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("(($(Time,Analog3) + ($(Time,Analog4)))/2)", chartManager.getDataMap(), "Time,Lamda5VAveraged");
         }
         
+        //calculate transmission rpm
         if(chartManager.getDataMap().tags.contains("Time,TransmissionTeeth")) {
             EquationEvaluater.evaluate("($(Time,TransmissionTeeth)/23)*(23/27)*60", chartManager.getDataMap(), "Time,TransRPM");
         }
         
+        //calculate gear ratio
         if(chartManager.getDataMap().tags.contains("Time,TransRPM") && chartManager.getDataMap().tags.contains("Time,RPM")) {
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", chartManager.getDataMap(), "Time,GearRatio", 0, 10);
         }
-        
+        if(chartManager.getDataMap().tags.contains("Time,WheelspeedRear") && chartManager.getDataMap().tags.contains("Time,RPM")) {
+//            EquationEvaluater.evaluate("(0.377 * (0.51308 * $(Time,RPM)) / ($(Time,WheelspeedRear) / 2.237)) / 1.822 / (11 / 45)", chartManager.getDataMap(), "Time,GearRatioFromRear", 0, 10);
+        }
+       
+        //calculate oilpressure
         if(chartManager.getDataMap().tags.contains("Time,Analog5")) {
             EquationEvaluater.evaluate("100 * ($(Time,Analog5) - .5) / (4.5 - .5)", chartManager.getDataMap(), "Time,OilPressure");
         }
