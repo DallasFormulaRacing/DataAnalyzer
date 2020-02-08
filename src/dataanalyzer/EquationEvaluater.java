@@ -183,10 +183,16 @@ public class EquationEvaluater {
             else {
                 lastVal = currValue;
             }
-            if(channelTag.contains("Time,"))
-                dataList.add(new SimpleLogObject(channelTag, currValue, time));
-            else
-                dataList.add(new SimpleLogObject("Time," + channelTag, currValue, time));
+            if(channelTag.contains("Time,")) {
+                SimpleLogObject slo = new SimpleLogObject(channelTag, values.pop(), time);
+                slo.setCreationMethod(eq+"%"+upBound+"%"+lowBound);
+                dataList.add(slo);
+            }
+            else {
+                SimpleLogObject slo = new SimpleLogObject("Time," + channelTag, values.pop(), time);
+                slo.setCreationMethod(eq+"%"+upBound+"%"+lowBound);
+                dataList.add(slo);
+            }
         }
         if(!dataList.isEmpty())
             dataMap.put(dataList);
@@ -274,8 +280,11 @@ public class EquationEvaluater {
                 }
             }
             
-            if(functionOfValue != -1)
-                dataList.add(new FunctionOfLogObject(functionOfTag.substring(functionOfTag.indexOf(",") + 1, functionOfTag.length()) + "," + channelTag, values.pop(), functionOfValue));
+            if(functionOfValue != -1) {
+                FunctionOfLogObject folo = new FunctionOfLogObject(functionOfTag.substring(functionOfTag.indexOf(",") + 1, functionOfTag.length()) + "," + channelTag, values.pop(), functionOfValue);
+                folo.setCreationMethod(eq);
+                dataList.add(folo);
+            }
         }
         dataMap.put(dataList);
     }
