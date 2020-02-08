@@ -18,8 +18,9 @@ public class LoadingDialog extends javax.swing.JFrame {
     /**
      * Creates new form LoadingDialog
      */
-    public LoadingDialog() {
+    public LoadingDialog(String title) {
         initComponents();
+        this.setTitle(title);
         this.setSize(200, 225);
         this.setBackground(Color.BLACK);
         prog = new InfiniteProgressPanel();
