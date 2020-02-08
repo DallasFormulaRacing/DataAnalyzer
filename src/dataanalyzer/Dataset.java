@@ -103,6 +103,29 @@ public class Dataset {
     }
     
     /**
+     * Gets the logging or polling rate of this sensor.
+     * May return funky values for FunctionOfLogObjects
+     * @param tag polling rate of this tag
+     * @return long representing time between two values, -1 if fail
+     */
+    public long getPollRate(String tag) {
+        //get list of objects in this tag
+        LinkedList<LogObject> lo = dataMap.getList(tag);
+        //make sure somethings here
+        if(lo == null || lo.isEmpty())
+            return -1;
+        //ensure first and second items exist then retrieve them;
+        if(lo.get(0) != null && lo.get(1) != null) {
+            long first = lo.getFirst().getTime();
+            long second = lo.get(1).getTime();
+            return second - first;
+        }
+        
+        //if we couldnt retrieve the first and second item, return fail
+        return -1;
+    }
+    
+    /**
      * Cuts the data to the specified length
      * @param start start of the data to cut to 
      * @param end end of the data to cut to
@@ -147,6 +170,16 @@ public class Dataset {
                 for(LogObject log : dataMap.getList(tag)) {
                     log.setTime(log.getTime() - startTime);
                 }
+                
+                //specialty case for time, distance. This just starts the distance at 0 again when the data is cropped.
+                if(tag.equals("Time,Distance")) {
+                    double startVal = ((SimpleLogObject) dataMap.getList(tag).getFirst()).getValue();
+                    for(LogObject log : dataMap.getList(tag)) {
+                        if(log instanceof SimpleLogObject) {
+                            ((SimpleLogObject) log).setValue(((SimpleLogObject) log).getValue() - startVal);
+                        }
+                    }
+                }
             }
             else {
                 //get the first object from this tag, and retrieve its creation method
@@ -168,14 +201,25 @@ public class Dataset {
             //get the tag or name of this channel
             String tag = tags.get(i);
             //split it on the % symbols. if there are more than 1, than there are bounds to adheret o
-            if(creationMethod.split("%").length > 1) {
-                //split up to get [tag,uperbound,lowerbound]
-                String[] creationMethodSplit = creationMethod.split("%");
-                //apply to equation evaluter
-                EquationEvaluater.evaluate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+            if(creationMethod.split("%").length > 2) {
+                if(creationMethod.endsWith("SUMM!")) {
+                    //split up to get [tag,uperbound,lowerbound]
+                    String[] creationMethodSplit = creationMethod.split("%");
+                    //apply to equation evaluter
+                    EquationEvaluater.summate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+                } else {
+                    //split up to get [tag,uperbound,lowerbound]
+                    String[] creationMethodSplit = creationMethod.split("%");
+                    //apply to equation evaluter
+                    EquationEvaluater.evaluate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+                }
             } else {
-                //apply to equation evaluater
-                EquationEvaluater.evaluate(creationMethod, dataMap, tag);
+                //if the creation method ends with this tag then we are to use the summation tool
+                if(creationMethod.endsWith("SUMM!"))
+                    EquationEvaluater.summate(creationMethod.split("%")[0], dataMap, tag);
+                else
+                    //apply to equation evaluater
+                    EquationEvaluater.evaluate(creationMethod, dataMap, tag);
             }
             
         }

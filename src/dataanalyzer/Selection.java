@@ -93,9 +93,11 @@ public class Selection {
                         //copy to a arraylist for a better runtime letter
                         ArrayList<LogObject> data = new ArrayList<>(ds.dataset.getDataMap().getList(uniqueTag).size());
                         for(LogObject lo : dataLinked) {
-                            if(lo.getLaps().contains(lap))
+                            if(lo.getLaps().contains(lap)) {
                                 data.add(lo);
+                            }
                         }
+                        double startDomain = 0;
                         //for each item left in the data
                         for(int i = 0; i < data.size(); i++) {
                             //modifes the index
@@ -124,8 +126,19 @@ public class Selection {
                             if(usedIndecies != 0) {
                                 //calculate average
                                 avg /= usedIndecies;
-                                //add that to series
-                                series.add(x - l.getStart(), avg);
+                                if(uniqueTag.contains("Time,"))
+                                    //add that to series
+                                    series.add(x - l.getStart(), avg);
+                                else if(uniqueTag.contains("Distance,")) {
+                                    if(series.isEmpty()) {
+                                        LogObject lo = data.get(0);
+                                        if(lo instanceof FunctionOfLogObject)
+                                            startDomain = ((FunctionOfLogObject) lo).getX();
+                                    }
+                                    series.add(x - startDomain, avg);
+                                }
+                                else
+                                    series.add(x, avg);
                             }
                         }
                         //add created series to current tag collection
@@ -324,10 +337,15 @@ public class Selection {
     public void addLap(Lap l) {
         //for each dataset selection
         for(DatasetSelection ds : datasetSelections) {
+            if(ds.selectedTags.isEmpty())
+                continue;
+            Lap myLap = l.clone();
+            myLap.start = roundToNearestLogObject(myLap.start, ds.dataset.getDataMap().getList(ds.selectedTags.get(0)));
+            myLap.stop = roundToNearestLogObject(myLap.stop, ds.dataset.getDataMap().getList(ds.selectedTags.get(0)));
             //check that the lap is within the limits.
-            if(l.start < ds.dataset.getDataTimeLength() && l.stop < ds.dataset.getDataTimeLength()) {
+            if(myLap.start < ds.dataset.getDataTimeLength() && myLap.stop < ds.dataset.getDataTimeLength()) {
                 //add the created lap
-                ds.dataset.getLapBreaker().add(l);
+                ds.dataset.getLapBreaker().add(myLap);
                 //apply the lap to the dataset
                 Lap.applyToDataset(ds.dataset.getDataMap(), ds.dataset.getLapBreaker());
             }
@@ -373,12 +391,38 @@ public class Selection {
      * @param end end of data to cut to
      */
     public void cutData(long start, long end) {
+        boolean reApplyPostProcessing = false;
+        //check for non Time, to have creation method.
+        for(DatasetSelection ds : datasetSelections) {
+            for(String tag : ds.dataset.getDataMap().getTags()) {
+                if(!tag.startsWith("Time,")) {
+                    if(ds.dataset.getDataMap().getList(tag).getFirst().getCreationMethod().isEmpty() || ds.dataset.getDataMap().getList(tag).getFirst().getCreationMethod().equals("Measured")) {
+                        //warn user if they want to continue. Warn user of data loss
+                        boolean shouldContinue = DataAnalyzer.createConfirmDialog("Loss of data possible! Continue?", "Continuing with cropping the data could cause loss of data. Yell at Arib to fix this. He doesn't want to though.");
+                        if(!shouldContinue) {
+                            reApplyPostProcessing = DataAnalyzer.createConfirmDialog("Apply Post Processing", "Some data can be restored through reapplying the original post processing. Press Yes to continue with this. Press No to Cancel.");
+                            if(!reApplyPostProcessing)
+                                return;
+                            else
+                                break;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         //for each dataset that is in this selection
         for(DatasetSelection ds : datasetSelections) {
             //if this dataset has something showing up currently on the screen and its not on a lap
             //TODO: implement lap math to cut to a lap
             if(!ds.selectedTags.isEmpty() && ds.selectedLaps.isEmpty()) {
                 ds.dataset.cutData(start, end);
+                if(reApplyPostProcessing) {
+                    DataAnalyzer.applyPE3PostProcessing(ds.dataset);
+                    DataAnalyzer.applyPostProcessing(ds.dataset);
+                }
+                
             }
             
         }
@@ -421,5 +465,20 @@ public class Selection {
         
         //return the generated map
         return toReturn;
+    }
+    
+    private long roundToNearestLogObject(long val, LinkedList<LogObject> los) {
+        long valueToReturn = 0;
+        long diff = Long.MAX_VALUE;
+        for(LogObject lo : los) {
+            if(Math.abs(lo.getTime() - val) < diff) {
+                diff = Math.abs(lo.getTime() - val);
+                valueToReturn = lo.getTime();
+            }
+            else
+                break;
+        }
+        
+        return valueToReturn;
     }
 }
