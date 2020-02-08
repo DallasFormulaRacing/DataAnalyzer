@@ -368,6 +368,23 @@ public class Selection {
     }
     
     /**
+     * Cuts the data to the two lengths specified
+     * @param start start of data to cut to
+     * @param end end of data to cut to
+     */
+    public void cutData(long start, long end) {
+        //for each dataset that is in this selection
+        for(DatasetSelection ds : datasetSelections) {
+            //if this dataset has something showing up currently on the screen and its not on a lap
+            //TODO: implement lap math to cut to a lap
+            if(!ds.selectedTags.isEmpty() && ds.selectedLaps.isEmpty()) {
+                ds.dataset.cutData(start, end);
+            }
+            
+        }
+    }
+    
+    /**
      * Gets the list of objects for the selected tags for each respective dataset
      * @return list of lists of selected tags keyed by name
      */

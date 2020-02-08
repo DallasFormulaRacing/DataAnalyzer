@@ -7,6 +7,7 @@ package dataanalyzer;
 
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * The Dataset class is a list of dataMaps. This will provide functionality to
@@ -99,6 +100,85 @@ public class Dataset {
      */
     public long getDataTimeLength() {
         return dataMap.getList("Time,RPM").getLast().time;
+    }
+    
+    /**
+     * Cuts the data to the specified length
+     * @param start start of the data to cut to 
+     * @param end end of the data to cut to
+     */
+    void cutData(long start, long end) {
+        ArrayList<String> creationMethods = new ArrayList<>();
+        ArrayList<String> tags = new ArrayList<>();
+        //for each tag
+        for(int i = 0; i < dataMap.getTags().size(); i++) {
+            String tag = dataMap.getTags().get(i);
+            //TODO:BIG STEP BY STEP TEST ON IF DELETING IS WORKING PROPERLY
+            //TODO:We may want to handle Time,Distance differently, by recacluating distance from 0.
+            //only for time datasets.
+            if(tag.contains("Time,")) {
+                //get list of objects for this tag
+                LinkedList<LogObject> lo = dataMap.getList(tag);
+                //until we find the first element that is within the time frame, delete the first item
+                boolean foundFirstElem = false;
+                //find start time
+                long startTime = 0;
+                //remove all preceding element
+                while(!foundFirstElem) {
+                    if(lo.getFirst().time < start)
+                        lo.removeFirst();
+                    else {
+                        foundFirstElem = true;
+                        startTime = lo.getFirst().getTime();
+                    }
+                 }
+                
+                
+                //until we find the last element that is within the time frame, delete the last item
+                boolean foundLastItem = false;
+                while(!foundLastItem) {
+                    if(lo.getLast().time > end)
+                        lo.removeLast();
+                    else
+                        foundLastItem = true;
+                }
+
+                //for all remaining items, change time stamp
+                for(LogObject log : dataMap.getList(tag)) {
+                    log.setTime(log.getTime() - startTime);
+                }
+            }
+            else {
+                //get the first object from this tag, and retrieve its creation method
+                creationMethods.add(dataMap.getList(tag).getFirst().getCreationMethod());
+                //add its channel tag as well
+                tags.add(dataMap.getList(tag).getFirst().getTAG());
+                //remove this tag as it will have to be recreated
+                dataMap.remove(tag);
+                //decrement the index since an element was deleted.
+                i--;
+            }
+        }
+        
+        
+        //for every function of object we logged
+        for(int i = 0; i < creationMethods.size(); i++) {
+            //get the equation for how it was created
+            String creationMethod = creationMethods.get(i);
+            //get the tag or name of this channel
+            String tag = tags.get(i);
+            //split it on the % symbols. if there are more than 1, than there are bounds to adheret o
+            if(creationMethod.split("%").length > 1) {
+                //split up to get [tag,uperbound,lowerbound]
+                String[] creationMethodSplit = creationMethod.split("%");
+                //apply to equation evaluter
+                EquationEvaluater.evaluate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+            } else {
+                //apply to equation evaluater
+                EquationEvaluater.evaluate(creationMethod, dataMap, tag);
+            }
+            
+        }
     }
     
     /**

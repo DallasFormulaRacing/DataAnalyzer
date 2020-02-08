@@ -28,6 +28,9 @@ public class ChartManager {
     //lap that will be created and applied to lapBreaker list
     private Lap newLap;
     
+    //status of cut dataTool
+    private long cutDataActive;
+    
     //holds all the datasets in this application instance
     private LinkedList<Dataset> datasets;
     
@@ -47,6 +50,7 @@ public class ChartManager {
         this.parent = parent;
         lapBreakerActive = -1;
         swapActive = -1;
+        cutDataActive = -2;
         newLap = new Lap();
         charts = new ArrayList<>();
         first = null;
@@ -244,6 +248,14 @@ public class ChartManager {
 
     public void setDatasets(LinkedList<Dataset> datasets) {
         this.datasets = datasets;
+    }
+    
+    public long getCutDataActive() {
+        return cutDataActive;
+    }
+
+    public void setCutDataActive(long cutDataActive) {
+        this.cutDataActive = cutDataActive;
     }
     
     //enables or disables the swapper

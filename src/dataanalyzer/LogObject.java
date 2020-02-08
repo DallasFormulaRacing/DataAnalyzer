@@ -15,11 +15,13 @@ public abstract class LogObject implements Comparable {
     protected long time;
     protected String TAG;
     protected ArrayList<Integer> laps;
+    protected String creationMethod;
     
     public LogObject() {
         time = -1;
         TAG = "";
         laps = new ArrayList<>();
+        creationMethod = "Measured";
     }
 
     public long getTime() {
@@ -44,6 +46,14 @@ public abstract class LogObject implements Comparable {
 
     public void addLap(int lap) {
         laps.add(lap);
+    }
+
+    public String getCreationMethod() {
+        return creationMethod;
+    }
+
+    public void setCreationMethod(String creationMethod) {
+        this.creationMethod = creationMethod;
     }
     
     //if we do ever sort, keep the list in order of TAGS, then time.

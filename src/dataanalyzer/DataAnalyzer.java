@@ -260,6 +260,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
         addNotesMenuItem = new javax.swing.JMenuItem();
+        cutDataMenuItem = new javax.swing.JMenuItem();
         viewMenu = new javax.swing.JMenu();
         fullscreenMenuItem = new javax.swing.JMenuItem();
         showRangeMarkersMenuItem = new javax.swing.JMenuItem();
@@ -370,6 +371,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         editMenu.add(addNotesMenuItem);
+
+        cutDataMenuItem.setText("Cut Data");
+        cutDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cutDataMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(cutDataMenuItem);
 
         menuBar.add(editMenu);
 
@@ -834,6 +843,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     //begin the lapbreaker
     private void addLapConditionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLapConditionMenuItemActionPerformed
+        //if cut tool is active, then disable it
+        if(chartManager.getCutDataActive() != -2) {
+            Toast.makeToast(this, "Cut data tool canceled.", Toast.DURATION_SHORT);
+            chartManager.setCutDataActive(-2);
+        }
         //if the lapbreaker is not already active
         if(chartManager.getLapBreakerActive() == -1) {
             chartManager.setNewLap(new Lap());
@@ -1027,6 +1041,23 @@ public class DataAnalyzer extends javax.swing.JFrame {
         for(ChartAssembly ca : chartManager.getCharts())
             ca.applyNewTheme(currTheme);
     }//GEN-LAST:event_darkTheme_menuitemActionPerformed
+
+    private void cutDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cutDataMenuItemActionPerformed
+        // if lap breaker is active, then deactivate it
+        if(chartManager.getLapBreakerActive() != -1) {
+            Toast.makeToast(this, "Lap breaker deactivated.", Toast.DURATION_SHORT);
+            chartManager.setLapBreakerActive(-1);
+        }
+        //if cut data is not already active
+        if(chartManager.getCutDataActive() == -2) {
+            chartManager.setCutDataActive(-1);
+            new MessageBox(this, "Use the reticle to find the start of the file.\nClick where the file starts.\nClick again where the file stops.", false).setVisible(true);
+        }
+        else {
+            Toast.makeToast(this, "Cut data cancelled.", Toast.DURATION_SHORT);
+            chartManager.setCutDataActive(-2);
+        }
+    }//GEN-LAST:event_cutDataMenuItemActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -2430,6 +2461,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
     private javax.swing.JMenuItem closeMenuItem;
+    private javax.swing.JMenuItem cutDataMenuItem;
     private javax.swing.JMenuItem darkTheme_menuitem;
     private javax.swing.JMenu datasetMenu;
     private javax.swing.JMenuItem defaultTheme_menuitem;

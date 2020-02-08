@@ -732,6 +732,18 @@ public class ChartAssembly implements ChartMouseListener {
                 }
             }
         }
+        
+        //if we are cutting the data
+        if(manager.getCutDataActive() >= -1) {
+            if(manager.getCutDataActive() == -1)
+                manager.setCutDataActive((long) xVal);
+            else {
+                selection.cutData(manager.getCutDataActive(), (long) xVal);
+                manager.setCutDataActive(-2);
+                setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+
+            }
+        }
     
         
         ValueMarker marker = new ValueMarker(xVal);
