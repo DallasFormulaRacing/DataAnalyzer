@@ -128,7 +128,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private JMenu createDatasetMenu(Dataset dataset) {
         JMenu datasetSubMenu = new JMenu(dataset.getName());
         
-        JMenu vitals = new JMenu("Vitals");
+        JMenuItem vitals = new JMenuItem("Vitals");
         vitals.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -192,6 +192,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         datasetSubMenu.add(engineMenu);
         datasetSubMenu.add(vehicleMenu);
+        datasetSubMenu.add(vitals);
         
         return datasetSubMenu;
     }
@@ -1881,7 +1882,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
         
         //show loading screen
-        LoadingDialog loading = new LoadingDialog();
+        LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
@@ -1967,7 +1968,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void openFile(Dataset dataset, String filepath) {
             
         //show loading screen
-        LoadingDialog loading = new LoadingDialog();
+        LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
         
         //holds the context to give into the swing worker
@@ -2114,7 +2115,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openFileAssembly(String filepath) {
         //show loading screen
-        LoadingDialog loading = new LoadingDialog();
+        LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
         
         //holds the context to give into the swing worker
@@ -2282,7 +2283,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openPE3Files(Dataset dataset, File file, boolean applyPostProcessing) throws FileNotFoundException {
         
-        LoadingDialog loading = new LoadingDialog();
+        LoadingDialog loading = new LoadingDialog(file.getName());
         loading.setVisible(true);
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
@@ -2304,6 +2305,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                     //all the data should be split by commas in the same order as the header
                     String[] data = line.split(",");
+                    if(data.length != keys.length)
+                        break;
                     //the first element is time
                     double timeInSeconds = Double.parseDouble(data[0]);
 
@@ -2314,9 +2317,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         dataset.getDataMap().put(new SimpleLogObject(("Time,(" + keys[i] + ")").replace("(", "[").replace(")", "]").replace(" ", ""), Double.parseDouble(data[i]), time));
                     }
 
+
                 }
 
-                //set title
+                //set title 
                 setTitle("DataAnalyzer - " + file.getName());
                 
                 if(applyPostProcessing) {
@@ -2344,7 +2348,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
         
         //show loading screen
-        LoadingDialog loading = new LoadingDialog();
+        LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
