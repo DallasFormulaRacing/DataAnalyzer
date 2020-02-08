@@ -103,6 +103,29 @@ public class Dataset {
     }
     
     /**
+     * Gets the logging or polling rate of this sensor.
+     * May return funky values for FunctionOfLogObjects
+     * @param tag polling rate of this tag
+     * @return long representing time between two values, -1 if fail
+     */
+    public long getPollRate(String tag) {
+        //get list of objects in this tag
+        LinkedList<LogObject> lo = dataMap.getList(tag);
+        //make sure somethings here
+        if(lo == null || lo.isEmpty())
+            return -1;
+        //ensure first and second items exist then retrieve them;
+        if(lo.get(0) != null && lo.get(1) != null) {
+            long first = lo.getFirst().getTime();
+            long second = lo.get(1).getTime();
+            return second - first;
+        }
+        
+        //if we couldnt retrieve the first and second item, return fail
+        return -1;
+    }
+    
+    /**
      * Cuts the data to the specified length
      * @param start start of the data to cut to 
      * @param end end of the data to cut to
@@ -146,6 +169,16 @@ public class Dataset {
                 //for all remaining items, change time stamp
                 for(LogObject log : dataMap.getList(tag)) {
                     log.setTime(log.getTime() - startTime);
+                }
+                
+                //specialty case for time, distance. This just starts the distance at 0 again when the data is cropped.
+                if(tag.equals("Time,Distance")) {
+                    double startVal = ((SimpleLogObject) dataMap.getList(tag).getFirst()).getValue();
+                    for(LogObject log : dataMap.getList(tag)) {
+                        if(log instanceof SimpleLogObject) {
+                            ((SimpleLogObject) log).setValue(((SimpleLogObject) log).getValue() - startVal);
+                        }
+                    }
                 }
             }
             else {

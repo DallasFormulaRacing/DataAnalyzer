@@ -203,6 +203,18 @@ public class Lap {
     }
     
     @Override
+    public Lap clone() {
+        Lap toReturn = new Lap();
+        toReturn.lapLabel = lapLabel;
+        toReturn.lapNumber = lapNumber;
+        toReturn.start = start;
+        toReturn.stop = stop;
+        
+        
+        return toReturn;
+    }
+    
+    @Override
     public boolean equals(Object eq) {
         if(eq instanceof Lap) {
             if(((Lap) eq).start == this.start && ((Lap) eq).stop == this.stop) {
