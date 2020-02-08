@@ -168,14 +168,25 @@ public class Dataset {
             //get the tag or name of this channel
             String tag = tags.get(i);
             //split it on the % symbols. if there are more than 1, than there are bounds to adheret o
-            if(creationMethod.split("%").length > 1) {
-                //split up to get [tag,uperbound,lowerbound]
-                String[] creationMethodSplit = creationMethod.split("%");
-                //apply to equation evaluter
-                EquationEvaluater.evaluate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+            if(creationMethod.split("%").length > 2) {
+                if(creationMethod.endsWith("SUMM!")) {
+                    //split up to get [tag,uperbound,lowerbound]
+                    String[] creationMethodSplit = creationMethod.split("%");
+                    //apply to equation evaluter
+                    EquationEvaluater.summate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+                } else {
+                    //split up to get [tag,uperbound,lowerbound]
+                    String[] creationMethodSplit = creationMethod.split("%");
+                    //apply to equation evaluter
+                    EquationEvaluater.evaluate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+                }
             } else {
-                //apply to equation evaluater
-                EquationEvaluater.evaluate(creationMethod, dataMap, tag);
+                //if the creation method ends with this tag then we are to use the summation tool
+                if(creationMethod.endsWith("SUMM!"))
+                    EquationEvaluater.summate(creationMethod.split("%")[0], dataMap, tag);
+                else
+                    //apply to equation evaluater
+                    EquationEvaluater.evaluate(creationMethod, dataMap, tag);
             }
             
         }

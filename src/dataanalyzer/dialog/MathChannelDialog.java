@@ -55,6 +55,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jCheckBox1 = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         channelTitleText = new javax.swing.JTextPane();
         createChannelButton = new javax.swing.JButton();
@@ -73,13 +74,14 @@ public class MathChannelDialog extends javax.swing.JFrame {
         jScrollPane6 = new javax.swing.JScrollPane();
         appliedDatasets = new javax.swing.JList<>();
         jLabel3 = new javax.swing.JLabel();
+        summationCheckBox = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMathChannelMenu = new javax.swing.JMenu();
         editMathChannelMenu = new javax.swing.JMenu();
         insertMathChannelMenu = new javax.swing.JMenu();
-        cToFMathChannelMenuItem = new javax.swing.JMenuItem();
-        fToCMathChannelMenuItem = new javax.swing.JMenuItem();
-        analogToOilPressure_menuitem = new javax.swing.JMenuItem();
+        functionOfMenuItem = new javax.swing.JMenuItem();
+
+        jCheckBox1.setText("jCheckBox1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -129,6 +131,8 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
         jLabel3.setText("Applied Datasets");
 
+        summationCheckBox.setText("Summate?");
+
         fileMathChannelMenu.setText("File");
         jMenuBar1.add(fileMathChannelMenu);
 
@@ -137,25 +141,13 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
         insertMathChannelMenu.setText("Insert");
 
-        cToFMathChannelMenuItem.setText("CelciusToFarenheit");
-        cToFMathChannelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        functionOfMenuItem.setText("Change Domain");
+        functionOfMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cToFMathChannelMenuItemActionPerformed(evt);
+                functionOfMenuItemActionPerformed(evt);
             }
         });
-        insertMathChannelMenu.add(cToFMathChannelMenuItem);
-
-        fToCMathChannelMenuItem.setText("FarenheitToCelcius");
-        fToCMathChannelMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fToCMathChannelMenuItemActionPerformed(evt);
-            }
-        });
-        insertMathChannelMenu.add(fToCMathChannelMenuItem);
-
-        analogToOilPressure_menuitem.setText("Analog to Oil Pressure");
-        analogToOilPressure_menuitem.setToolTipText("");
-        insertMathChannelMenu.add(analogToOilPressure_menuitem);
+        insertMathChannelMenu.add(functionOfMenuItem);
 
         jMenuBar1.add(insertMathChannelMenu);
 
@@ -173,7 +165,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(jScrollPane2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(minRangeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -181,7 +173,9 @@ public class MathChannelDialog extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(maxLabelRange)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(summationCheckBox))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -226,7 +220,9 @@ public class MathChannelDialog extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(createChannelButton))))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(createChannelButton)
+                                        .addComponent(summationCheckBox)))))
                         .addGap(8, 8, 8)))
                 .addContainerGap())
         );
@@ -265,26 +261,34 @@ public class MathChannelDialog extends javax.swing.JFrame {
         String eq = equationField.getText();
         //Check the validity of the string
         if(minTextField.getText().isEmpty() && maxTextField.getText().isEmpty()) {
-            for(Dataset dataset : getSelectedDatasets()) {
-                EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+            if(!summationCheckBox.isSelected()) { 
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+                }
+            } else {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.summate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+                }
             }
         }
-        else
-            for(Dataset dataset : getSelectedDatasets()) {
-                EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
+        else {
+            if(!summationCheckBox.isSelected()) {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
+                }
+            } else {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.summate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
+                }
             }
+        }
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
-    private void cToFMathChannelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cToFMathChannelMenuItemActionPerformed
-        //insert the celsius to farenheit equation here
-        equationField.setText(equationField.getText() + "((VAR_HERE)*(9/5))+32");
-    }//GEN-LAST:event_cToFMathChannelMenuItemActionPerformed
-
-    private void fToCMathChannelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fToCMathChannelMenuItemActionPerformed
-        //insert the farenheit to celsius equation here
-        equationField.setText(equationField.getText() + "($(Time,Coolant)-32)*(5/9)");
-    }//GEN-LAST:event_fToCMathChannelMenuItemActionPerformed
+    private void functionOfMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_functionOfMenuItemActionPerformed
+        //add string for changing function at the end of the current string
+        equationField.setText(equationField.getText() + " asFunctionOf(DOMAIN)");
+    }//GEN-LAST:event_functionOfMenuItemActionPerformed
 
     //Update variables list, handle list onclicks
     private void configureVariablesList() {
@@ -364,17 +368,16 @@ public class MathChannelDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem analogToOilPressure_menuitem;
     private javax.swing.JList<String> appliedDatasets;
     private javax.swing.JList<String> availableVariablesList;
-    private javax.swing.JMenuItem cToFMathChannelMenuItem;
     private javax.swing.JTextPane channelTitleText;
     private javax.swing.JButton createChannelButton;
     private javax.swing.JMenu editMathChannelMenu;
     private javax.swing.JTextArea equationField;
-    private javax.swing.JMenuItem fToCMathChannelMenuItem;
     private javax.swing.JMenu fileMathChannelMenu;
+    private javax.swing.JMenuItem functionOfMenuItem;
     private javax.swing.JMenu insertMathChannelMenu;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -389,5 +392,6 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private javax.swing.JTextPane maxTextField;
     private javax.swing.JLabel minRangeLabel;
     private javax.swing.JTextPane minTextField;
+    private javax.swing.JCheckBox summationCheckBox;
     // End of variables declaration//GEN-END:variables
 }

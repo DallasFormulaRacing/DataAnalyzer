@@ -2,6 +2,11 @@
 
 <Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
+    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jCheckBox1"/>
+      </Properties>
+    </Component>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMathChannelMenu">
@@ -19,27 +24,13 @@
             <Property name="text" type="java.lang.String" value="Insert"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="cToFMathChannelMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="functionOfMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="CelciusToFarenheit"/>
+                <Property name="text" type="java.lang.String" value="Change Domain"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cToFMathChannelMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="functionOfMenuItemActionPerformed"/>
               </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="fToCMathChannelMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="FarenheitToCelcius"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fToCMathChannelMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="analogToOilPressure_menuitem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Analog to Oil Pressure"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
-              </Properties>
             </MenuItem>
           </SubComponents>
         </Menu>
@@ -78,7 +69,7 @@
                   <Component id="jScrollPane2" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="minRangeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -87,6 +78,8 @@
                       <Component id="maxLabelRange" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jScrollPane5" min="-2" pref="77" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="summationCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane3" min="-2" pref="398" max="-2" attributes="0"/>
               </Group>
@@ -144,7 +137,10 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jScrollPane4" min="-2" pref="32" max="-2" attributes="0"/>
                                   <Component id="jScrollPane5" min="-2" pref="32" max="-2" attributes="0"/>
-                                  <Component id="createChannelButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                                      <Component id="createChannelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="summationCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -296,6 +292,11 @@
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
         <Property name="text" type="java.lang.String" value="Applied Datasets"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="summationCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Summate?"/>
       </Properties>
     </Component>
   </SubComponents>
