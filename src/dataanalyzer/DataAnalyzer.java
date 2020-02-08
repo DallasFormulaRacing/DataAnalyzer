@@ -128,7 +128,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private JMenu createDatasetMenu(Dataset dataset) {
         JMenu datasetSubMenu = new JMenu(dataset.getName());
         
-        JMenu vitals = new JMenu("Vitals");
+        JMenuItem vitals = new JMenuItem("Vitals");
         vitals.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -192,6 +192,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         datasetSubMenu.add(engineMenu);
         datasetSubMenu.add(vehicleMenu);
+        datasetSubMenu.add(vitals);
         
         return datasetSubMenu;
     }
