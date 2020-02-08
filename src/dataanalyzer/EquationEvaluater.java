@@ -90,10 +90,16 @@ public class EquationEvaluater {
                 values.push(doOperation(operators.pop().charAt(0), values.pop(), values.pop()));
             }
             index++;
-            if(channelTag.contains("Time,"))
-                dataList.add(new SimpleLogObject(channelTag, values.pop(), time));
-            else
-                dataList.add(new SimpleLogObject("Time," + channelTag, values.pop(), time));
+            if(channelTag.contains("Time,")) {
+                SimpleLogObject slo = new SimpleLogObject(channelTag, values.pop(), time);
+                slo.setCreationMethod(eq);
+                dataList.add(slo);
+            }
+            else {
+                SimpleLogObject slo = new SimpleLogObject("Time," + channelTag, values.pop(), time);
+                slo.setCreationMethod(eq);
+                dataList.add(slo);
+            }
         }
         if(!dataList.isEmpty())
             dataMap.put(dataList);
