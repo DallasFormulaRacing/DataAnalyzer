@@ -12,6 +12,7 @@ import com.arib.toast.Toast;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
+import dataanalyzer.dialog.SettingsDialog;
 import dataanalyzer.dialog.VitalsDialog;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -58,6 +59,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     ChartManager chartManager;
     
+    Settings settings;
+    
     private String fileNotes;
     
     //holds the current theme
@@ -68,6 +71,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //Setup directories
         Installer.runInstaller();
+        
+        //get current user settings
+        settings = Settings.getInstance();
         
         //to prevent nulls, start as blank
         fileNotes = "";
@@ -104,6 +110,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //disable the layout manager which essentially makes the frame an absolute positioning frame
         this.setLayout(null);
+        
+        //apply user's preferred theme
+        if(settings.getSetting("PreferredTheme").equals("Dark"))
+            darkTheme_menuitemActionPerformed(null);
+        else if(settings.getSetting("PreferredTheme").equals("System"))
+            systemTheme_menuitemActionPerformed(null);
         
         // Init the graph with some dummy data until there is data given to read
         initializeBasicView();
@@ -256,6 +268,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         saveAsMenuItem = new javax.swing.JMenuItem();
         exportMenuItem = new javax.swing.JMenuItem();
         resetMenuItem = new javax.swing.JMenuItem();
+        settingsMenuItem = new javax.swing.JMenuItem();
         closeMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         addMathChannelButton = new javax.swing.JMenuItem();
@@ -334,6 +347,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         fileMenu.add(resetMenuItem);
+
+        settingsMenuItem.setText("Settings");
+        settingsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                settingsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(settingsMenuItem);
 
         closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Exit");
@@ -558,7 +579,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
             
             if(!onlyDFRFiles) {
                 //ask for post processing
-                applyPostProcessing = askForPostProcessing();
+                String alwaysApply = settings.getSetting("AlwaysApplyPostProcessing");
+                if(alwaysApply.equals("Always"))
+                    applyPostProcessing = true;
+                else if(alwaysApply.equals("Never"))
+                    applyPostProcessing = false;
+                else
+                    applyPostProcessing = askForPostProcessing();
 
                 //ask the user to import a vehicle. if any but cancel pressed continue
 
@@ -1061,6 +1088,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chartManager.setCutDataActive(-2);
         }
     }//GEN-LAST:event_cutDataMenuItemActionPerformed
+
+    private void settingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsMenuItemActionPerformed
+        //create window for user to modify settings
+        new SettingsDialog(this, true).setVisible(true);
+    }//GEN-LAST:event_settingsMenuItemActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -2492,6 +2524,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
     private javax.swing.JMenuItem saveMenuButton;
+    private javax.swing.JMenuItem settingsMenuItem;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
     private javax.swing.JMenuItem singleViewMenuItem;
     private javax.swing.JMenuItem swapChartsMenuItem;
