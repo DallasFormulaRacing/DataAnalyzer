@@ -74,4 +74,45 @@ public class Installer {
         
     }
     
+    /**
+     * Gets the operating system the user is using
+     * @return Cleaned up string of the users operating system
+     */
+    public static String getOS() {
+        //get the os name
+        String OS = System.getProperty("os.name");
+
+        //clean up name and return
+        if(OS.startsWith("Windows")){
+            return "Windows";
+        }
+        if(OS.startsWith("Mac")){
+            return "Mac";
+        }
+        
+        return "Other";
+    }
+    
+    /**
+     * Helper function that auto declares OS from getOS() method
+     * @return path of settings file
+     */
+    public static String getSettingsPath() {
+        return getSettingsPath(getOS());
+    }
+    
+    /**
+     * Get path for settings
+     * @param os given an operating system
+     * @return path of settings file
+     */
+    public static String getSettingsPath(String os) {
+        if(os.equals("Windows")) {
+            String home = System.getProperty("user.home");
+            return home + "\\AppData\\Local\\DataAnalyzer\\Settings\\";
+        } else {
+            return "/Applications/DataAnalyzer/Settings/";
+        }
+    }
+    
 }
