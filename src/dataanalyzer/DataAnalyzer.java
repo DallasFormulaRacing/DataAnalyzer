@@ -20,10 +20,14 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -41,7 +45,9 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import junit.framework.Test;
 import org.jfree.chart.plot.ValueMarker;
+import sun.net.www.http.HttpClient;
 
 /**
  *
@@ -129,6 +135,48 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 initializeDatasetMenu();
             }
         });
+        
+        //check for an update
+        try {
+            checkForUpdate();
+        } catch(UnsupportedEncodingException e) {
+            Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+        } catch (URISyntaxException ex) {
+            Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+        } catch (IOException ex) {
+            Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+        } catch (IndexOutOfBoundsException ex) {
+            Toast.makeToast(this, "Had trouble parsing your app name. Please don't change your appname.", Toast.DURATION_SHORT);
+        }
+    }
+    
+    private void checkForUpdate() throws UnsupportedEncodingException, URISyntaxException, ProtocolException, IOException, MalformedURLException, IndexOutOfBoundsException {
+        //get current version. Will need to store this somewhere.
+        //or maybe we can use this.
+        String path = Test.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String decodedPath = URLDecoder.decode(path, "UTF-8");
+        
+        String filename = decodedPath.substring(decodedPath.lastIndexOf('/') + 1);
+        String currentVersion = filename.substring(0, filename.lastIndexOf('.')).split("DataAnalyzer")[1];
+        System.out.println(currentVersion);
+
+        URL url = new URL("https://raw.githubusercontent.com/DallasFormulaRacing/DataAnalyzer/master/README.md");
+        HttpURLConnection c = (HttpURLConnection)url.openConnection();  //connecting to url
+        c.setRequestMethod("GET");
+        BufferedReader in = new BufferedReader(new InputStreamReader(c.getInputStream()));  //stream to resource
+        String str;
+        String lastLine = "";
+        while ((str = in.readLine()) != null)   //reading data
+           lastLine = str;//process the response and save it in some string or so
+        in.close();  //closing stream
+        
+        System.out.println(lastLine);
+
+        //OR
+        //get current file name
+        //REST GET README. Get last line.
+        //if filenames are different. update.
+        
     }
     
     private void initializeDatasetMenu() {
