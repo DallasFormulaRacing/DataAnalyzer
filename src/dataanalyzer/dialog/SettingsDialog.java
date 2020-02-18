@@ -5,18 +5,10 @@
  */
 package dataanalyzer.dialog;
 
-import com.arib.toast.Toast;
-import dataanalyzer.Installer;
 import dataanalyzer.Settings;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-import java.util.TreeMap;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.SpinnerListModel;
 import javax.swing.WindowConstants;
 
 /**
