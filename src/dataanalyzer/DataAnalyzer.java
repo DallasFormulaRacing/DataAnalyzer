@@ -16,7 +16,6 @@ import dataanalyzer.dialog.SettingsDialog;
 import dataanalyzer.dialog.VitalsDialog;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,6 +23,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -32,12 +33,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -129,6 +127,25 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 initializeDatasetMenu();
             }
         });
+        
+        if(settings.getSetting("AutoCheckForUpdates").equals("true")) {
+            //check for an update
+            try {
+                AutoUpdate.checkForUpdate();
+            } catch(UnsupportedEncodingException e) {
+                Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+                System.out.println("Error");
+            } catch (URISyntaxException ex) {
+                Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+                System.out.println("Error");
+            } catch (IOException ex) {
+                Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
+                System.out.println("Error");
+            } catch (IndexOutOfBoundsException ex) {
+                Toast.makeToast(this, "Had trouble parsing your app name. Please don't change your appname.", Toast.DURATION_SHORT);
+                System.out.println("Had trouble parsing your app name. Please don't change your appname.");
+            }
+        }
     }
     
     private void initializeDatasetMenu() {
