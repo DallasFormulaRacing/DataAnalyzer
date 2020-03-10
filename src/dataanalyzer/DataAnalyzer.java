@@ -1418,11 +1418,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRR");
         
-        //now we have unoriented xyz 
-        LinkedList<LogObject> rotXAccel = new LinkedList<>();
-        LinkedList<LogObject> rotYAccel = new LinkedList<>();
-        LinkedList<LogObject> rotZAccel = new LinkedList<>();
-        
         //get x y z data as arrays
         ArrayList<LogObject> x,y,z;
         x = new ArrayList<>(dataset.getDataMap().getList("Time,xAccel"));
@@ -1446,7 +1441,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //get rotation matrix
         double[][] rot = Mathematics.rotationMatrix3(have, desired);
-        
+
         //for each accel value apply rotation matrix
         for(int i = 0; i < x.size(); i++) {
             //get current accel values
@@ -1468,6 +1463,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             newZ.add(new SimpleLogObject("Time,rotZ", rotated[2], z.get(i).getTime()));
         }
         
+        
         //save to dataset
         if(!dataset.getDataMap().tags.contains("Time,rotX") && !dataset.getDataMap().tags.contains("Time,rotY") && !dataset.getDataMap().tags.contains("Time,rotZ")) {
             dataset.getDataMap().put(newX);
@@ -1475,6 +1471,37 @@ public class DataAnalyzer extends javax.swing.JFrame {
             dataset.getDataMap().put(newZ);
         }
         
+        rot = CoordinateTransformer.performTransformation();
+        newX = new LinkedList<>();
+        newY = new LinkedList<>();
+        newZ = new LinkedList<>();
+        
+        for(int i = 0; i < x.size(); i++) {
+            //get current accel values
+            double xVal = 0, yVal = 0, zVal = 0;
+            if(x.get(i) instanceof SimpleLogObject) {
+                xVal = ((SimpleLogObject)x.get(i)).getValue();
+            }
+            if(y.get(i) instanceof SimpleLogObject) {
+                yVal = ((SimpleLogObject)y.get(i)).getValue();
+            }
+            if(z.get(i) instanceof SimpleLogObject) {
+                zVal = ((SimpleLogObject)z.get(i)).getValue();
+            }
+            //apply rotation
+            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
+            //add to new list
+            newX.add(new SimpleLogObject("Time,newRotX", rotated[0], x.get(i).getTime()));
+            newY.add(new SimpleLogObject("Time,newRotY", rotated[1], y.get(i).getTime()));
+            newZ.add(new SimpleLogObject("Time,newRotZ", rotated[2], z.get(i).getTime()));
+        }
+        
+        //save to dataset
+        if(!dataset.getDataMap().tags.contains("Time,newRotX") && !dataset.getDataMap().tags.contains("Time,newRotY") && !dataset.getDataMap().tags.contains("Time,newRotZ")) {
+            dataset.getDataMap().put(newX);
+            dataset.getDataMap().put(newY);
+            dataset.getDataMap().put(newZ);
+        }
         //add g graph charts
         if(dataset.getDataMap().getTags().contains("Time,rotX") && dataset.getDataMap().getTags().contains("Time,rotY") && !dataset.getDataMap().tags.contains("rotY,rotX")) {
             EquationEvaluater.evaluate("$(Time,rotX) asFunctionOf($(Time,rotY))", dataset.getDataMap(), "rotX");
