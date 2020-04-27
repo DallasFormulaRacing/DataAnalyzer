@@ -10,6 +10,7 @@ import dataanalyzer.Dataset;
 import dataanalyzer.EquationEvaluater;
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.VehicleData;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -75,6 +76,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
         appliedDatasets = new javax.swing.JList<>();
         jLabel3 = new javax.swing.JLabel();
         summationCheckBox = new javax.swing.JCheckBox();
+        rateCheckBox = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMathChannelMenu = new javax.swing.JMenu();
         editMathChannelMenu = new javax.swing.JMenu();
@@ -131,7 +133,19 @@ public class MathChannelDialog extends javax.swing.JFrame {
 
         jLabel3.setText("Applied Datasets");
 
-        summationCheckBox.setText("Summate?");
+        summationCheckBox.setText("Summate");
+        summationCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                summationCheckBoxItemStateChanged(evt);
+            }
+        });
+
+        rateCheckBox.setText("Rate");
+        rateCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                rateCheckBoxItemStateChanged(evt);
+            }
+        });
 
         fileMathChannelMenu.setText("File");
         jMenuBar1.add(fileMathChannelMenu);
@@ -159,35 +173,34 @@ public class MathChannelDialog extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(jScrollPane2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(createChannelButton)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(minRangeLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addComponent(jScrollPane2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(maxLabelRange)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(summationCheckBox))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(minRangeLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(maxLabelRange)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(rateCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(summationCheckBox))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
-                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(createChannelButton)
-                        .addGap(24, 24, 24))))
+                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -222,7 +235,8 @@ public class MathChannelDialog extends javax.swing.JFrame {
                                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(createChannelButton)
-                                        .addComponent(summationCheckBox)))))
+                                        .addComponent(summationCheckBox)
+                                        .addComponent(rateCheckBox)))))
                         .addGap(8, 8, 8)))
                 .addContainerGap())
         );
@@ -261,24 +275,36 @@ public class MathChannelDialog extends javax.swing.JFrame {
         String eq = equationField.getText();
         //Check the validity of the string
         if(minTextField.getText().isEmpty() && maxTextField.getText().isEmpty()) {
-            if(!summationCheckBox.isSelected()) { 
-                for(Dataset dataset : getSelectedDatasets()) {
-                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
-                }
-            } else {
+            if(summationCheckBox.isSelected()) { 
                 for(Dataset dataset : getSelectedDatasets()) {
                     EquationEvaluater.summate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
                 }
             }
+            else if(rateCheckBox.isSelected()) {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.rate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+                }
+            }
+            else {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+                }
+            }
         }
         else {
-            if(!summationCheckBox.isSelected()) {
-                for(Dataset dataset : getSelectedDatasets()) {
-                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
-                }
-            } else {
+            if(summationCheckBox.isSelected()) {
                 for(Dataset dataset : getSelectedDatasets()) {
                     EquationEvaluater.summate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
+                }
+            }
+            else if(rateCheckBox.isSelected()) {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.rate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText());
+                }
+            }
+            else {
+                for(Dataset dataset : getSelectedDatasets()) {
+                    EquationEvaluater.evaluate(eq, dataset.getDataMap(), dataset.getVehicleData(), channelTitleText.getText(), minBound, maxBound);
                 }
             }
         }
@@ -289,6 +315,20 @@ public class MathChannelDialog extends javax.swing.JFrame {
         //add string for changing function at the end of the current string
         equationField.setText(equationField.getText() + " asFunctionOf(DOMAIN)");
     }//GEN-LAST:event_functionOfMenuItemActionPerformed
+
+    private void summationCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_summationCheckBoxItemStateChanged
+        // unselect rate if summation is selected
+        if(evt.getStateChange() == ItemEvent.SELECTED) {
+            rateCheckBox.setSelected(false);
+        }
+    }//GEN-LAST:event_summationCheckBoxItemStateChanged
+
+    private void rateCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rateCheckBoxItemStateChanged
+        // unselect summation if rate is selected
+        if(evt.getStateChange() == ItemEvent.SELECTED) {
+            summationCheckBox.setSelected(false);
+        }
+    }//GEN-LAST:event_rateCheckBoxItemStateChanged
 
     //Update variables list, handle list onclicks
     private void configureVariablesList() {
@@ -392,6 +432,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private javax.swing.JTextPane maxTextField;
     private javax.swing.JLabel minRangeLabel;
     private javax.swing.JTextPane minTextField;
+    private javax.swing.JCheckBox rateCheckBox;
     private javax.swing.JCheckBox summationCheckBox;
     // End of variables declaration//GEN-END:variables
 }

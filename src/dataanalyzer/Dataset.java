@@ -207,7 +207,14 @@ public class Dataset {
                     String[] creationMethodSplit = creationMethod.split("%");
                     //apply to equation evaluter
                     EquationEvaluater.summate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
-                } else {
+                }
+                else if(creationMethod.endsWith("RATE!")) {
+                    //split up to get [tag,uperbound,lowerbound]
+                    String[] creationMethodSplit = creationMethod.split("%");
+                    //apply to equation evaluter
+                    EquationEvaluater.rate(creationMethodSplit[0], dataMap, tag, Integer.parseInt(creationMethodSplit[1]), Integer.parseInt(creationMethodSplit[2]));
+                }
+                else {
                     //split up to get [tag,uperbound,lowerbound]
                     String[] creationMethodSplit = creationMethod.split("%");
                     //apply to equation evaluter
@@ -215,8 +222,12 @@ public class Dataset {
                 }
             } else {
                 //if the creation method ends with this tag then we are to use the summation tool
-                if(creationMethod.endsWith("SUMM!"))
+                if(creationMethod.endsWith("SUMM!")) {
                     EquationEvaluater.summate(creationMethod.split("%")[0], dataMap, tag);
+                }
+                else if(creationMethod.endsWith("RATE!")) {
+                    EquationEvaluater.rate(creationMethod.split("%")[0], dataMap, tag);
+                }
                 else
                     //apply to equation evaluater
                     EquationEvaluater.evaluate(creationMethod, dataMap, tag);
