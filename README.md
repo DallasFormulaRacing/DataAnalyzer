@@ -6,7 +6,6 @@ Find the most recent release here: https://github.com/DallasFormulaRacing/DataAn
 Launch the jar executable. 
 Use File>Save to save the files as .dfr
 Use File>Open to open .dfr/.csv/.txt files
-Use File>Open PE3 to open csv files from the PE3 ECU format.
 
 If multiple files are opened within the same window then File>Save will save a .dfrasm
 
