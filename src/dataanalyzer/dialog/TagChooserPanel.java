@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
@@ -24,6 +25,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Position;
 
 /**
  *
@@ -77,6 +79,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
         }
         DatasetSelection ds = new DatasetSelection(dataset, tags, laps);
         return ds;
+        
     }
     
     /**
@@ -119,6 +122,11 @@ public class TagChooserPanel extends javax.swing.JPanel {
         jScrollPane1.setMinimumSize(new java.awt.Dimension(0, 0));
 
         dataList.setSize(new java.awt.Dimension(177, 298));
+        dataList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                dataListMouseClicked(evt);
+            }
+        });
         dataList.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 dataListKeyReleased(evt);
@@ -199,8 +207,8 @@ public class TagChooserPanel extends javax.swing.JPanel {
                 }
 
                 if(properInit)
-                //set the data list view to all the elements of the array list
-                dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
+                    //set the data list view to all the elements of the array list
+                    dataList.setListData(newTitles.toArray(new String[newTitles.size()]));
             }
         }
 
@@ -208,6 +216,8 @@ public class TagChooserPanel extends javax.swing.JPanel {
         if(searchField.getText().isEmpty()) {
             dataList.setListData(titles);
         }
+        //updates the search field to highlight selected elements
+        updateSelected();
     }//GEN-LAST:event_searchFieldKeyReleased
 
     private void categoryListKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_categoryListKeyReleased
@@ -298,6 +308,10 @@ public class TagChooserPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_lapListKeyReleased
+
+    private void dataListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dataListMouseClicked
+        //every time the data list is clicked. update the selected
+    }//GEN-LAST:event_dataListMouseClicked
 
     private void fillDataList(ArrayList<String> allTags) {
         // Use the tags list to get the title for each tag
@@ -407,12 +421,25 @@ public class TagChooserPanel extends javax.swing.JPanel {
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                     if(dataList.getSelectedIndex() != -1) {
-                        int[] selected = dataList.getSelectedIndices();
-                        chosenTags = new String[selected.length];
-                        for(int i = 0; i < chosenTags.length; i++){
-                            chosenTags[i] = allTags.get(selected[i]);
+                        //need to check if the search was changes, else you can only select and never unselect
+                        List<String> selected = dataList.getSelectedValuesList();
+                        //get items already selected that are not in getSelectedValuesList()
+                        List<String> prevSelected = new ArrayList<>();
+                        if(chosenTags != null) {
+                            for(int i = 0; i < chosenTags.length; i++) {
+                                if(!selected.contains(tagToTitle(chosenTags[i])) && dataList.getNextMatch(tagToTitle(chosenTags[i]), 0, Position.Bias.Forward) == -1) {
+                                    prevSelected.add(chosenTags[i]);
+                                }
+                            }
                         }
-                      
+                        chosenTags = new String[selected.size() + prevSelected.size()];
+                        for(int i = 0; i < prevSelected.size(); i++) {
+                            chosenTags[i] = prevSelected.get(i);
+                        }
+                        for(int i = 0; i < selected.size(); i++) {
+                            chosenTags[prevSelected.size() + i] = titleToTag("" + selected.get(i))[0];
+                        }
+                        
                     }
                 }
             }
@@ -576,12 +603,37 @@ public class TagChooserPanel extends javax.swing.JPanel {
         }
     }
     
+    private void updateSelected() {
+        if(chosenTags == null)
+            return;
+        List<Integer> selected = new ArrayList<>();
+        for(String s : chosenTags) {
+            for(int i = 0; i < dataList.getModel().getSize(); i++) {
+                if(dataList.getModel().getElementAt(i).equals(tagToTitle(s)))
+                    selected.add(i);
+            }
+        }
+        int[] selectedArray = new int[selected.size()];
+        for(int i = 0; i < selectedArray.length; i++) {
+            selectedArray[i] = selected.get(i);
+        }
+        dataList.setSelectedIndices(selectedArray);
+    }
+    
     /**
-     * Gets the tag from the active chart and formats it into a String array of TAGs
-     * @return String of the TAGs of the active charts
+     * Returns a title formatted string from a tag formatted string
+     * @param tag a tag
+     * @return a title based on the tag
      */
-    private String[] titleToTag() {
-        return titleToTag("");
+    private String tagToTitle(String tag) {
+        if(tag == null || tag.isEmpty()){
+            return "";
+        }
+        String title = "";
+        title += tag.split(",")[1];
+        title += " vs ";
+        title += tag.split(",")[0];
+        return title;
     }
     
     //given a chart title or dataList title we can create the tag

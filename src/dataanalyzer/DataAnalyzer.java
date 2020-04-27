@@ -1418,11 +1418,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRR");
         
-        //now we have unoriented xyz 
-        LinkedList<LogObject> rotXAccel = new LinkedList<>();
-        LinkedList<LogObject> rotYAccel = new LinkedList<>();
-        LinkedList<LogObject> rotZAccel = new LinkedList<>();
-        
         //get x y z data as arrays
         ArrayList<LogObject> x,y,z;
         x = new ArrayList<>(dataset.getDataMap().getList("Time,xAccel"));
@@ -1446,7 +1441,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //get rotation matrix
         double[][] rot = Mathematics.rotationMatrix3(have, desired);
-        
+
         //for each accel value apply rotation matrix
         for(int i = 0; i < x.size(); i++) {
             //get current accel values
@@ -1468,6 +1463,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             newZ.add(new SimpleLogObject("Time,rotZ", rotated[2], z.get(i).getTime()));
         }
         
+        
         //save to dataset
         if(!dataset.getDataMap().tags.contains("Time,rotX") && !dataset.getDataMap().tags.contains("Time,rotY") && !dataset.getDataMap().tags.contains("Time,rotZ")) {
             dataset.getDataMap().put(newX);
@@ -1475,6 +1471,37 @@ public class DataAnalyzer extends javax.swing.JFrame {
             dataset.getDataMap().put(newZ);
         }
         
+        rot = CoordinateTransformer.performTransformation();
+        newX = new LinkedList<>();
+        newY = new LinkedList<>();
+        newZ = new LinkedList<>();
+        
+        for(int i = 0; i < x.size(); i++) {
+            //get current accel values
+            double xVal = 0, yVal = 0, zVal = 0;
+            if(x.get(i) instanceof SimpleLogObject) {
+                xVal = ((SimpleLogObject)x.get(i)).getValue();
+            }
+            if(y.get(i) instanceof SimpleLogObject) {
+                yVal = ((SimpleLogObject)y.get(i)).getValue();
+            }
+            if(z.get(i) instanceof SimpleLogObject) {
+                zVal = ((SimpleLogObject)z.get(i)).getValue();
+            }
+            //apply rotation
+            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
+            //add to new list
+            newX.add(new SimpleLogObject("Time,newRotX", rotated[0], x.get(i).getTime()));
+            newY.add(new SimpleLogObject("Time,newRotY", rotated[1], y.get(i).getTime()));
+            newZ.add(new SimpleLogObject("Time,newRotZ", rotated[2], z.get(i).getTime()));
+        }
+        
+        //save to dataset
+        if(!dataset.getDataMap().tags.contains("Time,newRotX") && !dataset.getDataMap().tags.contains("Time,newRotY") && !dataset.getDataMap().tags.contains("Time,newRotZ")) {
+            dataset.getDataMap().put(newX);
+            dataset.getDataMap().put(newY);
+            dataset.getDataMap().put(newZ);
+        }
         //add g graph charts
         if(dataset.getDataMap().getTags().contains("Time,rotX") && dataset.getDataMap().getTags().contains("Time,rotY") && !dataset.getDataMap().tags.contains("rotY,rotX")) {
             EquationEvaluater.evaluate("$(Time,rotX) asFunctionOf($(Time,rotY))", dataset.getDataMap(), "rotX");
@@ -1566,6 +1593,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Barometer)) - ($(Time,MAP))", dataset.getDataMap(), "Time,SuckySucky");
         }
         
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear") && dataset.getDataMap().tags.contains("Time,RPM")) {
+            EquationEvaluater.evaluate("$(Time,RPM) / ($(Time,WheelspeedRear) / 60 * 63360 / (20.2 * 3.14159))", dataset.getDataMap(), "Time,TotalGearRatio", 0, 25);
+        }
+        
+        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear") && dataset.getDataMap().tags.contains("Time,RPM")) {
+            EquationEvaluater.evaluate("($(Time,RPM) / 1.822) / ($(Time,WheelspeedRear) * 60 * 63360 / 20.2) / (11 / 45)", dataset.getDataMap(), "Time,TransGearRatio", 0, 4);
+        }
+        
         if(dataset.getDataMap().tags.contains("Time,Analog1") && !dataset.getDataMap().tags.contains("Time,BrakePressureFront")) {
             EquationEvaluater.evaluate("($(Time,Analog1)-.5)*1250", dataset.getDataMap(), "Time,BrakePressureFront");
         }
@@ -1585,6 +1620,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(dataset.getDataMap().tags.contains("Time,TransRPM") && dataset.getDataMap().tags.contains("Time,RPM") && !dataset.getDataMap().tags.contains("Time,GearRatio")) {
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataset.getDataMap(), "Time,GearRatio", 0, 10);
         }
+        
+        //wheelspeed -> freq -> compare to RPM
+        //237.601 kg
+        if(dataset.getDataMap().tags.contains("Time,TotalGearRatio")) {
+            //if we have total gear ratio, divide out primary reduction and final reduction to get transmission reduction
+            EquationEvaluater.evaluate("$(Time,TotalGearRatio) / 1.822 / (11 / 45)", dataset.getDataMap(), "Time,GearRatio");
+        }
+        
+        //Clean gear data signal here
+        cleanDataSignal(dataset);
         
         if(dataset.getDataMap().tags.contains("Time,Analog5") && !dataset.getDataMap().tags.contains("Time,OilPressure")) {
             EquationEvaluater.evaluate("100 * ($(Time,Analog5) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure");
@@ -1618,6 +1663,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataset.getDataMap(), "CoolantCelcius");
         }
         
+        //rot inertias 
+        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+            EquationEvaluater.evaluate("($(Time,newRotX) * 9.81) * 237.601 * ($(Time,WheelspeedFront) / 2.237) * 0.001341", dataset.getDataMap(), "Time,Power");
+        }
+        
+        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+            //                        Pengine = Frolling        +                             Drag                                                               +                                                                          Fmass                                                           *               V kmh 
+            //                                Rx * m * g         +    .5 * p *    Cd * A *     V kmh                         *               V kmh               + (                                                      Tmass                                                          /  rrolling)       *              V kmh
+            //                                Rx * m * g         +    .5 * p * Cd(Truck) * Ain / 1550   *        V ms                        *               V ms               + (  mass   *         drive line factor                                             * Acceleration    * rrolling        /  rrolling)                               *              V ms
+            EquationEvaluater.evaluate("(((.03 * 237.601 * 9.81) + (.5 * 1.21 * .6 * (1380.718 / 1550) * ($(Time,WheelspeedFront) / 2.237) * ($(Time,WheelspeedFront) / 2.237)) + ((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetter");
+            //                           (  mass   *         drive line factor                                              * Acceleration             * rrolling        /  rrolling)        *              V ms                 * n/s to hrprs
+            EquationEvaluater.evaluate("((((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetterNoResistance");
+
+        }
+        
         //Create Distance Channels for all datasets that do not contain "Time"
         for(int i = 0; i < dataset.getDataMap().table.length; i++) {
             if(dataset.getDataMap().table[i] != null && !dataset.getDataMap().table[i].isEmpty() && dataset.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
@@ -1628,6 +1688,48 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             dataset.getDataMap().table[i].getFirst().getTAG().length()));
             }
         }
+    }
+    
+    /**
+     * Cleans the Time,GearRatio signal to match nearest found gear ratio
+     * 
+     * @param dataset the dataset to clean 
+     */
+    private static void cleanDataSignal(Dataset dataset) {
+        //TODO: to be changed to reading from VehicleData
+        //gear ratios
+        double[] gearRatios = new double[] {2.833, 2.062, 1.647, 1.421, 1.272, 1.173};
+        
+        //holds cleaned signal
+        LinkedList<LogObject> cleaned = new LinkedList<>();
+        //for each item in gear ratio
+        for(LogObject lo : dataset.getDataMap().getList("Time,GearRatio")) {
+            //ensure its a simple log object
+            if(lo instanceof SimpleLogObject) {
+                //get the objects value
+                double value = ((SimpleLogObject) lo).getValue();
+                //the closest value
+                double smallestValue = Integer.MAX_VALUE;
+                //the best gear associated with that value
+                int bestGear = 0;
+                //for each gear ratio
+                for(int i = 0; i < gearRatios.length; i++) {
+                    //if its closer than the closest value we have found so far
+                    if(Math.abs(value - gearRatios[i]) < smallestValue) {
+                        //update closest value
+                        smallestValue = Math.abs(value - gearRatios[i]);
+                        //update best gear
+                        bestGear = i + 1;
+                    }
+                }
+                
+                //add best gear to this signal
+                cleaned.add(new SimpleLogObject("Time,Gear", bestGear, ((SimpleLogObject) lo).time));
+            }
+        }
+        
+        //add signal to dataset
+        dataset.getDataMap().put(cleaned);
     }
     
     /**
