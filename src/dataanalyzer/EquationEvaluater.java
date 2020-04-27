@@ -192,12 +192,12 @@ public class EquationEvaluater {
                 lastVal = currValue;
             }
             if(channelTag.contains("Time,")) {
-                SimpleLogObject slo = new SimpleLogObject(channelTag, values.pop(), time);
+                SimpleLogObject slo = new SimpleLogObject(channelTag, currValue, time);
                 slo.setCreationMethod(eq+"%"+upBound+"%"+lowBound);
                 dataList.add(slo);
             }
             else {
-                SimpleLogObject slo = new SimpleLogObject("Time," + channelTag, values.pop(), time);
+                SimpleLogObject slo = new SimpleLogObject("Time," + channelTag, currValue, time);
                 slo.setCreationMethod(eq+"%"+upBound+"%"+lowBound);
                 dataList.add(slo);
             }
