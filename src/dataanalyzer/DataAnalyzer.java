@@ -1663,6 +1663,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("($(Time,Coolant)-32)*(5/9)", dataset.getDataMap(), "CoolantCelcius");
         }
         
+        //rot inertias 
+        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+            EquationEvaluater.evaluate("($(Time,newRotX) * 9.81) * 237.601 * ($(Time,WheelspeedFront) / 2.237) * 0.001341", dataset.getDataMap(), "Time,Power");
+        }
+        
+        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+            //                        Pengine = Frolling        +                             Drag                                                               +                                                                          Fmass                                                           *               V kmh 
+            //                                Rx * m * g         +    .5 * p *    Cd * A *     V kmh                         *               V kmh               + (                                                      Tmass                                                          /  rrolling)       *              V kmh
+            //                                Rx * m * g         +    .5 * p * Cd(Truck) * Ain / 1550   *        V ms                        *               V ms               + (  mass   *         drive line factor                                             * Acceleration    * rrolling        /  rrolling)                               *              V ms
+            EquationEvaluater.evaluate("(((.03 * 237.601 * 9.81) + (.5 * 1.21 * .6 * (1380.718 / 1550) * ($(Time,WheelspeedFront) / 2.237) * ($(Time,WheelspeedFront) / 2.237)) + ((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetter");
+            //                           (  mass   *         drive line factor                                              * Acceleration             * rrolling        /  rrolling)        *              V ms                 * n/s to hrprs
+            EquationEvaluater.evaluate("((((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetterNoResistance");
+
+        }
+        
         //Create Distance Channels for all datasets that do not contain "Time"
         for(int i = 0; i < dataset.getDataMap().table.length; i++) {
             if(dataset.getDataMap().table[i] != null && !dataset.getDataMap().table[i].isEmpty() && dataset.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
