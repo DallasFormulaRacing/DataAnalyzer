@@ -4,6 +4,9 @@
 #Project setup files
 nbproject/private/
 
+#ignore tmp foler
+tmp/
+
 # Log file
 *.log
 
