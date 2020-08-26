@@ -337,6 +337,13 @@ public class TagChooserPanel extends javax.swing.JPanel {
         }
         lapList.setListData(lapData);
         
+        //fill Category data
+        String[] cats = new String[analysisCategories.length];
+        for(int i = 0; i < cats.length; i++) {
+            cats[i] = analysisCategories[i].title;
+        }
+        categoryList.setListData(cats);
+        
         //allow multiple selections and deselect
         lapList.setSelectionModel(new DefaultListSelectionModel() {
             private static final long serialVersionUID = 1L;
@@ -481,6 +488,8 @@ public class TagChooserPanel extends javax.swing.JPanel {
                         ArrayList<String> compatibleTags = new ArrayList<>();
                         for(String s : selectedCategory) {
                             AnalysisCategory cat = getCategoryFromString(s);
+                            if(cat == null)
+                                continue;
                             for(String tag : cat.TAG) {
                                 if(dataset.getDataMap().getTags().contains(tag) && !compatibleTags.contains(tag))
                                     compatibleTags.add(tag);
