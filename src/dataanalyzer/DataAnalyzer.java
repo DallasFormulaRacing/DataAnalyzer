@@ -1153,12 +1153,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
-                dataset.getDataMap().getTags().contains("Time,TPS") && 
+                dataset.getDataMap().getTags().contains("Time,TPS[%]") && 
                 dataset.getDataMap().getTags().contains("Time,RPM")) {
             
             //create a dataset selection for this selection
             DatasetSelection ds = new DatasetSelection(dataset, 
-                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,RPM", "Time,TPS", "Time,AFRAveraged"})), 
+                    new ArrayList<String>(Arrays.asList(new String[] {"Time,RPM", "Time,TPS[%]", "Time,AFRAveraged"})), 
                     new ArrayList<>());
             //create selection object and assign created dataset selection to it
             Selection selection = new Selection();
@@ -1172,7 +1172,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(dataset.getDataMap().getTags().contains("Time,RPM")) {
             //create a dataset selection for this selection
             DatasetSelection ds = new DatasetSelection(dataset, 
-                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,RPM"})), 
+                    new ArrayList<>(Arrays.asList(new String[] {"Time,RPM"})), 
                     new ArrayList<>());
             //create selection object and assign created dataset selection to it
             Selection selection = new Selection();
@@ -1183,10 +1183,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
        
         //if tps data exists, put it on the tps chart
-        if(dataset.getDataMap().getTags().contains("Time,TPS")) {
+        if(dataset.getDataMap().getTags().contains("Time,TPS[%]")) {
             //create a dataset selection for this selection
             DatasetSelection ds = new DatasetSelection(dataset, 
-                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,TPS"})), 
+                    new ArrayList<>(Arrays.asList(new String[] {"Time,TPS[%]"})), 
                     new ArrayList<>());
             //create selection object and assign created dataset selection to it
             Selection selection = new Selection();
@@ -1200,7 +1200,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged")) {
             //create a dataset selection for this selection
             DatasetSelection ds = new DatasetSelection(dataset, 
-                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,AFRAveraged"})), 
+                    new ArrayList<>(Arrays.asList(new String[] {"Time,AFRAveraged"})), 
                     new ArrayList<>());
             //create selection object and assign created dataset selection to it
             Selection selection = new Selection();
@@ -1211,10 +1211,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //if fuel open time data exists, put it on the fuel open time chart
-        if(dataset.getDataMap().getTags().contains("Time,FuelOpenTime")) {
+        if(dataset.getDataMap().getTags().contains("Time,FuelOpenTime[ms]")) {
             //create a dataset selection for this selection
             DatasetSelection ds = new DatasetSelection(dataset, 
-                    new ArrayList<>((ArrayList<String>) Arrays.asList(new String[] {"Time,FuelOpenTime"})), 
+                    new ArrayList<>(Arrays.asList(new String[] {"Time,FuelOpenTime[ms]"})), 
                     new ArrayList<>());
             //create selection object and assign created dataset selection to it
             Selection selection = new Selection();
