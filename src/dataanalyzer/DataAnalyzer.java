@@ -1384,15 +1384,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
        
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#6") && !dataset.getDataMap().tags.contains("Time,yAccel")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,yAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#6") && !dataset.getDataMap().tags.contains("Time,rawyAccel")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#6) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#7") && !dataset.getDataMap().tags.contains("Time,xAccel")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,xAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#7") && !dataset.getDataMap().tags.contains("Time,rawxAccel")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#7) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8") && !dataset.getDataMap().tags.contains("Time,zAccel"))
-            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,zAccel");
+        if(dataset.getDataMap().tags.contains("Time,Analog#8") && !dataset.getDataMap().tags.contains("Time,rawzAccel"))
+            EquationEvaluater.evaluate("((($(Time,Analog#8) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel");
         
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL")) {
             EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL");
@@ -1420,141 +1420,54 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //get x y z data as arrays
         ArrayList<LogObject> x,y,z;
-        x = new ArrayList<>(dataset.getDataMap().getList("Time,xAccel"));
-        y = new ArrayList<>(dataset.getDataMap().getList("Time,yAccel"));
-        z = new ArrayList<>(dataset.getDataMap().getList("Time,zAccel"));
+        x = new ArrayList<>(dataset.getDataMap().getList("Time,rawxAccel"));
+        y = new ArrayList<>(dataset.getDataMap().getList("Time,rawyAccel"));
+        z = new ArrayList<>(dataset.getDataMap().getList("Time,rawzAccel"));
         
-        //desired calibration
-        double[] desired = new double[3];
-        desired[0] = 0;
-        desired[1] = 0;
-        desired[2] = 1;
-
-        //current rotation
-        double[] have = new double[3];
-        have[0] = -.21316;
-        have[1] = .116;
-        have[2] = .91;
+        double[][] rot = CoordinateTransformer.performTransformation();
         LinkedList<LogObject> newX = new LinkedList<>();
         LinkedList<LogObject> newY = new LinkedList<>();
         LinkedList<LogObject> newZ = new LinkedList<>();
         
-        //get rotation matrix
-        double[][] rot = Mathematics.rotationMatrix3(have, desired);
+        for(int i = 0; i < x.size(); i++) {
+            //get current accel values
+            double xVal = 0, yVal = 0, zVal = 0;
+            if(x.get(i) instanceof SimpleLogObject) {
+                xVal = ((SimpleLogObject)x.get(i)).getValue();
+            }
+            if(y.get(i) instanceof SimpleLogObject) {
+                yVal = ((SimpleLogObject)y.get(i)).getValue();
+            }
+            if(z.get(i) instanceof SimpleLogObject) {
+                zVal = ((SimpleLogObject)z.get(i)).getValue();
+            }
+            //apply rotation
+            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
+            //add to new list
+            newX.add(new SimpleLogObject("Time,xAccel", rotated[0], x.get(i).getTime()));
+            newY.add(new SimpleLogObject("Time,yAccel", rotated[1], y.get(i).getTime()));
+            newZ.add(new SimpleLogObject("Time,zAccel", rotated[2], z.get(i).getTime()));
+        }
+        
+        //save to dataset
+        if(!dataset.getDataMap().tags.contains("Time,xAccel") && !dataset.getDataMap().tags.contains("Time,yAccel") && !dataset.getDataMap().tags.contains("Time,zAccel")) {
+            dataset.getDataMap().put(newX);
+            dataset.getDataMap().put(newY);
+            dataset.getDataMap().put(newZ);
+        }
 
-        //for each accel value apply rotation matrix
-        for(int i = 0; i < x.size(); i++) {
-            //get current accel values
-            double xVal = 0, yVal = 0, zVal = 0;
-            if(x.get(i) instanceof SimpleLogObject) {
-                xVal = ((SimpleLogObject)x.get(i)).getValue();
-            }
-            if(y.get(i) instanceof SimpleLogObject) {
-                yVal = ((SimpleLogObject)y.get(i)).getValue();
-            }
-            if(z.get(i) instanceof SimpleLogObject) {
-                zVal = ((SimpleLogObject)z.get(i)).getValue();
-            }
-            //apply rotation
-            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
-            //add to new list
-            newX.add(new SimpleLogObject("Time,rotX", rotated[0], x.get(i).getTime()));
-            newY.add(new SimpleLogObject("Time,rotY", rotated[1], y.get(i).getTime()));
-            newZ.add(new SimpleLogObject("Time,rotZ", rotated[2], z.get(i).getTime()));
-        }
-        
-        
-        //save to dataset
-        if(!dataset.getDataMap().tags.contains("Time,rotX") && !dataset.getDataMap().tags.contains("Time,rotY") && !dataset.getDataMap().tags.contains("Time,rotZ")) {
-            dataset.getDataMap().put(newX);
-            dataset.getDataMap().put(newY);
-            dataset.getDataMap().put(newZ);
-        }
-        
-        rot = CoordinateTransformer.performTransformation();
-        newX = new LinkedList<>();
-        newY = new LinkedList<>();
-        newZ = new LinkedList<>();
-        
-        for(int i = 0; i < x.size(); i++) {
-            //get current accel values
-            double xVal = 0, yVal = 0, zVal = 0;
-            if(x.get(i) instanceof SimpleLogObject) {
-                xVal = ((SimpleLogObject)x.get(i)).getValue();
-            }
-            if(y.get(i) instanceof SimpleLogObject) {
-                yVal = ((SimpleLogObject)y.get(i)).getValue();
-            }
-            if(z.get(i) instanceof SimpleLogObject) {
-                zVal = ((SimpleLogObject)z.get(i)).getValue();
-            }
-            //apply rotation
-            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
-            //add to new list
-            newX.add(new SimpleLogObject("Time,newRotX", rotated[0], x.get(i).getTime()));
-            newY.add(new SimpleLogObject("Time,newRotY", rotated[1], y.get(i).getTime()));
-            newZ.add(new SimpleLogObject("Time,newRotZ", rotated[2], z.get(i).getTime()));
-        }
-        
-        //save to dataset
-        if(!dataset.getDataMap().tags.contains("Time,newRotX") && !dataset.getDataMap().tags.contains("Time,newRotY") && !dataset.getDataMap().tags.contains("Time,newRotZ")) {
-            dataset.getDataMap().put(newX);
-            dataset.getDataMap().put(newY);
-            dataset.getDataMap().put(newZ);
-        }
         //add g graph charts
-        if(dataset.getDataMap().getTags().contains("Time,rotX") && dataset.getDataMap().getTags().contains("Time,rotY") && !dataset.getDataMap().tags.contains("rotY,rotX")) {
-            EquationEvaluater.evaluate("$(Time,rotX) asFunctionOf($(Time,rotY))", dataset.getDataMap(), "rotX");
+        if(dataset.getDataMap().getTags().contains("Time,xAccel") && dataset.getDataMap().getTags().contains("Time,yAccel") && !dataset.getDataMap().tags.contains("yAccel,xAccel")) {
+            EquationEvaluater.evaluate("$(Time,xAccel) asFunctionOf($(Time,yAccel))", dataset.getDataMap(), "xAccel");
         }
         
         //add oil pressure with lateral Gs
-        if(dataset.getDataMap().getTags().contains("Time,OilPressure") && dataset.getDataMap().getTags().contains("Time,rotY") && !dataset.getDataMap().tags.contains("rotY,OilPressure")) {
-            EquationEvaluater.evaluate("$(Time,OilPressure) asFunctionOf($(Time,rotY))", dataset.getDataMap(), "OilPressure");
+        if(dataset.getDataMap().getTags().contains("Time,OilPressure") && dataset.getDataMap().getTags().contains("Time,yAccel") && !dataset.getDataMap().tags.contains("yAccel,OilPressure")) {
+            EquationEvaluater.evaluate("$(Time,OilPressure) asFunctionOf($(Time,yAccel))", dataset.getDataMap(), "OilPressure");
         }
         
     }
-    
-    private double[][] getRotMax() {
-        //https://books.google.ie/books?id=VTy6BQAAQBAJ&pg=PA7&lpg=PA7&dq=pre-rotation,+tilt+post-rotation+matrices&source=bl&ots=Py9GXtE7Io&sig=xfur3P7sv_XaR9ihOAsPXvgGiWw&hl=en&sa=X&ved=0ahUKEwiCmc3V0YfLAhXFPRoKHZuODpMQ6AEIKDAC#v=onepage&q&f=false
-        //inputs xyz
-        //input as a array
-        double x = -.21316;
-        double y = .11;
-        double z = -.94276;
-        double[] input = new double[] {x, y, z};
-        //theta = cos^-1(z)
-        double theta = 1/Math.cos(z);
-        //phi = tan^-1(x/y)
-        double phi = 1/Math.tan(x/y);
-        //rTheta mat
-        double[][] rTheta = {
-            {Math.cos(theta), Math.sin(theta), 0},
-            {-1 * Math.sin(theta), Math.cos(theta), 0},
-            {0, 0, 1}
-        };
-        //rPhi mat
-        double[][] rPhi = {
-            {Math.cos(phi), 0, -Math.sin(phi)},
-            {0, 1, 0},
-            {Math.sin(phi), 0, Math.cos(phi)}
-        };
-        //do rTheta * rPhi * input
-        double[][] rThetaCrossrPhi = Mathematics.multiplyMatrices3(rTheta, rPhi);
-        double[] primes = Mathematics.multiplyVector3(input, rThetaCrossrPhi);
-        //get alpha from primes calculated
-        double alpha = 1/Math.tan(primes[1]/primes[0]);
-        //create rAlpha mat
-        double[][] rAlpha = {
-            {Math.cos(alpha), 0, -Math.sin(alpha)},
-            {0, 1, 0},
-            {Math.sin(alpha), 0, Math.cos(alpha)}
-        };
-        
-        //do rAlpha * rTheta * rPhi which gives rotation matrix
-        return Mathematics.multiplyMatrices3(Mathematics.multiplyMatrices3(rAlpha, rTheta), rPhi);
-        
-    }
-   
+
     public static void applyPostProcessing(Dataset dataset) {
         //if nothing was loaded do not try to do math channels
         if(dataset.getDataMap().isEmpty())
@@ -1664,17 +1577,17 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //rot inertias 
-        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
-            EquationEvaluater.evaluate("($(Time,newRotX) * 9.81) * 237.601 * ($(Time,WheelspeedFront) / 2.237) * 0.001341", dataset.getDataMap(), "Time,Power");
+        if(dataset.getDataMap().tags.contains("Time,xAccel") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+            EquationEvaluater.evaluate("($(Time,xAccel) * 9.81) * 237.601 * ($(Time,WheelspeedFront) / 2.237) * 0.001341", dataset.getDataMap(), "Time,Power");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,newRotX") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
+        if(dataset.getDataMap().tags.contains("Time,xAccel") && dataset.getDataMap().tags.contains("Time,WheelspeedFront")) {
             //                        Pengine = Frolling        +                             Drag                                                               +                                                                          Fmass                                                           *               V kmh 
             //                                Rx * m * g         +    .5 * p *    Cd * A *     V kmh                         *               V kmh               + (                                                      Tmass                                                          /  rrolling)       *              V kmh
             //                                Rx * m * g         +    .5 * p * Cd(Truck) * Ain / 1550   *        V ms                        *               V ms               + (  mass   *         drive line factor                                             * Acceleration    * rrolling        /  rrolling)                               *              V ms
-            EquationEvaluater.evaluate("(((.03 * 237.601 * 9.81) + (.5 * 1.21 * .6 * (1380.718 / 1550) * ($(Time,WheelspeedFront) / 2.237) * ($(Time,WheelspeedFront) / 2.237)) + ((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetter");
+            EquationEvaluater.evaluate("(((.03 * 237.601 * 9.81) + (.5 * 1.21 * .6 * (1380.718 / 1550) * ($(Time,WheelspeedFront) / 2.237) * ($(Time,WheelspeedFront) / 2.237)) + ((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,xAccel) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetter");
             //                           (  mass   *         drive line factor                                              * Acceleration             * rrolling        /  rrolling)        *              V ms                 * n/s to hrprs
-            EquationEvaluater.evaluate("((((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,newRotX) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetterNoResistance");
+            EquationEvaluater.evaluate("((((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,xAccel) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetterNoResistance");
 
         }
         
