@@ -880,12 +880,17 @@ public class EquationEvaluater {
         
         //see if all variables exist, we can make assumption tags list is valid if not empty
         if(dataMap.tags.isEmpty())
-            if(vars.size() > 0)
+            if(vars.size() > 0) {
+                System.out.println("datamap empty!");
                 return -1;
+            }
         else {
             for(String s : vars) {
-                if(!dataMap.tags.contains(s))
+                if(!dataMap.tags.contains(s)) {
+                    System.out.println("Tag didn't exist in datamap. Equation attempted:");
+                    System.out.println(equation);
                     return -2;
+                }
             }
         }
         
@@ -906,8 +911,10 @@ public class EquationEvaluater {
             if(sizeToBe == -1)
                 sizeToBe = dataMap.getList(s).size();
             else
-                if(dataMap.getList(s).size() != sizeToBe)
+                if(dataMap.getList(s).size() != sizeToBe) {
+                    System.out.println("Data size mismatch!");
                     return -3;
+                }
         }
         
         return sizeToBe;
