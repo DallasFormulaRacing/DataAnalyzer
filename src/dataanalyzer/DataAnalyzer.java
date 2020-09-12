@@ -1432,6 +1432,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //add g graph charts
         if(dataset.getDataMap().getTags().contains("Time,xAccel[g]") && dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("yAccel,xAccel[g]")) {
             EquationEvaluater.evaluate("$(Time,xAccel[g]) asFunctionOf($(Time,yAccel[g]))", dataset.getDataMap(), "xAccel[g]");
+            if(dataset.getDataMap().tags.contains("yAccel[g],xAccel[g]")) {
+                LinkedList<LogObject> los = dataset.getDataMap().getList("yAccel[g],xAccel[g]");
+                //this should hopefully force multiple xAccelerations for one yAcceleration value and force the graph to not draw a line.
+                dataset.getDataMap().put(new FunctionOfLogObject("yAccel[g],xAccel[g]", 0, 0));
+                dataset.getDataMap().put(new FunctionOfLogObject("yAccel[g],xAccel[g]", 0.001, 0));
+                dataset.getDataMap().put(new FunctionOfLogObject("yAccel[g],xAccel[g]", -0.001, 0));
+                
+                
+            }
         }
         
         //add oil pressure with lateral Gs
