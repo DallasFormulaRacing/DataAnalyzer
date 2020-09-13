@@ -203,9 +203,9 @@ public class LambdaMap extends javax.swing.JFrame {
      */
     private void updateTables() {
         LinkedList<LogObject> list = dataMap.getList("Time,RPM");
-        LinkedList<LogObject> list2 = dataMap.getList("Time,TPS");
+        LinkedList<LogObject> list2 = dataMap.getList("Time,TPS[%]");
         LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
-        LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime");
+        LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime[ms]");
 
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
