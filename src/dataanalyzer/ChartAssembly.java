@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JInternalFrame;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -252,12 +253,28 @@ public class ChartAssembly implements ChartMouseListener {
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
         
+        // create extrude feature that copies information to external JFrame
+        JMenuItem extrude = new JMenuItem("Extrude");
+        extrude.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame chartJFrame = new JFrame("Chart");
+                chartJFrame.setVisible(true);
+                chartJFrame.setContentPane(chartPanel);
+                chartJFrame.setSize(640, 480);
+                chartJFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                chartFrame.setVisible(false);
+            }
+        });
+        extrude.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.ALT_MASK));
+        
         //add created menu items to menu for frame
         frameMenuBar.add(data);
         frameMenuBar.add(histogram);
         frameMenuBar.add(filtering);
         frameMenuBar.add(markers);
         frameMenuBar.add(statistics);
+        frameMenuBar.add(extrude);
         
         //set created menu to frame
         chartFrame.setJMenuBar(frameMenuBar);
@@ -354,7 +371,7 @@ public class ChartAssembly implements ChartMouseListener {
             }
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
-
+        
         //add created menu items to current menu
         menu.add(data);
         menu.add(histogram);
