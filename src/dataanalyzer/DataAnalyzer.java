@@ -9,6 +9,8 @@ import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
@@ -1001,7 +1003,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
                     break;
                 }
 
@@ -1069,7 +1071,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
                     break;
                 }
 
@@ -1321,7 +1323,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
                     break;
                 }
             }
