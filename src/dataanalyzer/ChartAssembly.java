@@ -253,7 +253,7 @@ public class ChartAssembly implements ChartMouseListener {
         });
         statistics.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.ALT_MASK));
         
-        //create static markers menu item
+        // create extrude feature that copies information to external JFrame
         JMenuItem extrude = new JMenuItem("Extrude");
         extrude.addActionListener(new ActionListener() {
             @Override
@@ -262,6 +262,8 @@ public class ChartAssembly implements ChartMouseListener {
                 chartJFrame.setVisible(true);
                 chartJFrame.setContentPane(chartPanel);
                 chartJFrame.setSize(640, 480);
+                chartJFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                chartFrame.setVisible(false);
             }
         });
         extrude.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.ALT_MASK));
