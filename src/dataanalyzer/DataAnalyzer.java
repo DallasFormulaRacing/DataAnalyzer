@@ -95,8 +95,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     JOptionPane.QUESTION_MESSAGE);
                 
                 switch(promptResult) {
-                    case JOptionPane.YES_OPTION : saveFile(openedFilePath); curr.dispose(); break;
-                    case JOptionPane.NO_OPTION : curr.dispose(); break;
+                    case JOptionPane.YES_OPTION : saveFile(openedFilePath); System.exit(0); break;
+                    case JOptionPane.NO_OPTION : System.exit(0); break;
                     case JOptionPane.CANCEL_OPTION : break;
                 }
             }
