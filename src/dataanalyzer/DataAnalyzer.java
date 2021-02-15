@@ -9,6 +9,8 @@ import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
@@ -984,28 +986,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void defaultTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultTheme_menuitemActionPerformed
         currTheme = Theme.DEFAULT;
         //light theme parameters
-        UIManager.put( "control", new Color(214,217,223) );
-        UIManager.put( "info", new Color(242,242,189) );
-        UIManager.put( "nimbusBase", new Color(51,98,140) );
-        UIManager.put( "nimbusAlertYellow", new Color(255,220,35) );
-        UIManager.put( "nimbusDisabledText", new Color(142,143,145) );
-        UIManager.put( "nimbusFocus", new Color(115,164,209));
-        UIManager.put( "nimbusGreen", new Color(176,179,50) );
-        UIManager.put( "nimbusInfoBlue", new Color(47,92,180));
-        UIManager.put( "nimbusLightBackground", new Color(255,255,255));
-        UIManager.put( "nimbusOrange", new Color(191,98,4) );
-        UIManager.put( "nimbusRed", new Color(169,46,34) );
-        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
-        UIManager.put( "nimbusSelectionBackground", new Color(57,105,138) );
-        UIManager.put( "text", new Color(0,0,0) );
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-
-            }
+            javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -1052,28 +1034,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void darkTheme_menuitemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_darkTheme_menuitemActionPerformed
         currTheme = Theme.DARK;
         //dark
-        UIManager.put( "control", new Color( 128, 128, 128));
-        UIManager.put( "info", new Color(128,128,128));
-        UIManager.put( "nimbusBase", new Color( 18, 30, 49));
-        UIManager.put( "nimbusAlertYellow", new Color( 248, 187, 0));
-        UIManager.put( "nimbusDisabledText", new Color( 128, 128, 128));
-        UIManager.put( "nimbusFocus", new Color(115,164,209));
-        UIManager.put( "nimbusGreen", new Color(176,179,50));
-        UIManager.put( "nimbusInfoBlue", new Color( 66, 139, 221));
-        UIManager.put( "nimbusLightBackground", new Color( 18, 30, 49));
-        UIManager.put( "nimbusOrange", new Color(191,98,4));
-        UIManager.put( "nimbusRed", new Color(169,46,34));
-        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255));
-        UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156));
-        UIManager.put( "text", new Color( 230, 230, 230));
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-
-            }
+            javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatDarkLaf");
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(DataAnalyzer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -1321,7 +1283,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    javax.swing.UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
                     break;
                 }
             }
