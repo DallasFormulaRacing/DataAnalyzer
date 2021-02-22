@@ -6,7 +6,6 @@
 package dataanalyzer;
 
 import javax.swing.JInternalFrame;
-
 /**
  * Initializing a chartFrame
  * @author aribdhuka

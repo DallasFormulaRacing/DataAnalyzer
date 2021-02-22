@@ -21,8 +21,7 @@ import org.jfree.chart.*;
  */
 public class ChartManager {
     
-    private final JFrame parent;
-    
+    private final DataAnalyzer parent;
     //status of lapBreakerTool
     private int lapBreakerActive;
     //lap that will be created and applied to lapBreaker list
@@ -46,7 +45,7 @@ public class ChartManager {
     private ArrayList<SizeListener> listeners;
     
     
-    public ChartManager(JFrame parent) {
+    public ChartManager(DataAnalyzer parent) {
         this.parent = parent;
         lapBreakerActive = -1;
         swapActive = -1;
@@ -74,8 +73,8 @@ public class ChartManager {
     //adds a new chart
     public ChartAssembly addChart() {
         ChartAssembly chart = new ChartAssembly(this);
-        chart.getOverlay().rangeMarkersActive = ((DataAnalyzer) parent).rangeMarkersActive;
-        parent.add(chart.chartFrame);
+        chart.getOverlay().rangeMarkersActive = parent.rangeMarkersActive;
+        parent.desktop.add(chart.chartFrame);
         charts.add(chart);
         return chart;
     }
@@ -159,7 +158,7 @@ public class ChartManager {
         d.getDataMap().addTagSizeChangeListener(new SizeListener() {
             @Override
             public void sizeUpdate() {
-                if(!((DataAnalyzer) parent).isOpeningAFile()) {
+                if(!parent.isOpeningAFile()) {
                     Lap.applyToDataset(d.getDataMap(), d.getLapBreaker());
 
                 }
