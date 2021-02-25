@@ -118,7 +118,7 @@ public class ChartAssembly implements ChartMouseListener {
      * loads and creates an empty chart panel
      * adds the panel to the frame,
      */
-    private void showEmptyGraph() {
+    protected void showEmptyGraph() {
         final XYSeriesCollection data = new XYSeriesCollection();
 
         // Add values of ( Age, Happiness)

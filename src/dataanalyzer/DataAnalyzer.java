@@ -11,6 +11,7 @@ import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
@@ -39,11 +40,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JDesktopPane;
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import org.jfree.chart.plot.ValueMarker;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -64,6 +69,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     Settings settings;
     
     private String fileNotes;
+    
+    private int staticChartMenuItemCount;
     
     //holds the current theme
     protected Theme currTheme = Theme.DEFAULT;
@@ -124,6 +131,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //set the opened file path to empty string to prevent null pointer exceptions
         openedFilePath = "";
+        
+        //setup charts menu
+        try {
+            setupChartConfigurationsMenu();
+        } catch (IOException e) {
+            Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
+        }
         
         chartManager.addDatasetSizeChangeListener(new SizeListener() {
             @Override
@@ -230,6 +244,101 @@ public class DataAnalyzer extends javax.swing.JFrame {
         return datasetSubMenu;
     }
     
+        
+    private void setupChartConfigurationsMenu() throws IOException {
+        //get current OS
+        String OS = System.getProperty("os.name");
+        
+        //for Windows
+        if (OS.startsWith("Windows")) {
+            String home = System.getProperty("user.home");
+            //check for files in this folder
+            final File folder = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
+            //for each object in this directory
+            for (final File fileEntry : folder.listFiles()) {
+                //check if its a file
+                if (fileEntry.isFile()) {
+                    //get the extension
+                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(File.separator), fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    String extension = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    //if its the right extension
+                    if(extension.equals(".dfrchartconfig")) {
+                        //add menu item
+                        JMenuItem item = new JMenuItem(filename);
+                        item.addMouseListener(new MouseAdapter() {
+                            public void mousePressed(MouseEvent e) {
+                                try {
+                                    if(e.getButton() == MouseEvent.BUTTON1){
+                                        System.out.println("button1");
+                                        ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
+                                    }else if(e.getButton() == MouseEvent.BUTTON2){
+                                        System.out.println("button2");
+                                        showPopUp(e);
+                                    }
+                                } catch (FileNotFoundException fnfe) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (IOException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (ParseException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Parsing File", Toast.DURATION_MEDIUM);
+                                }
+                            }
+                            
+                            private void showPopUp(MouseEvent e) {
+                                PopUpMenu menu = new PopUpMenu();
+                                menu.show(e.getComponent(), e.getX(), e.getY());
+                            }
+    
+                            class PopUpMenu extends JPopupMenu {
+                                JMenuItem deleteItem;
+                                public PopUpMenu() {
+                                    System.out.println("got here");
+                                    deleteItem = new JMenuItem("Delete");
+                                    add(deleteItem);
+                                }
+                            }
+                        });
+                        chartMenu.add(item);
+                    }
+                }
+            }
+        } else if (OS.startsWith("Linux") || OS.startsWith("Mac")) {
+            char sep = '/';
+            //check for files in this folder
+            final File folder = new File(sep+"Applications"+sep+"DataAnalyzer"+sep+"ChartConfigurations");
+            //for each object in this directory
+            for (final File fileEntry : folder.listFiles()) {
+                //check if its a file
+                if (fileEntry.isFile()) {
+                    //get the extension
+                    String filename = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf(sep), fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    String extension = fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().lastIndexOf('.'));
+                    //if its the right extension
+                    if(extension.equals(".dfrchartconfig")) {
+                        //add menu item
+                        JMenuItem item = new JMenuItem(filename);
+                        item.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
+                                } catch (FileNotFoundException fnfe) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (IOException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+                                } catch (ParseException ex) {
+                                    Toast.makeToast(DataAnalyzer.this, "Error Parsing File", Toast.DURATION_MEDIUM);
+                                }
+                            }
+                        });
+                        chartMenu.add(item);
+                    }
+                }
+            }
+        }
+    }
+
+    
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
@@ -308,15 +417,19 @@ public class DataAnalyzer extends javax.swing.JFrame {
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
+        chartMenu = new javax.swing.JMenu();
+        saveChartConfiguration = new javax.swing.JMenuItem();
         datasetMenu = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
+
+        desktop.setLayout(null);
         getContentPane().add(desktop, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -325,7 +438,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newWindowMenuItem);
 
-        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
         openBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -334,7 +447,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(openBtn);
 
-        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
         saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -343,7 +456,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveMenuButton);
 
-        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         saveAsMenuItem.setText("Save As");
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -352,7 +465,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveAsMenuItem);
 
-        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         exportMenuItem.setText("Export");
         exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -361,7 +474,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(exportMenuItem);
 
-        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         resetMenuItem.setText("Reset");
         resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -378,7 +491,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(settingsMenuItem);
 
-        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Exit");
         closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -399,7 +512,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         editMenu.add(addMathChannelButton);
 
-        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
         addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -428,7 +541,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         fullscreenMenuItem.setText("Fullscreen");
         fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -477,7 +590,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(swapChartsMenuItem);
 
-        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         addChartMenuItem.setText("Add Chart");
         addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -511,6 +624,18 @@ public class DataAnalyzer extends javax.swing.JFrame {
         viewMenu.add(darkTheme_menuitem);
 
         menuBar.add(viewMenu);
+
+        chartMenu.setText("Charts");
+
+        saveChartConfiguration.setText("Save Chart Setup");
+        saveChartConfiguration.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveChartConfigurationActionPerformed(evt);
+            }
+        });
+        chartMenu.add(saveChartConfiguration);
+
+        menuBar.add(chartMenu);
 
         datasetMenu.setText("Dataset");
         datasetMenu.setToolTipText("");
@@ -1075,6 +1200,30 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //create window for user to modify settings
         new SettingsDialog(this, true).setVisible(true);
     }//GEN-LAST:event_settingsMenuItemActionPerformed
+
+    private void saveChartConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveChartConfigurationActionPerformed
+        String name = "";
+        Referencer<String> ref = new Referencer<>(name);
+        new FileNameDialog(this, true, ref).setVisible(true);
+        name = ref.get();
+        if(!name.equals("!#@$NONAME")) {
+            try {
+                ChartConfiguration.saveChartConfiguration(name, chartManager.getCharts(), this, chartManager);
+            } catch (IOException ex) {
+                Toast.makeToast(DataAnalyzer.this, "Error Loading File", Toast.DURATION_MEDIUM);
+            }
+        }
+        //remove all past
+        while(chartMenu.getMenuComponentCount() > staticChartMenuItemCount)
+            chartMenu.remove(chartMenu.getMenuComponent(staticChartMenuItemCount));
+            
+        //resetup
+        try {
+            setupChartConfigurationsMenu();
+        } catch (IOException e) {
+            Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
+        }
+    }//GEN-LAST:event_saveChartConfigurationActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -2473,6 +2622,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem cutDataMenuItem;
     private javax.swing.JMenuItem darkTheme_menuitem;
@@ -2489,6 +2639,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem openBtn;
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JMenuItem saveChartConfiguration;
     private javax.swing.JMenuItem saveMenuButton;
     private javax.swing.JMenuItem settingsMenuItem;
     private javax.swing.JMenuItem showRangeMarkersMenuItem;
