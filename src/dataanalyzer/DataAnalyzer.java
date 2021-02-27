@@ -21,6 +21,10 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,7 +64,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     protected boolean rangeMarkersActive;
                
     ChartManager chartManager;
-    
+    int heightFrame;
+    int widthFrame;
     Settings settings;
     
     private String fileNotes;
@@ -70,6 +75,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     public DataAnalyzer() {
         initComponents();
+        heightFrame = getHeight();
+        widthFrame = getWidth();
         this.setContentPane(desktop);
         //Setup directories
         Installer.runInstaller();
@@ -104,6 +111,28 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                
+                if (getHeight() == heightFrame && getWidth() == widthFrame)
+                    return;
+                ArrayList<ChartAssembly> charts = chartManager.getCharts();
+                float heightFact = (float) getHeight()/heightFrame;
+                float widthFact = (float) getWidth()/widthFrame;
+                
+                for(ChartAssembly chart : charts) {
+                    int width = chart.getChartFrame().getWidth();
+                    int height = chart.getChartFrame().getHeight();
+                    int xChart = chart.getChartFrame().getX();
+                    int yChart = chart.getChartFrame().getY();
+                    chart.getChartFrame().setBounds((int) (xChart*widthFact), (int) (yChart*heightFact), (int) (width*widthFact),(int) (height*heightFact));
+                }
+                heightFrame = getHeight();
+                widthFrame = getWidth();
+            }
+        });
+        
         //start with not currently opening a file
         openingAFile = false;
         
@@ -131,7 +160,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 initializeDatasetMenu();
             }
         });
-        
+               
         if(settings.getSetting("AutoCheckForUpdates").equals("true")) {
             //check for an update
             try {
