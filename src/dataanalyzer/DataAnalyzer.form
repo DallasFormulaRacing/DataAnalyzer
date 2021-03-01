@@ -233,6 +233,21 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="chartMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Charts"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="saveChartConfiguration">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Save Chart Setup"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveChartConfigurationActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="datasetMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Dataset"/>

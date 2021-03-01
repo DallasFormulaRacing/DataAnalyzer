@@ -481,4 +481,9 @@ public class Selection {
         
         return valueToReturn;
     }
+    
+    public LinkedList<DatasetSelection> getDatasetSelections() {
+        return datasetSelections;
+    }
+    
 }

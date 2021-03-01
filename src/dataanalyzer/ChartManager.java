@@ -79,6 +79,14 @@ public class ChartManager {
         return chart;
     }
     
+    public void clearCharts() {
+        while(!charts.isEmpty()) {
+            ChartAssembly chart = charts.get(0);
+            chart.chartFrame.dispose();
+            charts.remove(0);
+        }
+    }
+    
     /**
      * Provides ability to move charts around the window without dragging.
      * Trades two charts by swapping the charts position and size.
