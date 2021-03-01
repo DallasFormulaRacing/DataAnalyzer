@@ -268,11 +268,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         item.addMouseListener(new MouseAdapter() {
                             public void mousePressed(MouseEvent e) {
                                 try {
-                                    if(e.getButton() == MouseEvent.BUTTON1){
-                                        System.out.println("button1");
+                                    if(e.getButton() == MouseEvent.BUTTON1){                                        
                                         ChartConfiguration.openChartConfiguration(fileEntry.getAbsolutePath(), DataAnalyzer.this, chartManager);
                                     }else if(e.getButton() == MouseEvent.BUTTON2){
-                                        System.out.println("button2");
                                         showPopUp(e);
                                     }
                                 } catch (FileNotFoundException fnfe) {
