@@ -83,9 +83,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     public DataAnalyzer() {
         initComponents();
+        
+        // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
+        
+        // uses JDesktopPane to manage windows
         this.setContentPane(desktop);
+        
         //Setup directories
         Installer.runInstaller();
         
@@ -107,8 +112,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 // Checks if file has been opened and if its not .dfr or if its .dfr and there are changes to the file 
-                if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
+                //if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
                     
+                if (openedFilePath != "" && openedFilePath.contains(".dfr")) {
                     int promptResult = JOptionPane.showConfirmDialog(curr, 
                     "Would you like to save before closing this window?", "Save Before Close?", 
                     JOptionPane.YES_NO_CANCEL_OPTION,
@@ -1909,9 +1915,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(!fileNotes.isEmpty()) {
             sb.append("FILENOTES\n");
             sb.append(fileNotes);
-            }
+        }
         
-        String chosenFileName = "";
+        sb.append("CHARTCONFIG\n");
+        sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
         
         //if a filename was not provided
         if(filename.isEmpty() || !filename.contains(".dfr")) {
@@ -2059,7 +2066,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             sb.append("\n");
         }
         
-        String chosenFileName = "";
         
         //if a filename was not provided
         if(filename.isEmpty() || !filename.contains(".dfrasm")) {
@@ -2306,13 +2312,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
 
                 //for all the lines for lapdata
+                String check = "";
                 while(scanner.hasNextLine()) {
                     //get the next line
                     String line = scanner.nextLine();
                     if(line.isEmpty())
                         continue;
 
-                    if(line.equals(("FILENOTES"))) {
+                    if(line.equals("FILENOTES") || line.equals("CHARTCONFIG")) {
+                        check = line;
                         break;
                     }
 
@@ -2334,8 +2342,19 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
 
                 //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
-                while(scanner.hasNextLine()) {
-                    fileNotes += scanner.nextLine();
+                if (check.equals("FILENOTES")) {
+                    while(scanner.hasNextLine()) {
+                        if (fileNotes.equals("CHARTCONFIG"))
+                            break;
+                        fileNotes += scanner.nextLine();
+                    }
+                }
+                if (check.equals("CHARTCONFIG") || fileNotes.equals("CHARTCONFIG")) {
+                    try {
+                        ChartConfiguration.openDefaultChartConfiguration(scanner.nextLine(), me, chartManager);
+                    } catch (ParseException e) {
+                        System.err.println("String could not be parsed");
+                    }
                 }
 
                 //give the data to the vehicleData class to create

@@ -111,7 +111,80 @@ public class ChartConfiguration {
             System.err.println("That is not the correct file type");
         }
     }
+    
+    public static void openDefaultChartConfiguration(String chartConfig, DataAnalyzer dataAnalyzer, ChartManager chartManager) throws ParseException {
+       
+            Object obj = new JSONParser().parse(chartConfig);
+            JSONArray config = (JSONArray) obj;
+            Dimension frameSize = dataAnalyzer.getSize();
 
+            dataAnalyzer.chartManager.clearCharts();
+            for(int i = 0; i < config.size(); i++) {
+                JSONObject chartInfo = (JSONObject) config.get(i);
+                
+                //basic chart properties
+                int x = (int) ((double) frameSize.width * (double)chartInfo.get("x"));                
+                int y = (int) ((double) frameSize.height * (double)chartInfo.get("y"));
+                int width = (int) ((double) frameSize.width * (double)chartInfo.get("width"));
+                int height = (int) ((double) frameSize.height * (double)chartInfo.get("height"));
+                
+                //chart data properties
+                JSONArray selection = (JSONArray) chartInfo.get("selection");
+                LinkedList<DatasetSelection> datasetSelections = new LinkedList<>();
+                if (selection.size() > 0) {
+                    for(int j = 0; j < selection.size(); j++) {
+                        JSONObject datasetselectionjson = (JSONObject) selection.get(j);
+                        String datasetName = (String)datasetselectionjson.get("name");
+                        Dataset dataset = null;
+                        if(datasetName.isEmpty() || dataAnalyzer.chartManager.getDatasets().size() == 1) {
+                            dataset = dataAnalyzer.chartManager.getMainDataset();
+                        } else {
+                            dataset = dataAnalyzer.chartManager.getDataset(datasetName);
+                        }
+                        String tags = (String) datasetselectionjson.get("tags");
+                        String laps = (String) datasetselectionjson.get("laps");
+
+                        //convert String of tags into actual list
+                        //NEEDS to be comma(space)
+                        ArrayList<String> tagsList = new ArrayList<>();
+                        if(!tags.equals("[]")) {
+                            String[] tagsArray = tags.substring(1, tags.length() - 1).split(", ");
+                            for (int k = 0; k < tagsArray.length; k++) {
+                                tagsList.add(tagsArray[k]);
+                            }
+                        }
+
+                        //convert String of laps into Integer list of laps
+                        ArrayList<Integer> lapsList = new ArrayList<>();
+                        if(!laps.equals("[]")) {
+                            String[] lapsArray = laps.substring(1, laps.length() - 1).split(", ");
+                            for (int k = 0; k < lapsArray.length; k++) {
+                                lapsList.add(Integer.parseInt(lapsArray[k]));
+                            }
+                        }
+
+                        //create DatasetSelection
+                        DatasetSelection ds = new DatasetSelection(dataset, tagsList, lapsList);
+                        datasetSelections.add(ds);   
+                    }
+                }
+                
+                //setup selection object
+                Selection selectionObj = new Selection(datasetSelections);
+                
+                //setup chart assembly
+                ChartAssembly ca = dataAnalyzer.chartManager.addChart();
+                ca.chartFrame.setLocation(x, y);
+                ca.chartFrame.setSize(width, height);
+                ca.selection = selectionObj;
+                if(datasetSelections.size() == 0) {
+                    ca.showEmptyGraph();
+                } else {
+                    ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
+                }
+            }
+    }
+    
     /**
      * Saves the current chart configuration to the chart configuration
      * directory with the name specified by the user.
@@ -164,7 +237,49 @@ public class ChartConfiguration {
         pw.write(locations.toJSONString());
         pw.close();
     }
+    
+    public static String saveDefaultChartConfiguration(ArrayList<ChartAssembly> charts, DataAnalyzer dataAnalyzer, ChartManager chartManager) {
 
+        JSONArray locations = new JSONArray();
+
+        //Fills up locations based on the current state of the charts. 
+        for (int i = 0; i < charts.size(); i++) {
+            if((charts.get(i).getChartFrame().isVisible())) {
+                JInternalFrame chartFrame = charts.get(i).getChartFrame();
+
+                float x = (float) chartFrame.getX() / dataAnalyzer.getWidth();
+                float y = (float) chartFrame.getY() / dataAnalyzer.getHeight();
+                float width = (float) chartFrame.getWidth() / dataAnalyzer.getWidth();
+                float height = (float) chartFrame.getHeight() / dataAnalyzer.getHeight();
+                
+                JSONObject entry = new JSONObject();
+                entry.put("x", x);
+                entry.put("y", y);
+                entry.put("width", width);
+                entry.put("height", height);
+                
+                ChartAssembly chart = charts.get(i);
+                JSONArray selection = new JSONArray();
+                for(DatasetSelection ds : chart.selection.getDatasetSelections()) {
+                    JSONObject datasetselectionjson = new JSONObject();
+                    String datasetName = ds.dataset.name;
+                    if(dataAnalyzer.chartManager.getDatasets().size() == 1) {
+                        datasetName = "";
+                    }
+                    datasetselectionjson.put("name", datasetName);
+                    datasetselectionjson.put("tags", ds.selectedTags.toString());
+                    datasetselectionjson.put("laps", ds.selectedLaps.toString());
+                    selection.add(datasetselectionjson);
+                }
+                entry.put("selection", selection);
+                
+                locations.add(entry);
+            }
+        }
+
+        return locations.toJSONString();
+    }
+    
     /**
      * Sets the file directory according to the operating system
      */
