@@ -53,6 +53,7 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import org.jfree.chart.plot.ValueMarker;
 import org.json.simple.parser.ParseException;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -90,7 +91,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //get current user settings
         settings = Settings.getInstance();
-        
+         
         //to prevent nulls, start as blank
         fileNotes = "";
         
@@ -105,16 +106,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                int promptResult = JOptionPane.showConfirmDialog(curr, 
+                // Checks if file has been opened and if its not .dfr or if its .dfr and there are changes to the file 
+                if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
+                    
+                    int promptResult = JOptionPane.showConfirmDialog(curr, 
                     "Would you like to save before closing this window?", "Save Before Close?", 
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
+
+                    switch(promptResult) {
+                        case JOptionPane.YES_OPTION : saveFile(openedFilePath); System.exit(0); break;
+                        case JOptionPane.NO_OPTION : System.exit(0); break;
+                        case JOptionPane.CANCEL_OPTION : break;
+                    }
+                } else
+                    System.exit(0);
                 
-                switch(promptResult) {
-                    case JOptionPane.YES_OPTION : saveFile(openedFilePath); System.exit(0); break;
-                    case JOptionPane.NO_OPTION : System.exit(0); break;
-                    case JOptionPane.CANCEL_OPTION : break;
-                }
             }
         });
         
@@ -1969,6 +1976,64 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         }
     }
+    // Checks if there have been any changes to the file
+    private boolean ifChange(String filename) {
+        // gets dataset
+        Dataset dataset = chartManager.getMainDataset();        
+        //add normal data
+        StringBuilder sb = new StringBuilder();
+        //append log data
+        sb.append(getStringOfData(dataset));
+        //append vehicle dynamic data
+        sb.append("VEHICLEDYNAMICDATA");
+        sb.append("\n");
+        sb.append(dataset.getVehicleData().getStringOfData());
+        //append lap data
+        sb.append("LAPDATA");
+        sb.append("\n");
+        sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
+        
+        if(!fileNotes.isEmpty()) {
+            sb.append("FILENOTES\n");
+            sb.append(fileNotes);
+        }
+        // Gets file directory depending on OS
+        String home = System.getProperty("user.home");
+        String fileDirectory = "";
+        String os = Installer.getOS();
+        if (os.equals("Windows")) {
+            fileDirectory = home + "\\AppData\\Local\\DataAnalyzer\\Temp\\temp.dfr";
+        } else
+            fileDirectory = "/Applications/DataAnalyzer/Temp/temp.dfr";
+        
+        File temp = new File(fileDirectory);
+            
+        //try to open a file writer
+        try(FileWriter fw = new FileWriter(temp)) {
+            //write the data
+            fw.write(sb.toString());
+            //close the file writer
+            fw.close();
+        //exception handling
+        } catch (IOException e) {
+            //error message displayed
+            new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
+        }
+        File orig = new File(filename);
+        boolean ifEqual = true;
+        
+        try {
+            // Compares content of the file
+            ifEqual = FileUtils.contentEquals(temp, orig);
+        } catch (IOException e) {
+            new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
+        }
+        
+        // deletes the temporary file when done
+        temp.delete();
+        
+        return ifEqual;
+    }
     
     private void saveFileAssembly(String filename) {
          //add normal data
@@ -2065,7 +2130,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public void openTXT(Dataset dataset, String filepath) {
         
         openingAFile = true;
-        
+
         //show loading screen
         LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
@@ -2531,7 +2596,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public void importTXT(String filepath) {
                 
         openingAFile = true;
-        
+
         //show loading screen
         LoadingDialog loading = new LoadingDialog(filepath);
         loading.setVisible(true);
