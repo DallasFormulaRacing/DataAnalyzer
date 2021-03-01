@@ -59,7 +59,7 @@ public class ChartConfiguration {
                         String datasetName = (String)datasetselectionjson.get("name");
                         Dataset dataset = null;
                         if(datasetName.isEmpty() || dataAnalyzer.chartManager.getDatasets().size() == 1) {
-                            dataAnalyzer.chartManager.getMainDataset();
+                            dataset = dataAnalyzer.chartManager.getMainDataset();
                         } else {
                             dataset = dataAnalyzer.chartManager.getDataset(datasetName);
                         }
