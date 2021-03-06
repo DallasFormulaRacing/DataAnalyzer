@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import static java.lang.Math.floor;
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -208,10 +209,11 @@ public class ChartConfiguration {
                 float height = (float) chartFrame.getHeight() / dataAnalyzer.getHeight();
                 
                 JSONObject entry = new JSONObject();
-                entry.put("x", x);
-                entry.put("y", y);
-                entry.put("width", width);
-                entry.put("height", height);
+                // truncates values so we dont have issues checking for changes in file
+                entry.put("x", Math.floor(x * 100) / 100);
+                entry.put("y", Math.floor(y * 100) / 100);
+                entry.put("width", Math.floor(width * 100) / 100);
+                entry.put("height", Math.floor(height * 100) / 100);
                 
                 ChartAssembly chart = charts.get(i);
                 JSONArray selection = new JSONArray();
@@ -253,10 +255,11 @@ public class ChartConfiguration {
                 float height = (float) chartFrame.getHeight() / dataAnalyzer.getHeight();
                 
                 JSONObject entry = new JSONObject();
-                entry.put("x", x);
-                entry.put("y", y);
-                entry.put("width", width);
-                entry.put("height", height);
+                // truncates values so we dont have issues checking for changes in file
+                entry.put("x", Math.floor(x * 100) / 100);
+                entry.put("y", Math.floor(y * 100) / 100);
+                entry.put("width", Math.floor(width * 100) / 100);
+                entry.put("height", Math.floor(height * 100) / 100);
                 
                 ChartAssembly chart = charts.get(i);
                 JSONArray selection = new JSONArray();

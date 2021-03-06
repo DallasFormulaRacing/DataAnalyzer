@@ -68,6 +68,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //holds if file operations are currently ongoing
     private boolean openingAFile;
     
+    private enum FileType { EMPTY, DFR, DFRASM };
+    
     protected boolean rangeMarkersActive;
                
     ChartManager chartManager;
@@ -112,15 +114,34 @@ public class DataAnalyzer extends javax.swing.JFrame {
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                // Default file 
+                FileType type = FileType.EMPTY;
+                
+                if (openedFilePath.contains(".dfr")) {
+                    // If file is .dfrasm
+                    if(openedFilePath.substring(openedFilePath.length() - 3).equals("asm"))
+                        type = FileType.DFRASM;
+                    else
+                        // If file is .dfr
+                        type = FileType.DFR;
+                }
                 // Checks if file has been opened and if its not .dfr or if its .dfr and there are changes to the file
-                if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
+                if (openedFilePath != "" && !openedFilePath.contains(".dfr")  || type == FileType.DFR && !ifEqualDfr(openedFilePath) || type == FileType.DFRASM && !ifEqualDfrasm(openedFilePath)) {
                     int promptResult = JOptionPane.showConfirmDialog(curr, 
                     "Would you like to save before closing this window?", "Save Before Close?", 
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
 
                     switch(promptResult) {
-                        case JOptionPane.YES_OPTION : saveFile(openedFilePath); System.exit(0); break;
+                        case JOptionPane.YES_OPTION : 
+                            // Checks if multiple files are opened
+                            if(getChartManager().getDatasets().size() > 1) {
+                                saveFileAssembly(openedFilePath);
+                            } else {
+                                saveFile(openedFilePath);
+                            }
+                            System.exit(0); 
+                            break;
                         case JOptionPane.NO_OPTION : System.exit(0); break;
                         case JOptionPane.CANCEL_OPTION : break;
                     }
@@ -2003,7 +2024,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     // Checks if there have been any changes to the file
-    private boolean ifChange(String filename) {
+    private boolean ifEqualDfr(String filename) {
         // gets dataset
         Dataset dataset = chartManager.getMainDataset();        
         //add normal data
@@ -2076,7 +2097,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         // deletes the temporary file when done
         temp.delete();
-        
         return ifEqual;
     }
     
@@ -2186,6 +2206,83 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
+    private boolean ifEqualDfrasm(String filename) {
+         //add normal data
+        StringBuilder sb = new StringBuilder();
+        
+        for(Dataset dataset : getChartManager().getDatasets()) {
+            sb.append(dataset.getName());
+            sb.append("\n");
+            //append log data
+            sb.append(getStringOfData(dataset));
+            //append vehicle dynamic data
+            sb.append("VEHICLEDYNAMICDATA");
+            sb.append("\n");
+            sb.append(dataset.getVehicleData().getStringOfData());
+            //append lap data
+            sb.append("LAPDATA");
+            sb.append("\n");
+            sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
+            //Should i add a check for if there are even filenotes to add or not?
+            sb.append("FILENOTES\n");
+            sb.append(fileNotes);
+            sb.append("\n");
+            sb.append("ENDDATASET");
+            sb.append("\n");
+        }
+        //Appends Chartconfig
+        sb.append("CHARTCONFIG\n");
+        sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
+        sb.append("\n");
+        //appends file version to end
+        sb.append("FILEVERSION\n");
+        String ver = "";
+        try {
+            ver = getVersion();
+        } catch (UnsupportedEncodingException e) {
+            //error message displayed
+            new MessageBox(this, "Error: File version could not be determined", true).setVisible(true);
+            ver = "Version undetermined.";
+        }
+        sb.append(ver);
+        sb.append("\n");
+        
+        // Gets file directory depending on OS
+        String home = System.getProperty("user.home");
+        String fileDirectory = "";
+        String os = Installer.getOS();
+        if (os.equals("Windows")) {
+            fileDirectory = home + "\\AppData\\Local\\DataAnalyzer\\Temp\\temp.dfrasm";
+        } else
+            fileDirectory = "/Applications/DataAnalyzer/Temp/temp.dfrasm";
+        
+        File temp = new File(fileDirectory);
+            
+        //try to open a file writer
+        try(FileWriter fw = new FileWriter(temp)) {
+            //write the data
+            fw.write(sb.toString());
+            //close the file writer
+            fw.close();
+        //exception handling
+        } catch (IOException e) {
+            //error message displayed
+            new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
+        }
+        File orig = new File(filename);
+        boolean ifEqual = true;
+        
+        try {
+            // Compares content of the files
+            ifEqual = FileUtils.contentEquals(temp, orig);
+        } catch (IOException e) {
+            new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
+        }
+        
+        // deletes the temporary file when done
+        temp.delete();
+        return ifEqual;
+    }
     //OPEN FILES OF MULTIPLE TYPES
     //THESE ARE MEANT TO OPEN A FILE IN A NEW WINDOW
     public void openTXT(Dataset dataset, String filepath) {
@@ -2396,35 +2493,27 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
                 }
 
-                //To check if the current line being read is chartconfig
-                boolean onCC = false;
+
                 //reads file notes that come before chartconfig
                 if (check.equals("FILENOTES")) {
                     while(scanner.hasNextLine()) {
-                        String nLine = scanner.nextLine();
+                        check = scanner.nextLine();
                         //checks if the current line being read is beginning of the CHARTCONFIG
-                        if (nLine.equals("CHARTCONFIG")) {
-                            onCC = true;
+                        if (check.equals("CHARTCONFIG")) {
                             break;
                         }
-                        if (fileNotes.equals("CHARTCONFIG"))
-                            break;
-                        fileNotes += nLine;
+                        fileNotes += check;
                     }
                 }
-                //if the previous line read  was chartconfig the scanner would already be past the tag which causes it to ignore CC which is what the boolean is checking for
-                if (check.equals("CHARTCONFIG") || onCC) {
-                    while (scanner.hasNextLine()) {
-                        String nLine = scanner.nextLine();
-                        if(nLine.equals("PROGRAMVERSION")) {
-                            break;
-                        }
+                
+                if (check.equals("CHARTCONFIG")) {
+                        //Gets chart config data
+                        check = scanner.nextLine();
                         try {                           
-                            ChartConfiguration.openDefaultChartConfiguration(nLine, me, chartManager);
+                            ChartConfiguration.openDefaultChartConfiguration(check, me, chartManager);
                         } catch (ParseException e) {
                             System.err.println("String could not be parsed");
                         }
-                    }
                 }
 
                 //give the data to the vehicleData class to create
@@ -2488,8 +2577,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //current tag
                     String tag = "";
                     //pull first line which should be dataset name
-                    dataset.setName(scanner.nextLine());
                     String line = scanner.nextLine();
+                    
+                    //checks for Chartconfig
+                    if(line.equals("CHARTCONFIG")){
+                        line = scanner.nextLine();
+                        try {                           
+                            ChartConfiguration.openDefaultChartConfiguration(line, me, chartManager);
+                            break;
+                        } catch (ParseException e) {
+                            System.err.println("String could not be parsed");
+                        }
+                    }
+                    
+                    dataset.setName(line);
+                    line = scanner.nextLine();
                     
                     while(!line.equals("VEHICLEDYNAMICDATA")) {
                         // If the line represents an END of the current tag
@@ -2598,23 +2700,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         new MessageBox(me, "Duplicate dataset! Couldnt add: " + e.getDatasetName(), false).setVisible(true);
                     }
                     dataset = new Dataset();
-                    
-                    //parses for Chartconfig
-                    if(line.equals("CHARTCONFIG")){
-                        while (scanner.hasNextLine()) {
-                            String nLine = scanner.nextLine();
-                            if(nLine.equals("PROGRAMVERSION")) {
-                                //skips actual version line so it  goes to end of file
-                                scanner.nextLine();
-                                break;
-                            }
-                            try {                           
-                                ChartConfiguration.openDefaultChartConfiguration(nLine, me, chartManager);
-                            } catch (ParseException e) {
-                                System.err.println("String could not be parsed");
-                            }
-                        }
-                    }
                     
                 }
                 
