@@ -1929,7 +1929,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //adds current program version
         sb.append("PROGRAMVERSION\n");
-        //not sure whether it should get version from github or the jar
         String ver = "";
         try {
             ver = getVersion();
@@ -2026,10 +2025,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             sb.append("\n");
         }
         
+        //ADD IN CONFIG
         sb.append("CHARTCONFIG\n");
         sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
         sb.append("\n");
-        //ADD IN CONFIG
         //adds current program version
         sb.append("PROGRAMVERSION\n");
         //
@@ -2105,8 +2104,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             sb.append("ENDDATASET");
             sb.append("\n");
         }
-        /*
-        // how the fuck does dfrasm work
         //Appends Chartconfig
         sb.append("CHARTCONFIG\n");
         sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
@@ -2123,7 +2120,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         sb.append(ver);
         sb.append("\n");
-        */
         
         
         //if a filename was not provided
@@ -2407,8 +2403,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     while(scanner.hasNextLine()) {
                         String nLine = scanner.nextLine();
                         //checks if the current line being read is beginning of the CHARTCONFIG
-                        //POTENTIAL ISSUE: if the notes are just the word CHARTCONFIG
-                        //SOLUTION: added a check into the filenotes method that doesn't allow it to equal only CHARTCONFIG
                         if (nLine.equals("CHARTCONFIG")) {
                             onCC = true;
                             break;
@@ -2604,11 +2598,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         new MessageBox(me, "Duplicate dataset! Couldnt add: " + e.getDatasetName(), false).setVisible(true);
                     }
                     dataset = new Dataset();
-                    /*
+                    
+                    //parses for Chartconfig
                     if(line.equals("CHARTCONFIG")){
                         while (scanner.hasNextLine()) {
                             String nLine = scanner.nextLine();
                             if(nLine.equals("PROGRAMVERSION")) {
+                                //skips actual version line so it  goes to end of file
+                                scanner.nextLine();
                                 break;
                             }
                             try {                           
@@ -2618,7 +2615,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             }
                         }
                     }
-                    */
                     
                 }
                 
