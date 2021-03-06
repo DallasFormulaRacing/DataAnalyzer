@@ -51,6 +51,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import junit.framework.Test;
 import org.jfree.chart.plot.ValueMarker;
 import org.json.simple.parser.ParseException;
 import org.apache.commons.io.FileUtils;
@@ -111,10 +112,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                // Checks if file has been opened and if its not .dfr or if its .dfr and there are changes to the file 
-                //if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
-                    
-                if (openedFilePath != "" && openedFilePath.contains(".dfr")) {
+                // Checks if file has been opened and if its not .dfr or if its .dfr and there are changes to the file
+                if (openedFilePath != "" && !openedFilePath.contains(".dfr") || openedFilePath.contains(".dfr") && !ifChange(openedFilePath)) {
                     int promptResult = JOptionPane.showConfirmDialog(curr, 
                     "Would you like to save before closing this window?", "Save Before Close?", 
                     JOptionPane.YES_NO_CANCEL_OPTION,
@@ -1135,7 +1134,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void addNotesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNotesMenuItemActionPerformed
         Referencer<String> reference = new Referencer<>(fileNotes);
         new FileNotesDialog(reference, this, true).setVisible(true);
-        fileNotes = reference.get();
+        //prevents conflicts caused by having multiple lines that just say CHARTCONFIG in .dfr file
+        String currNote = reference.get();
+        if(currNote.equals("CHARTCONFIG")) {
+            new MessageBox(this, "\"CHARTCONFIG\" is not a valid Note.", false).setVisible(true);
+            return;
+        }
+        fileNotes = currNote;
     }//GEN-LAST:event_addNotesMenuItemActionPerformed
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
@@ -1915,10 +1920,25 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(!fileNotes.isEmpty()) {
             sb.append("FILENOTES\n");
             sb.append(fileNotes);
+            sb.append("\n");
         }
         
         sb.append("CHARTCONFIG\n");
         sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
+        sb.append("\n");
+        
+        //adds current program version
+        sb.append("PROGRAMVERSION\n");
+        //not sure whether it should get version from github or the jar
+        String ver = "";
+        try {
+            ver = getVersion();
+        } catch (UnsupportedEncodingException e) {
+            //error message displayed
+            new MessageBox(this, "Error: File version could not be determined", true).setVisible(true);
+            ver = "Version undetermined.";
+        }
+        sb.append(ver);
         
         //if a filename was not provided
         if(filename.isEmpty() || !filename.contains(".dfr")) {
@@ -2003,7 +2023,26 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(!fileNotes.isEmpty()) {
             sb.append("FILENOTES\n");
             sb.append(fileNotes);
+            sb.append("\n");
         }
+        
+        sb.append("CHARTCONFIG\n");
+        sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
+        sb.append("\n");
+        //ADD IN CONFIG
+        //adds current program version
+        sb.append("PROGRAMVERSION\n");
+        //
+        String ver = "";
+        try {
+            ver = getVersion();
+        } catch (UnsupportedEncodingException e) {
+            //error message displayed
+            new MessageBox(this, "Error: File version could not be determined", true).setVisible(true);
+            ver = "Version undetermined.";
+        }
+        sb.append(ver);
+        
         // Gets file directory depending on OS
         String home = System.getProperty("user.home");
         String fileDirectory = "";
@@ -2059,12 +2098,32 @@ public class DataAnalyzer extends javax.swing.JFrame {
             sb.append("LAPDATA");
             sb.append("\n");
             sb.append(Lap.getStringOfData(dataset.getLapBreaker()));
+            //Should i add a check for if there are even filenotes to add or not?
             sb.append("FILENOTES\n");
             sb.append(fileNotes);
             sb.append("\n");
             sb.append("ENDDATASET");
             sb.append("\n");
         }
+        /*
+        // how the fuck does dfrasm work
+        //Appends Chartconfig
+        sb.append("CHARTCONFIG\n");
+        sb.append(ChartConfiguration.saveDefaultChartConfiguration(chartManager.getCharts(), this, chartManager));
+        sb.append("\n");
+        //appends file version to end
+        sb.append("FILEVERSION\n");
+        String ver = "";
+        try {
+            ver = getVersion();
+        } catch (UnsupportedEncodingException e) {
+            //error message displayed
+            new MessageBox(this, "Error: File version could not be determined", true).setVisible(true);
+            ver = "Version undetermined.";
+        }
+        sb.append(ver);
+        sb.append("\n");
+        */
         
         
         //if a filename was not provided
@@ -2341,19 +2400,36 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         dataset.getLapBreaker().add(new Lap(lapStart, lapStop, lapNumber));
                 }
 
-                //either we have alre ady reached the end of the file, or we break the last loop at "FILENOTES"
+                //To check if the current line being read is chartconfig
+                boolean onCC = false;
+                //reads file notes that come before chartconfig
                 if (check.equals("FILENOTES")) {
                     while(scanner.hasNextLine()) {
+                        String nLine = scanner.nextLine();
+                        //checks if the current line being read is beginning of the CHARTCONFIG
+                        //POTENTIAL ISSUE: if the notes are just the word CHARTCONFIG
+                        //SOLUTION: added a check into the filenotes method that doesn't allow it to equal only CHARTCONFIG
+                        if (nLine.equals("CHARTCONFIG")) {
+                            onCC = true;
+                            break;
+                        }
                         if (fileNotes.equals("CHARTCONFIG"))
                             break;
-                        fileNotes += scanner.nextLine();
+                        fileNotes += nLine;
                     }
                 }
-                if (check.equals("CHARTCONFIG") || fileNotes.equals("CHARTCONFIG")) {
-                    try {
-                        ChartConfiguration.openDefaultChartConfiguration(scanner.nextLine(), me, chartManager);
-                    } catch (ParseException e) {
-                        System.err.println("String could not be parsed");
+                //if the previous line read  was chartconfig the scanner would already be past the tag which causes it to ignore CC which is what the boolean is checking for
+                if (check.equals("CHARTCONFIG") || onCC) {
+                    while (scanner.hasNextLine()) {
+                        String nLine = scanner.nextLine();
+                        if(nLine.equals("PROGRAMVERSION")) {
+                            break;
+                        }
+                        try {                           
+                            ChartConfiguration.openDefaultChartConfiguration(nLine, me, chartManager);
+                        } catch (ParseException e) {
+                            System.err.println("String could not be parsed");
+                        }
                     }
                 }
 
@@ -2528,8 +2604,24 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         new MessageBox(me, "Duplicate dataset! Couldnt add: " + e.getDatasetName(), false).setVisible(true);
                     }
                     dataset = new Dataset();
+                    /*
+                    if(line.equals("CHARTCONFIG")){
+                        while (scanner.hasNextLine()) {
+                            String nLine = scanner.nextLine();
+                            if(nLine.equals("PROGRAMVERSION")) {
+                                break;
+                            }
+                            try {                           
+                                ChartConfiguration.openDefaultChartConfiguration(nLine, me, chartManager);
+                            } catch (ParseException e) {
+                                System.err.println("String could not be parsed");
+                            }
+                        }
+                    }
+                    */
+                    
                 }
-
+                
                 //we are finished with file operation
                 openingAFile = false;
                 
@@ -2636,7 +2728,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         worker.execute();
     }
+    
+    //adds current program version pulled from jar file like in AutoUpdate's checkForUpdate() method
+    public String getVersion() throws UnsupportedEncodingException {
+        //get current location of file
+        String path = Test.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        //get the name of the jar file that we ran
+        String decodedPath = URLDecoder.decode(path, "UTF-8");
+        
+        //pull the filename from the path
+        String filename = decodedPath.substring(decodedPath.lastIndexOf('/') + 1);
 
+        //get the current version of the file.
+        String version = filename.substring(0, filename.lastIndexOf('.')).split("DataAnalyzer")[0];
+        return version;
+    }
+    
     public long getLastTime(Dataset dataset) {
         //get the datamap
         CategoricalHashMap datamap = dataset.getDataMap();
