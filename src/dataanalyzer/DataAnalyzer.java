@@ -1982,6 +1982,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //Display success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                         this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                        openedFilePath = chooser.getSelectedFile().getAbsolutePath() + ".dfr";
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
@@ -1998,6 +1999,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //Display Success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                         this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                        openedFilePath = chooser.getSelectedFile().getAbsolutePath();
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
@@ -2164,6 +2166,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //Display success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                         this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                        openedFilePath = chooser.getSelectedFile().getAbsolutePath() + ".dfrasm";
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
@@ -2180,6 +2183,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         //Display Success Toast
                         Toast.makeToast(this, "Saved as: " + chooser.getSelectedFile().getName(), Toast.DURATION_LONG);
                         this.setTitle("DataAnalyzer - " + chooser.getSelectedFile().getName());
+                        openedFilePath = chooser.getSelectedFile().getAbsolutePath();
                     //exception handling
                     } catch (IOException e) {
                         //error message displayed
