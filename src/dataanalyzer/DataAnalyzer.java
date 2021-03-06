@@ -1032,7 +1032,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
         //save file with no known file path. Will force method to open file chooser
         if(getChartManager().getDatasets().size() > 1) {
-            saveFileAssembly("");
+            saveFileAssembly(openedFilePath);
         } else {
             saveFile(openedFilePath);
         }
