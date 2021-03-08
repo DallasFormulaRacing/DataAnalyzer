@@ -30,6 +30,7 @@ public class Installer {
         File vehicleData = new File(home + "\\AppData\\Local\\DataAnalyzer\\VehicleData\\");
         File chartConfig = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
         File settings = new File(home + "\\AppData\\Local\\DataAnalyzer\\Settings\\");
+        File temp = new File(home + "\\AppData\\Local\\DataAnalyzer\\Temp\\");
         
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdirs();
@@ -47,6 +48,9 @@ public class Installer {
             settings.mkdirs();
         }
         
+        if (!temp.isDirectory()){
+            temp.mkdirs();
+        }
     }
     
     private static void runLinuxInstaller() {
@@ -55,7 +59,8 @@ public class Installer {
         File vehicleData = new File("/Applications/DataAnalyzer/VehicleData/");
         File chartConfig = new File("/Applications/DataAnalyzer/ChartConfigurations/");
         File settings = new File("/Applications/DataAnalyzer/Settings/");
-
+        File temp = new File("/Applications/DataAnalyzer/Temp/");
+        
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdir();
 
@@ -72,6 +77,9 @@ public class Installer {
             settings.mkdir();
         }
         
+        if (!temp.isDirectory()){
+            temp.mkdirs();
+        }
     }
     
     /**
