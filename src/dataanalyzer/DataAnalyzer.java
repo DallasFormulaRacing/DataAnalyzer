@@ -939,7 +939,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
         if(getChartManager().getDatasets().size() > 1) {
-            saveFileAssembly("");
+            saveFileAssembly(openedFilePath);
         } else {
             saveFile(openedFilePath);
         }
