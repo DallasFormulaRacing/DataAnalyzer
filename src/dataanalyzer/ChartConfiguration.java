@@ -1,5 +1,10 @@
 package dataanalyzer;
 
+import dataanalyzer.charts.ChartManager;
+import dataanalyzer.charts.ChartAssembly;
+import dataanalyzer.charts.DatasetSelection;
+import dataanalyzer.charts.Selection;
+import dataanalyzer.data.Dataset;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.io.*;
@@ -97,13 +102,13 @@ public class ChartConfiguration {
                 
                 //setup chart assembly
                 ChartAssembly ca = dataAnalyzer.chartManager.addChart();
-                ca.chartFrame.setLocation(x, y);
-                ca.chartFrame.setSize(width, height);
-                ca.selection = selectionObj;
+                ca.getChartFrame().setLocation(x, y);
+                ca.getChartFrame().setSize(width, height);
+                ca.setSelection(selectionObj);
                 if(datasetSelections.size() == 0) {
                     ca.showEmptyGraph();
                 } else {
-                    ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
+                    ca.setChart(ca.getSelection().getUniqueTags().toArray(new String[ca.getSelection().getUniqueTags().size()]));
                 }
             }
             
@@ -175,13 +180,13 @@ public class ChartConfiguration {
                 
                 //setup chart assembly
                 ChartAssembly ca = dataAnalyzer.chartManager.addChart();
-                ca.chartFrame.setLocation(x, y);
-                ca.chartFrame.setSize(width, height);
-                ca.selection = selectionObj;
+                ca.getChartFrame().setLocation(x, y);
+                ca.getChartFrame().setSize(width, height);
+                ca.setSelection(selectionObj);
                 if(datasetSelections.size() == 0) {
                     ca.showEmptyGraph();
                 } else {
-                    ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
+                    ca.setChart(ca.getSelection().getUniqueTags().toArray(new String[ca.getSelection().getUniqueTags().size()]));
                 }
             }
     }
@@ -217,15 +222,15 @@ public class ChartConfiguration {
                 
                 ChartAssembly chart = charts.get(i);
                 JSONArray selection = new JSONArray();
-                for(DatasetSelection ds : chart.selection.getDatasetSelections()) {
+                for(DatasetSelection ds : chart.getSelection().getDatasetSelections()) {
                     JSONObject datasetselectionjson = new JSONObject();
-                    String datasetName = ds.dataset.name;
+                    String datasetName = ds.getDataset().getName();
                     if(dataAnalyzer.chartManager.getDatasets().size() == 1) {
                         datasetName = "";
                     }
                     datasetselectionjson.put("name", datasetName);
-                    datasetselectionjson.put("tags", ds.selectedTags.toString());
-                    datasetselectionjson.put("laps", ds.selectedLaps.toString());
+                    datasetselectionjson.put("tags", ds.getSelectedTags().toString());
+                    datasetselectionjson.put("laps", ds.getSelectedLaps().toString());
                     selection.add(datasetselectionjson);
                 }
                 entry.put("selection", selection);
@@ -263,15 +268,15 @@ public class ChartConfiguration {
                 
                 ChartAssembly chart = charts.get(i);
                 JSONArray selection = new JSONArray();
-                for(DatasetSelection ds : chart.selection.getDatasetSelections()) {
+                for(DatasetSelection ds : chart.getSelection().getDatasetSelections()) {
                     JSONObject datasetselectionjson = new JSONObject();
-                    String datasetName = ds.dataset.name;
+                    String datasetName = ds.getDataset().getName();
                     if(dataAnalyzer.chartManager.getDatasets().size() == 1) {
                         datasetName = "";
                     }
                     datasetselectionjson.put("name", datasetName);
-                    datasetselectionjson.put("tags", ds.selectedTags.toString());
-                    datasetselectionjson.put("laps", ds.selectedLaps.toString());
+                    datasetselectionjson.put("tags", ds.getSelectedTags().toString());
+                    datasetselectionjson.put("laps", ds.getSelectedLaps().toString());
                     selection.add(datasetselectionjson);
                 }
                 entry.put("selection", selection);

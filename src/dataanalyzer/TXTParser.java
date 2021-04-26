@@ -5,6 +5,9 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.data.SimpleLogObject;
+import dataanalyzer.data.CategoricalHashMap;
+import dataanalyzer.data.CategorizedValueMarker;
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import java.io.File;
 import java.io.FileNotFoundException;

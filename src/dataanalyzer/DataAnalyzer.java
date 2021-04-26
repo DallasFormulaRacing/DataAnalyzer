@@ -5,18 +5,28 @@
  */
 package dataanalyzer;
 
-import dataanalyzer.dialog.VehicleDataDialog;
-import dataanalyzer.dialog.AskVehicleDialog;
-import dataanalyzer.dialog.MathChannelDialog;
+import dataanalyzer.mathchannel.CoordinateTransformer;
+import dataanalyzer.mathchannel.EquationEvaluater;
+import dataanalyzer.mathchannel.Mathematics;
+import dataanalyzer.data.DuplicateDatasetNameException;
+import dataanalyzer.charts.ChartManager;
+import dataanalyzer.charts.ChartAssembly;
+import dataanalyzer.charts.DatasetSelection;
+import dataanalyzer.charts.Selection;
+import dataanalyzer.data.LogObject;
+import dataanalyzer.data.SimpleLogObject;
+import dataanalyzer.data.Lap;
+import dataanalyzer.data.Dataset;
+import dataanalyzer.data.CategoricalHashMap;
+import dataanalyzer.data.CategorizedValueMarker;
+import dataanalyzer.data.FunctionOfLogObject;
+import dataanalyzer.lambdamap.LambdaMap;
+import dataanalyzer.data.VehicleDataDialog;
+import dataanalyzer.data.AskVehicleDialog;
+import dataanalyzer.mathchannel.MathChannelDialog;
 import com.arib.toast.Toast;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
-import dataanalyzer.dialog.FileNameDialog;
-import dataanalyzer.dialog.FileNotesDialog;
-import dataanalyzer.dialog.LoadingDialog;
-import dataanalyzer.dialog.MessageBox;
-import dataanalyzer.dialog.SettingsDialog;
-import dataanalyzer.dialog.VitalsDialog;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -1167,7 +1177,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
         for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+            assembly.getChartFrame().dispose();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1344,7 +1354,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Selection selection = new Selection();
             selection.addDatasetSelection(ds);
             //assign this selection to our chart assembly
-            main.selection = selection;
+            main.setSelection(selection);
             main.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
         
@@ -1358,7 +1368,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Selection selection = new Selection();
             selection.addDatasetSelection(ds);
             //assign this selection to our chart assembly
-            rpm.selection = selection;
+            rpm.setSelection(selection);
             rpm.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
        
@@ -1372,7 +1382,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Selection selection = new Selection();
             selection.addDatasetSelection(ds);
             //assign this selection to our chart assembly
-            tps.selection = selection;
+            tps.setSelection(selection);
             tps.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
         
@@ -1386,7 +1396,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Selection selection = new Selection();
             selection.addDatasetSelection(ds);
             //assign this selection to our chart assembly
-            lambda.selection = selection;
+            lambda.setSelection(selection);
             lambda.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
         
@@ -1400,7 +1410,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Selection selection = new Selection();
             selection.addDatasetSelection(ds);
             //assign this selection to our chart assembly
-            fot.selection = selection;
+            fot.setSelection(selection);
             fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
     }
@@ -1522,45 +1532,45 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public static void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
         
-        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+        if(dataset.getDataMap().getTags().contains("Time,MeasuredAFR#1") && dataset.getDataMap().getTags().contains("Time,MeasuredAFR#2") && !dataset.getDataMap().getTags().contains("Time,AFRAveraged")) {
             EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#5[volts]") && !dataset.getDataMap().getTags().contains("Time,OilPressure[psi]")) {
             EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
         }
        
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#6[volts]") && !dataset.getDataMap().getTags().contains("Time,rawyAccel[g]")) {
             EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#7[volts]") && !dataset.getDataMap().getTags().contains("Time,rawxAccel[g]")) {
             EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+        if(dataset.getDataMap().getTags().contains("Time,Analog#8[volts]") && !dataset.getDataMap().getTags().contains("Time,rawzAccel[g]"))
             EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
-        if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,WSFL") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFL[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
-        if(dataset.getDataMap().tags.contains("Time,WSRL") && !dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,WSRL") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRL[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSRL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRL[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRL");
         
-        if(dataset.getDataMap().tags.contains("Time,WSFR") && !dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,WSFR") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFR[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSFR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFR[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFR");
         
-        if(dataset.getDataMap().tags.contains("Time,WSRR") && !dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,WSRR") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRR[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSRR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRR[mph]");
         }
         //delete frequency signal
@@ -1598,16 +1608,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //save to dataset
-        if(!dataset.getDataMap().tags.contains("Time,xAccel[g]") && !dataset.getDataMap().tags.contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("Time,zAccel[g]")) {
+        if(!dataset.getDataMap().getTags().contains("Time,xAccel[g]") && !dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().getTags().contains("Time,zAccel[g]")) {
             dataset.getDataMap().put(newX);
             dataset.getDataMap().put(newY);
             dataset.getDataMap().put(newZ);
         }
 
         //add g graph charts
-        if(dataset.getDataMap().getTags().contains("Time,xAccel[g]") && dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("yAccel,xAccel[g]")) {
+        if(dataset.getDataMap().getTags().contains("Time,xAccel[g]") && dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().getTags().contains("yAccel,xAccel[g]")) {
             EquationEvaluater.evaluate("$(Time,xAccel[g]) asFunctionOf($(Time,yAccel[g]))", dataset.getDataMap(), "xAccel[g]");
-            if(dataset.getDataMap().tags.contains("yAccel[g],xAccel[g]")) {
+            if(dataset.getDataMap().getTags().contains("yAccel[g],xAccel[g]")) {
                 LinkedList<LogObject> los = dataset.getDataMap().getList("yAccel[g],xAccel[g]");
                 //this should hopefully force multiple xAccelerations for one yAcceleration value and force the graph to not draw a line.
                 dataset.getDataMap().put(new FunctionOfLogObject("yAccel[g],xAccel[g]", 0, 0));
@@ -1619,7 +1629,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //add oil pressure with lateral Gs
-        if(dataset.getDataMap().getTags().contains("Time,OilPressure[psi]") && dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("yAccel[g],OilPressure[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,OilPressure[psi]") && dataset.getDataMap().getTags().contains("Time,yAccel[g]") && !dataset.getDataMap().getTags().contains("yAccel[g],OilPressure[psi]")) {
             EquationEvaluater.evaluate("$(Time,OilPressure[psi]) asFunctionOf($(Time,yAccel[g]))", dataset.getDataMap(), "OilPressure[psi]");
         }
         
@@ -1633,63 +1643,63 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //load wheelspeed averages
         
         //calculate front wheel speed averages
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]") && dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]"))
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedFR[mph]") && dataset.getDataMap().getTags().contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedFR[mph])) + ($(Time,WheelspeedFL[mph])) / 2", dataset.getDataMap(), "Time,WheelspeedFront[mph]");
-        else if(dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]"))
+        else if(dataset.getDataMap().getTags().contains("Time,WheelspeedFR[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedFR[mph]))", dataset.getDataMap(), "Time,WheelspeedFront[mph]");
-        else if(!dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]") && dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]"))
+        else if(!dataset.getDataMap().getTags().contains("Time,WheelspeedFR[mph]") && dataset.getDataMap().getTags().contains("Time,WheelspeedFL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedFL[mph]))", dataset.getDataMap(), "Time,WheelspeedFront[mph]");
         
         //calculate rear wheel speed averages
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]") && dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]"))
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedRR[mph]") && dataset.getDataMap().getTags().contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedRR[mph])) + ($(Time,WheelspeedRL[mph])) / 2", dataset.getDataMap(), "Time,WheelspeedRear[mph]");
-        else if(dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]"))
+        else if(dataset.getDataMap().getTags().contains("Time,WheelspeedRR[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedRR[mph]))", dataset.getDataMap(), "Time,WheelspeedRear[mph]");
-        else if(!dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]") && dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]"))
+        else if(!dataset.getDataMap().getTags().contains("Time,WheelspeedRR[mph]") && dataset.getDataMap().getTags().contains("Time,WheelspeedRL[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]"))
             EquationEvaluater.evaluate("($(Time,WheelspeedRL[mph]))", dataset.getDataMap(), "Time,WheelspeedRear[mph]");
         
         //calculate full average and tire slip
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]") && !dataset.getDataMap().tags.contains("Time,WheelspeedAvg[mph]") && !dataset.getDataMap().tags.contains("Time,TireSlip[%]")) {
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]") && !dataset.getDataMap().getTags().contains("Time,WheelspeedAvg[mph]") && !dataset.getDataMap().getTags().contains("Time,TireSlip[%]")) {
             EquationEvaluater.evaluate("($(Time,WheelspeedRear[mph])) + ($(Time,WheelspeedFront[mph])) / 2", dataset.getDataMap(), "Time,WheelspeedAvg[mph]");
             EquationEvaluater.evaluate("100 * (($(Time,WheelspeedRear[mph]) / $(Time,WheelspeedFront[mph])) - 1)", dataset.getDataMap(), "Time,TireSlip[%]");
         }
         
         //Create time vs distance
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]") && !dataset.getDataMap().tags.contains("Time,Distance"))
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]") && !dataset.getDataMap().getTags().contains("Time,Distance"))
             EquationEvaluater.summate("$(Time,WheelspeedFront[mph]) / 60 / 60 / 1000 * " + dataset.getPollRate("Time,WheelspeedFront[mph]"), dataset.getDataMap(), "Time,Distance");
         
         //Create sucky sucky in asain accent
-        if(dataset.getDataMap().tags.contains("Time,Barometer[psi]") && dataset.getDataMap().tags.contains("Time,MAP[psi]") && !dataset.getDataMap().tags.contains("Time,SuckySucky[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Barometer[psi]") && dataset.getDataMap().getTags().contains("Time,MAP[psi]") && !dataset.getDataMap().getTags().contains("Time,SuckySucky[psi]")) {
             EquationEvaluater.evaluate("($(Time,Barometer[psi])) - ($(Time,MAP[psi]))", dataset.getDataMap(), "Time,SuckySucky[psi]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().tags.contains("Time,RPM")) {
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().getTags().contains("Time,RPM")) {
             EquationEvaluater.evaluate("$(Time,RPM) / ($(Time,WheelspeedRear[mph]) / 60 * 63360 / (20.2 * 3.14159))", dataset.getDataMap(), "Time,TotalGearRatio", 0, 25);
         }
         
-        if(dataset.getDataMap().tags.contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().tags.contains("Time,RPM")) {
+        if(dataset.getDataMap().getTags().contains("Time,WheelspeedRear[mph]") && dataset.getDataMap().getTags().contains("Time,RPM")) {
             EquationEvaluater.evaluate("($(Time,RPM) / 1.822) / ($(Time,WheelspeedRear[mph]) * 60 * 63360 / 20.2) / (11 / 45)", dataset.getDataMap(), "Time,TransGearRatio", 0, 4);
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,BrakePressureFront[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#1[volts]") && !dataset.getDataMap().getTags().contains("Time,BrakePressureFront[psi]")) {
             EquationEvaluater.evaluate("($(Time,Analog#1[volts])-.5)*1250", dataset.getDataMap(), "Time,BrakePressureFront[psi]");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#2[volts]") && !dataset.getDataMap().tags.contains("Time,BrakePressureRear[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#2[volts]") && !dataset.getDataMap().getTags().contains("Time,BrakePressureRear[psi]")) {
             EquationEvaluater.evaluate("($(Time,Analog#2[volts])-.5)*1250", dataset.getDataMap(), "Time,BrakePressureRear[psi]");
         }
         
         
-        if(dataset.getDataMap().tags.contains("Time,TransmissionTeeth") && !dataset.getDataMap().tags.contains("Time,TransRPM")) {
+        if(dataset.getDataMap().getTags().contains("Time,TransmissionTeeth") && !dataset.getDataMap().getTags().contains("Time,TransRPM")) {
             EquationEvaluater.evaluate("($(Time,TransmissionTeeth)/23)*(23/27)*60", dataset.getDataMap(), "Time,TransRPM");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,TransRPM") && dataset.getDataMap().tags.contains("Time,RPM") && !dataset.getDataMap().tags.contains("Time,GearRatio")) {
+        if(dataset.getDataMap().getTags().contains("Time,TransRPM") && dataset.getDataMap().getTags().contains("Time,RPM") && !dataset.getDataMap().getTags().contains("Time,GearRatio")) {
             EquationEvaluater.evaluate("($(Time,RPM)/1.822) / $(Time,TransRPM)", dataset.getDataMap(), "Time,GearRatio", 0, 10);
         }
         
         //wheelspeed -> freq -> compare to RPM
         //237.601 kg
-        if(dataset.getDataMap().tags.contains("Time,TotalGearRatio") && !dataset.getDataMap().tags.contains("Time,GearRatio")) {
+        if(dataset.getDataMap().getTags().contains("Time,TotalGearRatio") && !dataset.getDataMap().getTags().contains("Time,GearRatio")) {
             //if we have total gear ratio, divide out primary reduction and final reduction to get transmission reduction
             EquationEvaluater.evaluate("$(Time,TotalGearRatio) / 1.822 / (11 / 45)", dataset.getDataMap(), "Time,GearRatio");
         }
@@ -1697,13 +1707,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //Clean gear data signal here
         cleanDataSignal(dataset);
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Analog#5[volts]") && !dataset.getDataMap().getTags().contains("Time,OilPressure[psi]")) {
             EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
         }
 
         
         //TODO: REDO ALL OF THESE VALUES.
-        if(dataset.getDataMap().tags.contains("Time,BrakePressureRear[psi]") && dataset.getDataMap().tags.contains("Time,BrakePressureRear[psi]")) {
+        if(dataset.getDataMap().getTags().contains("Time,BrakePressureRear[psi]") && dataset.getDataMap().getTags().contains("Time,BrakePressureRear[psi]")) {
             //calculate force on caliper pistons
             //EquationEvaluater.evaluate("($(Time,BrakePressureFront)*(3.14*.00090792))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonFront");
             //EquationEvaluater.evaluate("($(Time,BrakePressureRear)*(3.14*.000706858))", chartManager.getDataMap(), "Time,ForceOnCaliperPistonRear");
@@ -1714,22 +1724,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
             
         }
         //TODO: what if no brakes are applied, divide by 0 error. above 5.1
-        if(dataset.getDataMap().tags.contains("Time,EffectiveBrakeTorqueFront") && dataset.getDataMap().tags.contains("Time,EffectiveBrakeTorqueRear") && !dataset.getDataMap().tags.contains("Time,BrakeBalance")) {
+        if(dataset.getDataMap().getTags().contains("Time,EffectiveBrakeTorqueFront") && dataset.getDataMap().getTags().contains("Time,EffectiveBrakeTorqueRear") && !dataset.getDataMap().getTags().contains("Time,BrakeBalance")) {
             EquationEvaluater.evaluate("$(Time,EffectiveBrakeTorqueFront)/($(Time,EffectiveBrakeTorqueFront) + $(Time,EffectiveBrakeTorqueRear))", dataset.getDataMap(), "Time,BrakeBalance", 0, 1);
         }
 
         //Perform Operations
         //TODO: FILTERING
-        if(dataset.getDataMap().tags.contains("Time,Coolant[F]") && !dataset.getDataMap().tags.contains("Time,CoolantCelcius[C]")) {
+        if(dataset.getDataMap().getTags().contains("Time,Coolant[F]") && !dataset.getDataMap().getTags().contains("Time,CoolantCelcius[C]")) {
             EquationEvaluater.evaluate("($(Time,Coolant[F])-32)*(5/9)", dataset.getDataMap(), "CoolantCelcius[C]");
         }
         
         //rot inertias 
-        if(dataset.getDataMap().tags.contains("Time,xAccel[g]") && dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,xAccel[g]") && dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]")) {
             EquationEvaluater.evaluate("($(Time,xAccel[g]) * 9.81) * 237.601 * ($(Time,WheelspeedFront[mph]) / 2.237) * 0.001341", dataset.getDataMap(), "Time,Power[hp]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,xAccel[g]") && dataset.getDataMap().tags.contains("Time,WheelspeedFront[mph]")) {
+        if(dataset.getDataMap().getTags().contains("Time,xAccel[g]") && dataset.getDataMap().getTags().contains("Time,WheelspeedFront[mph]")) {
             //                        Pengine = Frolling        +                             Drag                                                               +                                                                          Fmass                                                           *               V kmh 
             //                                Rx * m * g         +    .5 * p *    Cd * A *     V kmh                         *               V kmh               + (                                                      Tmass                                                          /  rrolling)       *              V kmh
             //                                Rx * m * g         +    .5 * p * Cd(Truck) * Ain / 1550   *        V ms                        *               V ms               + (  mass   *         drive line factor                                             * Acceleration    * rrolling        /  rrolling)                               *              V ms
@@ -1738,15 +1748,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             EquationEvaluater.evaluate("((((237.601 * (1 + .04 + .0025 * ($(Time,TotalGearRatio) * $(Time,TotalGearRatio))) * ($(Time,xAccel[g]) * 9.81) * (20.2 / 39.27)) / (20.2 / 39.27))) * ($(Time,WheelspeedFront[mph]) / 2.237)) * .001341", dataset.getDataMap(), "Time,PowerBetterNoResistance[hp]");
 
         }
-        
+       
         //Create Distance Channels for all datasets that do not contain "Time"
-        for(int i = 0; i < dataset.getDataMap().table.length; i++) {
-            if(dataset.getDataMap().table[i] != null && !dataset.getDataMap().table[i].isEmpty() && dataset.getDataMap().table[i].getFirst().getTAG().contains("Time")) {
-                if(!dataset.getDataMap().table[i].getFirst().getTAG().equals("Time,Distance"))
-                    EquationEvaluater.evaluate("$(" + dataset.getDataMap().table[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", 
+        for(int i = 0; i < dataset.getDataMap().getTable().length; i++) {
+            if(dataset.getDataMap().getTable()[i] != null && !dataset.getDataMap().getTable()[i].isEmpty() && dataset.getDataMap().getTable()[i].getFirst().getTAG().contains("Time")) {
+                if(!dataset.getDataMap().getTable()[i].getFirst().getTAG().equals("Time,Distance"))
+                    EquationEvaluater.evaluate("$(" + dataset.getDataMap().getTable()[i].getFirst().getTAG() + ") asFunctionOf($(Time,Distance))", 
                             dataset.getDataMap(), 
-                            dataset.getDataMap().table[i].getFirst().getTAG().substring(dataset.getDataMap().table[i].getFirst().getTAG().indexOf(",") + 1, 
-                            dataset.getDataMap().table[i].getFirst().getTAG().length()));
+                            dataset.getDataMap().getTable()[i].getFirst().getTAG().substring(dataset.getDataMap().getTable()[i].getFirst().getTAG().indexOf(",") + 1, 
+                            dataset.getDataMap().getTable()[i].getFirst().getTAG().length()));
             }
         }
     }
@@ -1785,7 +1795,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 
                 //add best gear to this signal
-                cleaned.add(new SimpleLogObject("Time,Gear", bestGear, ((SimpleLogObject) lo).time));
+                cleaned.add(new SimpleLogObject("Time,Gear", bestGear, ((SimpleLogObject) lo).getTime()));
             }
         }
         
@@ -1887,7 +1897,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         StringBuilder toReturn = new StringBuilder();
         
         //for each tag of data
-        for(String tag : dataset.getDataMap().tags) {
+        for(String tag : dataset.getDataMap().getTags()) {
             //output the tag
             toReturn.append(tag);
             toReturn.append("\n");
@@ -2834,7 +2844,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         CategoricalHashMap datamap = dataset.getDataMap();
         String toUse = "";
         //find the first tag that goes has a time domain
-        for(String tag : datamap.tags) {
+        for(String tag : datamap.getTags()) {
             if(tag.matches("Time,[A-Za-z]*")) {
                 toUse = tag;
                 break;
@@ -2846,7 +2856,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             return 0;
         
         //get time paramenter of last item of this tag.
-        return datamap.getList(toUse).getLast().time;
+        return datamap.getList(toUse).getLast().getTime();
         
     }
     //returns chartManager
@@ -2857,6 +2867,25 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public boolean isOpeningAFile() {
         return openingAFile;
     }
+
+    public Theme getCurrTheme() {
+        return currTheme;
+    }
+
+    public boolean isRangeMarkersActive() {
+        return rangeMarkersActive;
+    }
+
+    public void setRangeMarkersActive(boolean rangeMarkersActive) {
+        this.rangeMarkersActive = rangeMarkersActive;
+    }
+
+    public JDesktopPane getDesktop() {
+        return desktop;
+    }
+
+    
+    
     
     /**
      * Ask the user if they want to create a vehicle before the auto dataset creation takes place
