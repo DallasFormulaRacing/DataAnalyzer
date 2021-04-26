@@ -241,7 +241,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vitals.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new VitalsDialog(DataAnalyzer.this, true, dataset.getDataMap()).setVisible(true);
+                new VitalsDialog(DataAnalyzer.this, true, dataset).setVisible(true);
             }
         });
         
@@ -2852,6 +2852,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //returns chartManager
     public ChartManager getChartManager() {
         return chartManager;
+    }
+    
+    public JDesktopPane getDesktop() {
+        return desktop;
     }
     
     public boolean isOpeningAFile() {

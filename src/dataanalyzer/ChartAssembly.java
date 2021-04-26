@@ -398,7 +398,7 @@ public class ChartAssembly implements ChartMouseListener {
     }
     
     // Displays the data for all selected data types
-    protected void setChart(String[] tags) {
+    public void setChart(String[] tags) {
 
         // Gets the specific data based on what kind of data we want to show for which 
         XYSeriesCollection[] seriesCollection;
@@ -479,7 +479,7 @@ public class ChartAssembly implements ChartMouseListener {
     }
 
     // Displays the data for all selected data types
-    protected void setChart(String[] tags, int bucketSize) {
+    public void setChart(String[] tags, int bucketSize) {
 
         // Gets the specific data based on what kind of data we want to show for which 
         XYSeriesCollection[] seriesCollection;
@@ -1001,6 +1001,14 @@ public class ChartAssembly implements ChartMouseListener {
 
     public void setChartFrame(JInternalFrame chartFrame) {
         this.chartFrame = chartFrame;
+    }
+    
+    public Selection getSelection() {
+        return selection;
+    }
+    
+    public void setSelection(Selection selection) {
+        this.selection = selection;
     }
     
     /**
