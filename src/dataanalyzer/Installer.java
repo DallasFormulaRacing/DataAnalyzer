@@ -22,6 +22,7 @@ public class Installer {
         if(OS.startsWith("Mac")){
             runLinuxInstaller();
         }
+        createMathChannels();
     }
     
     private static void runWindowsInstaller() {
@@ -31,7 +32,8 @@ public class Installer {
         File chartConfig = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
         File settings = new File(home + "\\AppData\\Local\\DataAnalyzer\\Settings\\");
         File temp = new File(home + "\\AppData\\Local\\DataAnalyzer\\Temp\\");
-        
+        File datasets = new File(home + "\\AppData\\Local\\DataAnalyzer\\Datasets\\");
+                
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdirs();
 
@@ -47,9 +49,11 @@ public class Installer {
         if (!settings.isDirectory()){
             settings.mkdirs();
         }
-        
         if (!temp.isDirectory()){
             temp.mkdirs();
+        }
+        if (!datasets.isDirectory()) {
+            datasets.mkdirs();
         }
     }
     
@@ -60,6 +64,7 @@ public class Installer {
         File chartConfig = new File("/Applications/DataAnalyzer/ChartConfigurations/");
         File settings = new File("/Applications/DataAnalyzer/Settings/");
         File temp = new File("/Applications/DataAnalyzer/Temp/");
+        File datasets = new File("/Applications/DataAnalyzer/Datasets/");
         
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdir();
@@ -76,10 +81,17 @@ public class Installer {
         if (!settings.isDirectory()){
             settings.mkdir();
         }
-        
         if (!temp.isDirectory()){
             temp.mkdirs();
         }
+        if (!datasets.isDirectory()) {
+            datasets.mkdirs();
+        }
+    }
+    
+    private static void createMathChannels()
+    {
+        
     }
     
     /**
@@ -122,5 +134,4 @@ public class Installer {
             return "/Applications/DataAnalyzer/Settings/";
         }
     }
-    
 }
