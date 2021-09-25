@@ -1522,29 +1522,50 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public static void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
         
-        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
-            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+            EquationEvaluater.evaluate("$(Time,MeasuredAFR#1)", dataset.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
-        }
-       
-        
-        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#7[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
-            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        }
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        // 2021 Competition Car PE3 Settings
+//        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+//            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+//            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+//            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
+//        }
+//       
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+//        }
+//        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+//            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
+        
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
