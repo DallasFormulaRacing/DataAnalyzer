@@ -710,7 +710,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
-
+            
             // Override approveSelection method because we only want to approve
             //  the selection if its is a .csv file.
             @Override
@@ -764,6 +764,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         };
 
+        // Set the preferred size of the fileChooser to 500x500
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
+        
         // showOpenDialog returns the chosen option and if it as an approve
         fileChooser.setMultiSelectionEnabled(true);
         //  option then the file should be imported and opened
@@ -1010,6 +1013,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
             }
         };
+        
+        // Set the dimensions of the JFileChooser to the preferred size
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
 
         // showOpenDialog returns the chosen option and if it as an approve
         //  option then the file should be imported and opened
@@ -1043,6 +1049,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String data = datasetToCSV();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(""));
         //variable that holds result
@@ -1455,6 +1463,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String sb = dataset.getVehicleData().getStringOfData();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(filename));
         //variable that holds result
@@ -1986,6 +1996,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
@@ -2170,6 +2182,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
