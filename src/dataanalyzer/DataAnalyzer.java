@@ -764,7 +764,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         };
 
-        // Set the preferred size of the fileChooser to 500x500.
+        // Set the preferred size of the fileChooser to 500x500
         fileChooser.setPreferredSize(new Dimension(1100, 700));
         
         // showOpenDialog returns the chosen option and if it as an approve
