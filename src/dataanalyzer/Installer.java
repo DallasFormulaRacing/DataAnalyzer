@@ -22,6 +22,9 @@ public class Installer {
         if(OS.startsWith("Mac")){
             runLinuxInstaller();
         }
+        if(OS.startsWith("Linux")) {
+            runLinuxInstaller();
+        }
     }
     
     private static void runWindowsInstaller() {
@@ -55,11 +58,26 @@ public class Installer {
     
     private static void runLinuxInstaller() {
         String home = System.getProperty("user.home");
+        File applicationsFolder = new File("/Applications/");
         File dataAnalyzer = new File("/Applications/DataAnalyzer/");
         File vehicleData = new File("/Applications/DataAnalyzer/VehicleData/");
         File chartConfig = new File("/Applications/DataAnalyzer/ChartConfigurations/");
         File settings = new File("/Applications/DataAnalyzer/Settings/");
         File temp = new File("/Applications/DataAnalyzer/Temp/");
+        
+        if(!applicationsFolder.isDirectory()) {
+            boolean created = applicationsFolder.mkdir();
+            //TODO: Could create a dialog to ask the user to create directory as admin
+            //commands to do as follows
+            //mkdir /Applications/
+            //name=$(whoami)
+            //sudo chmod a+wrx Applications/
+            //above command should hopefully prompt OS to show insert password dialog to run. Needs to be tested.
+            if(created == false) {
+                System.err.println("Errror in installer could not continue!!! Try creating /Applications/ and giving permissions.");
+                System.exit(1);
+            }
+        }
         
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdir();
@@ -96,6 +114,9 @@ public class Installer {
         }
         if(OS.startsWith("Mac")){
             return "Mac";
+        }
+        if(OS.startsWith("Linux")) {
+            return "Linux";
         }
         
         return "Other";
