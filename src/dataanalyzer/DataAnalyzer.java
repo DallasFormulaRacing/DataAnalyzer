@@ -718,7 +718,233 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void openBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBtnClicked
-        openFile(null);
+        
+        // Open a separate dialog to select a .csv file
+        fileChooser = new JFileChooser() {
+            
+            // Override approveSelection method because we only want to approve
+            //  the selection if its is a .csv file.
+            @Override
+            public void approveSelection() {
+                //get all selected files
+                File[] chosenFiles = getSelectedFiles();
+                
+                //check to see if all files are legal
+                boolean toApprove = true;
+                for(File chosenFile : chosenFiles) {
+                    if(chosenFile.exists()) {
+                        // Get the file extension to make sure it is .csv
+                        String filePath = chosenFile.getAbsolutePath();
+                        int lastIndex = filePath.lastIndexOf(".");
+                        String fileExtension = filePath.substring(lastIndex,
+                                filePath.length());
+
+                        // approve selection if it is a .csv file
+                        if (!(fileExtension.equals(".dfr") || 
+                                fileExtension.equals(".csv") || 
+                                fileExtension.equals(".txt") || 
+                                fileExtension.equals(".dfrasm"))) {
+                            toApprove = false;
+                            // display error message - that selection should not be approve
+                            new MessageBox(DataAnalyzer.this, "Error: Selection could not be approved", true).setVisible(true);
+                            this.cancelSelection();
+                        }
+                    } else {
+                        toApprove = false;
+                    }
+                }
+                
+                //if all files are legal
+                if(toApprove) {
+                    if(chosenFiles.length > 0) {
+                        if(chosenFiles[0].exists()) {
+                            String filePath = chosenFiles[0].getAbsolutePath();
+                            
+                            if(filePath.lastIndexOf('/') != -1) {
+                                setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+                            } else if(filePath.lastIndexOf('\\') != -1) {
+                                setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('\\')));
+                            } else {
+                                setTitle("DataAnalyzer - " + filePath);
+                            }
+                        }
+                    }
+                    super.approveSelection();
+                }
+
+            }
+        };
+
+        // Set the preferred size of the fileChooser to 500x500
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
+        
+        // showOpenDialog returns the chosen option and if it as an approve
+        fileChooser.setMultiSelectionEnabled(true);
+        //  option then the file should be imported and opened
+        int choice = fileChooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            boolean onlyDFRFiles = true;
+            for(File file : fileChooser.getSelectedFiles()) {
+                String filePath = file.getAbsolutePath();
+                int lastIndex = filePath.lastIndexOf(".");
+                String fileExtension = filePath.substring(lastIndex,
+                        filePath.length());
+                if(!fileExtension.equals(".dfr") && !fileExtension.equals(".dfrasm")) {
+                    onlyDFRFiles = false;
+                    break;
+                }
+                
+            }
+            
+            boolean applyPostProcessing = false;
+            
+            if(!onlyDFRFiles) {
+                //ask for post processing
+                String alwaysApply = settings.getSetting("AlwaysApplyPostProcessing");
+                if(alwaysApply.equals("Always"))
+                    applyPostProcessing = true;
+                else if(alwaysApply.equals("Never"))
+                    applyPostProcessing = false;
+                else
+                    applyPostProcessing = askForPostProcessing();
+
+                //ask the user to import a vehicle. if any but cancel pressed continue
+
+                /**
+                 * No longer asking for vehicle. The user will setup their preferred
+                 * vehicle through a settings screen that will auto apply to each
+                 * dataset automatically.
+                 */
+//                boolean shouldContinue = askForVehicle();
+//                if(!shouldContinue)
+//                    return;
+            }
+            
+            File[] chosenFiles = fileChooser.getSelectedFiles();
+            boolean multipleWindows = true;
+            if(chosenFiles.length > 1)
+                multipleWindows = createConfirmDialog("Multiple Windows?", "Should these files be opened in independent windows?");
+            //should we create a new window?
+            boolean toCreateNewWindow = false;
+            //holds new window number opened
+            int windowCount = 0;
+            //for each file
+            for(File chosenFile : chosenFiles) {
+                //if we need to create a new window
+                if(toCreateNewWindow) {
+                    //new window object
+                    DataAnalyzer da = new DataAnalyzer();
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName().substring(0, chosenFile.getName().lastIndexOf('.')));
+                    try {
+                        da.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                        continue;
+                    }
+                    //set vehicle data
+                    da.getChartManager().getMainDataset().setVehicleData(chartManager.getMainDataset().getVehicleData());
+                    //get file path
+                    String chosenFilePath = chosenFile.getAbsolutePath();
+                    //set the file path for that object
+                    da.openedFilePath = chosenFilePath;
+                    //get index of the last.
+                    int lastIndex = chosenFilePath.lastIndexOf(".");
+                    //get file extension
+                    String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
+                    
+                    //if its a created file
+                    if(fileExtension.equals(".dfr")) {
+                        da.openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        da.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
+                    }
+                    //if its a new import
+                    else {
+                        //if its a csv
+                        if(fileExtension.equals(".csv")) {
+                            //make the new window import a PE3 file
+                            try {
+                                da.openPE3Files(dataset, chosenFile, applyPostProcessing);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                                continue;
+                            }
+                        //else if its a TXT make the new window import a CSV
+                        } else if (fileExtension.equals(".txt")) {
+                            da.openTXT(dataset, chosenFilePath);
+                        }
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                            da.applyPostProcessing(dataset);
+                    }
+                    
+                    da.setVisible(true);
+                    if(chosenFilePath.lastIndexOf('/') != -1) {
+                        da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                    } else {
+                        da.setTitle("DataAnalyzer - " + chosenFilePath);
+                    }
+                    da.setLocation(100*windowCount, 100*windowCount);
+                    da.openingAFile = false;
+                //if we are not to create a new window
+                } else {
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName());
+                    try {
+                        this.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                        continue;
+                    }
+                    //get file path
+                    String chosenFilePath = chosenFile.getAbsolutePath();
+                    //set this windows last opened filepath to the current filepath
+                    openedFilePath = chosenFilePath;
+                    //get the index of last .
+                    int lastIndex = openedFilePath.lastIndexOf(".");
+                    //get file extension
+                    String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+                    
+                    //if its a created file or assembly
+                    if(fileExtension.equals(".dfr")) {
+                        openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        this.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
+                    }
+                    //if its a new import
+                    else {
+                        //if its a csv
+                        if(fileExtension.equals(".csv")) {
+                            //make the new window import a PE3 file
+                            try {
+                                openPE3Files(dataset, chosenFile, applyPostProcessing);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                                continue;
+                            }
+                        //else if its a TXT make the new window import a CSV
+                        } else if (fileExtension.equals(".txt")) {
+                            openTXT(dataset, chosenFilePath);
+                        }
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                            applyPostProcessing(dataset);
+                    }
+                    if(multipleWindows)
+                        toCreateNewWindow = true;
+                    openingAFile = false;
+                }
+                windowCount++;
+            }
+        
+        }
     }//GEN-LAST:event_openBtnClicked
 
     private void addMathChannel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMathChannel
@@ -798,6 +1024,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
             }
         };
+        
+        // Set the dimensions of the JFileChooser to the preferred size
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
 
         // showOpenDialog returns the chosen option and if it as an approve
         //  option then the file should be imported and opened
@@ -831,6 +1060,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String data = datasetToCSV();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(""));
         //variable that holds result
@@ -1248,6 +1479,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String sb = dataset.getVehicleData().getStringOfData();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(filename));
         //variable that holds result
@@ -1315,29 +1548,50 @@ public class DataAnalyzer extends javax.swing.JFrame {
     public static void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
         
-        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
-            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+            EquationEvaluater.evaluate("$(Time,MeasuredAFR#1)", dataset.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
-        }
-       
-        
-        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#7[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
-            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        }
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        // 2021 Competition Car PE3 Settings
+//        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+//            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+//            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+//            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
+//        }
+//       
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+//        }
+//        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+//            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
             EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
+        
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
@@ -1775,6 +2029,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
@@ -1959,6 +2215,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
