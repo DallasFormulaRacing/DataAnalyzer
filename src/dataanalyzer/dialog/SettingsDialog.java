@@ -45,10 +45,12 @@ public class SettingsDialog extends javax.swing.JDialog {
                 //see if its being closed by something that is not the apply or cancel buttons
                 if(!applyOrCancel) {
                     //TODO: see if any changes have actually been made
-                    //Make the user confirm that the window should be closed
-                    if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changed. Confirm Close?"))
-                        //if user accepts, then dispose
-                        ev.getWindow().dispose();
+                    Settings s = Settings.getInstance();
+                    if(settings.equals(s))
+                        //Make the user confirm that the window should be closed
+                        if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changed. Confirm Close?"))
+                            //if user accepts, then dispose
+                            ev.getWindow().dispose();
                 }
             }
         });
@@ -172,7 +174,11 @@ public class SettingsDialog extends javax.swing.JDialog {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         //if cancel is pressed, dispose window
         //TODO: see if changes are made and confirm with user
-        applyOrCancel = true;
+        Settings s = Settings.getInstance();
+        if(settings.equals(s))
+            applyOrCancel = false;
+        else
+            applyOrCancel = true;
         this.dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
