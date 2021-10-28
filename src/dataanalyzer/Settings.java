@@ -13,6 +13,7 @@ import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 
 /**
  * The Settings class is a singleton object that holds a tree map of the user's
@@ -73,9 +74,6 @@ public class Settings {
         return instance;
     }
     
-    /**
-     * Gets all the settings currently in the map and outputs them to a file
-     */
     public void save() {
         //delete the current settings file
         new File(Installer.getSettingsPath() + "userpreferences.conf").delete();
@@ -96,7 +94,6 @@ public class Settings {
             Logger.getLogger(Settings.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
     /**
      * Gets the settings value given a name.
      * @param settingName the name of the setting we are looking for

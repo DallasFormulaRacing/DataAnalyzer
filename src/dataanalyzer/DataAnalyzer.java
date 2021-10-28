@@ -83,7 +83,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     //holds the current theme
     protected Theme currTheme = Theme.DEFAULT;
-
+    
+    //holds if file save button was pressed
+    private boolean fileWasSaved = false;
+    
     public DataAnalyzer() {
         initComponents();
         
@@ -943,8 +946,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
         if(getChartManager().getDatasets().size() > 1) {
             saveFileAssembly(openedFilePath);
+            fileWasSaved = true;
         } else {
             saveFile(openedFilePath);
+            fileWasSaved = true;
         }
     }//GEN-LAST:event_saveMenuButtonClicked
 
@@ -1039,8 +1044,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //save file with no known file path. Will force method to open file chooser
         if(getChartManager().getDatasets().size() > 1) {
             saveFileAssembly(openedFilePath);
+            fileWasSaved = true;
         } else {
             saveFile(openedFilePath);
+            fileWasSaved  = true;
         }
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
@@ -2106,7 +2113,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             fileDirectory = home + "\\AppData\\Local\\DataAnalyzer\\Temp\\temp.dfr";
         } else
             fileDirectory = "/Applications/DataAnalyzer/Temp/temp.dfr";
-        
+    
+        boolean ifEqual = true;    
         File temp = new File(fileDirectory);
             
         //try to open a file writer
@@ -2121,7 +2129,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
         }
         File orig = new File(filename);
-        boolean ifEqual = true;
         
         try {
             // Compares content of the file
@@ -2130,8 +2137,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
-        // deletes the temporary file when done
-        temp.delete();
+        // only saves changes in the temp file to the original if the save button was pressed
+        if( fileWasSaved == true ){
+                temp.renameTo(orig);    
+            } 
+        
         return ifEqual;
     }
     
@@ -2317,10 +2327,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } catch (IOException e) {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
-        
-        // deletes the temporary file when done
-        temp.delete();
-        return ifEqual;
+       
+       // only saves changes in the temp file to the original if the save button was pressed
+       if( fileWasSaved == true ){
+           temp.renameTo(orig);    
+        }
+       
+       return ifEqual;
     }
     //OPEN FILES OF MULTIPLE TYPES
     //THESE ARE MEANT TO OPEN A FILE IN A NEW WINDOW
