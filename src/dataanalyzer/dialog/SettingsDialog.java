@@ -45,9 +45,8 @@ public class SettingsDialog extends javax.swing.JDialog {
                 //see if its being closed by something that is not the apply or cancel buttons
                 if(!applyOrCancel) {
                     //TODO: see if any changes have actually been made
-                 
                     //Make the user confirm that the window should be closed
-                     if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changed. Confirm Close?"))
+                    if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changed. Confirm Close?"))
                         //if user accepts, then dispose
                         ev.getWindow().dispose();
                 }
