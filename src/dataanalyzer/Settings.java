@@ -96,6 +96,7 @@ public class Settings {
             Logger.getLogger(Settings.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
     /**
      * Gets the settings value given a name.
      * @param settingName the name of the setting we are looking for
