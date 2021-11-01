@@ -73,7 +73,7 @@ public class Settings {
         return instance;
     }
     
-     /**
+    /**
      * Gets all the settings currently in the map and outputs them to a file
      */
     public void save() {
