@@ -85,7 +85,7 @@ public class LambdaMap extends javax.swing.JFrame {
         this.dataMap = dataMap;
 
         //Sets default table setting values
-        this.maxRPM = 12500;
+        this.maxRPM = 13000;
         this.targetAFR = 12;
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
