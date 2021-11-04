@@ -52,6 +52,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private double targetAFR;
     private double afrError;
     private int injectorTimeColorMap;
+    private boolean includeFullyLeanValues;
 
     //Contains the current lambda view (avg=0, max=1, min=2, injector=3)
     private int currentLambdaView;
@@ -89,6 +90,7 @@ public class LambdaMap extends javax.swing.JFrame {
         this.targetAFR = 12;
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
+        this.includeFullyLeanValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -108,7 +110,7 @@ public class LambdaMap extends javax.swing.JFrame {
      * @param targetAFR The desired AFR value
      * @param afrError The tolerance values for target values
      */
-    public LambdaMap(CategoricalHashMap dataMap, int maxRPM, int targetAFR, int afrError) {
+    public LambdaMap(CategoricalHashMap dataMap, int maxRPM, int targetAFR, int afrError, boolean includeFullyLeanValues) {
         //Passes through table data
         this.dataMap = dataMap;
 
@@ -117,6 +119,7 @@ public class LambdaMap extends javax.swing.JFrame {
         this.targetAFR = targetAFR;
         this.afrError = afrError;
         this.injectorTimeColorMap = 0;
+        this.includeFullyLeanValues = includeFullyLeanValues;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -221,29 +224,42 @@ public class LambdaMap extends javax.swing.JFrame {
 
         for (int i = 0; i < list.size(); i++) {
             double rpm = 0, tps = 0, lambda = 0, injectorTime = 0;
+            
+            boolean include = true;
 
             //to make sure the LogObject has a value
+            //also purge entries that have no data in the lamdba sensor
             try {
                 LogObject rpmObj = list.pop();
-                list.addLast(rpmObj);
                 rpm = ((SimpleLogObject) rpmObj).value;
 
                 LogObject tpsObj = list2.pop();
-                list2.addLast(tpsObj);
                 tps = ((SimpleLogObject) tpsObj).value;
 
                 LogObject lambdaObj = list3.pop();
-                list3.addLast(lambdaObj);
                 lambda = ((SimpleLogObject) lambdaObj).value;
 
                 LogObject injectorObj = list4.pop();
-                list4.addLast(injectorObj);
                 injectorTime = ((SimpleLogObject) injectorObj).value;
+                
+                //if we are to include fully lean values, don't remove them.
+                if(!includeFullyLeanValues) {
+                    //remove fully lean entry
+                    if(lambda * 14.7 >= 22.05) {
+                        include = false;
+                    }
+                }
+                
+                list.addLast(rpmObj);
+                list2.addLast(tpsObj);
+                list3.addLast(lambdaObj);
+                list4.addLast(injectorObj);
+
             } catch (Exception e) {
                 System.out.println(e);
             }
 
-            if (rpm <= maxRPM) {
+            if (include && rpm <= maxRPM) {
                 //Finds which column the data should go into
                 int column = squeeze(rpm, 0, maxRPM, 0, table.getColumnCount() - 1);
                 int row = squeeze(tps, 0, 100, 0, table.getRowCount() - 1);
@@ -557,14 +573,15 @@ public class LambdaMap extends javax.swing.JFrame {
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
         //Creates a lambda map settings dialog box
-        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap);
+        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap, includeFullyLeanValues);
         settings.setVisible(true);
 
         //Sets table setting values equal to user updated dialog setting values
-        this.maxRPM = settings.getMaxRPM().get();
-        this.targetAFR = settings.getTargetAFR().get();
-        this.afrError = settings.getAcceptedError().get();
-        this.injectorTimeColorMap = settings.getInjectorTimeColorMap().get();
+        this.maxRPM = settings.getMaxRPM();
+        this.targetAFR = settings.getTargetAFR();
+        this.afrError = settings.getAcceptedError();
+        this.injectorTimeColorMap = settings.getInjectorTimeColorMap();
+        this.includeFullyLeanValues = settings.isIncludeFullyLeanValues();
 
         //Initializes new table model with new max RPM
         initTableModel(maxRPM, 100);

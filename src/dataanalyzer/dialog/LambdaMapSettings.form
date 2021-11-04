@@ -32,20 +32,23 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="injectorTimeLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="afrErrorLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="targetAFRLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="maxRPMLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="maxRpmField" max="32767" attributes="0"/>
-                  <Component id="targetAfrField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="afrOffsetField" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="66" max="32767" attributes="0"/>
-                      <Component id="applyButton" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="includeFullyLeanValuesCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="injectorTimeLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="afrErrorLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="targetAFRLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="maxRPMLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="maxRpmField" max="32767" attributes="0"/>
+                      <Component id="targetAfrField" alignment="0" max="32767" attributes="0"/>
+                      <Component id="afrOffsetField" alignment="0" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="66" max="32767" attributes="0"/>
+                          <Component id="applyButton" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="injectorTimeComboBox" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="injectorTimeComboBox" max="32767" attributes="0"/>
               </Group>
               <EmptySpace pref="25" max="32767" attributes="0"/>
           </Group>
@@ -70,7 +73,9 @@
               <Component id="injectorTimeLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="injectorTimeComboBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="22" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="includeFullyLeanValuesCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="applyButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -154,6 +159,12 @@
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="injectorTimeComboBox.setSelectedIndex(injectorTimeColorMap);"/>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="includeFullyLeanValuesCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Include Fully Lean Values"/>
+        <Property name="toolTipText" type="java.lang.String" value=""/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
