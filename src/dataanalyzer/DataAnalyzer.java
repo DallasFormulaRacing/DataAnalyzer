@@ -55,6 +55,10 @@ import junit.framework.Test;
 import org.jfree.chart.plot.ValueMarker;
 import org.json.simple.parser.ParseException;
 import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 /**
  *
@@ -2137,10 +2141,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
+        Path tempPath = Paths.get(filename);
+        Path origPath = Paths.get(fileDirectory);
         // only saves changes in the temp file to the original if the save button was pressed
         if( fileWasSaved == true ){
-                temp.renameTo(orig);    
-            } 
+          try{
+            Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+      } 
         
         return ifEqual;
     }
