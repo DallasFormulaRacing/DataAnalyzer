@@ -246,6 +246,32 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        // Applies PE3 Post Processing
+        JMenuItem postProc = new JMenuItem("Apply PP");
+        postProc.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                LoadingDialog loading = new LoadingDialog("Post Processing");
+                loading.setVisible(true);
+
+                SwingWorker worker = new SwingWorker<Void, Void>() {
+
+                    public Void doInBackground() {
+                        applyPE3PostProcessing(dataset);
+                        return null;
+                    }
+
+                    public void done() {
+                        //Destroy the Loading Dialog
+                        loading.stop();
+                    }
+                };
+
+                worker.execute();
+            }
+        });
+                
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -303,6 +329,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         datasetSubMenu.add(engineMenu);
         datasetSubMenu.add(vehicleMenu);
         datasetSubMenu.add(vitals);
+        datasetSubMenu.add(postProc);
         
         return datasetSubMenu;
     }
@@ -1534,7 +1561,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     public static void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
-        
+               
         if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
             EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
@@ -1555,26 +1582,27 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
             EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
+        // Old calc applied ($([Wheelspeed Sensor]) / 20) * 3.14159 * 20.2 / 63360 * 3600
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
-            EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
+            EquationEvaluater.evaluate("$(Time,WSFL)", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
         if(dataset.getDataMap().tags.contains("Time,WSRL") && !dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]")) {
-            EquationEvaluater.evaluate("($(Time,WSRL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRL[mph]");
+            EquationEvaluater.evaluate("$(Time,WSRL)", dataset.getDataMap(), "Time,WheelspeedRL[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRL");
         
         if(dataset.getDataMap().tags.contains("Time,WSFR") && !dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]")) {
-            EquationEvaluater.evaluate("($(Time,WSFR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFR[mph]");
+            EquationEvaluater.evaluate("$(Time,WSFR)", dataset.getDataMap(), "Time,WheelspeedFR[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFR");
         
         if(dataset.getDataMap().tags.contains("Time,WSRR") && !dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]")) {
-            EquationEvaluater.evaluate("($(Time,WSRR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRR[mph]");
+            EquationEvaluater.evaluate("$(Time,WSRR)", dataset.getDataMap(), "Time,WheelspeedRR[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRR");
