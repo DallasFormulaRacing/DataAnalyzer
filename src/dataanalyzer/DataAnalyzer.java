@@ -84,7 +84,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     //holds the current theme
     protected Theme currTheme = Theme.DEFAULT;
-
+    
+    //holds if file save button was pressed
+    private boolean fileWasSaved = false;
+    
     public DataAnalyzer() {
         initComponents();
         
@@ -745,7 +748,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         // Open a separate dialog to select a .csv file
         fileChooser = new JFileChooser() {
-
+            
             // Override approveSelection method because we only want to approve
             //  the selection if its is a .csv file.
             @Override
@@ -799,6 +802,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         };
 
+        // Set the preferred size of the fileChooser to 500x500
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
+        
         // showOpenDialog returns the chosen option and if it as an approve
         fileChooser.setMultiSelectionEnabled(true);
         //  option then the file should be imported and opened
@@ -975,8 +981,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void saveMenuButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuButtonClicked
         if(getChartManager().getDatasets().size() > 1) {
             saveFileAssembly(openedFilePath);
+            fileWasSaved = true;
         } else {
             saveFile(openedFilePath);
+            fileWasSaved = true;
         }
     }//GEN-LAST:event_saveMenuButtonClicked
 
@@ -1045,6 +1053,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
             }
         };
+        
+        // Set the dimensions of the JFileChooser to the preferred size
+        fileChooser.setPreferredSize(new Dimension(1100, 700));
 
         // showOpenDialog returns the chosen option and if it as an approve
         //  option then the file should be imported and opened
@@ -1068,8 +1079,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //save file with no known file path. Will force method to open file chooser
         if(getChartManager().getDatasets().size() > 1) {
             saveFileAssembly(openedFilePath);
+            fileWasSaved = true;
         } else {
             saveFile(openedFilePath);
+            fileWasSaved  = true;
         }
     }//GEN-LAST:event_saveAsMenuItemActionPerformed
 
@@ -1078,6 +1091,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String data = datasetToCSV();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(""));
         //variable that holds result
@@ -1495,6 +1510,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         String sb = dataset.getVehicleData().getStringOfData();
         //open the file choser
         JFileChooser chooser = new JFileChooser();
+        // Set the size of the JFileChooser
+        chooser.setPreferredSize(new Dimension(1100, 700));
         //set the directory
         chooser.setCurrentDirectory(new File(filename));
         //variable that holds result
@@ -1560,32 +1577,53 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     
     public static void applyPE3PostProcessing(Dataset dataset) {
-        //Change PE3 -> our standards. (So fuel mapper and such work)
-               
-        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
-            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+        //Change PE3 -> our standards. (So fuel mapper and such work)  
+        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+            EquationEvaluater.evaluate("$(Time,MeasuredAFR#1)", dataset.getDataMap(), "Time,AFRAveraged");
+
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
-            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
-        }
-       
-        
-        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+            EquationEvaluater.evaluate("100 * ($(Time,Analog#7[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
         }
         
-        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
-            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
         }
-        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
-            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+        }
+        if(dataset.getDataMap().tags.contains("Time,Analog#1[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+            EquationEvaluater.evaluate("((($(Time,Analog#1[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
+        
+        // 2021 Competition Car PE3 Settings
+//        if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && dataset.getDataMap().tags.contains("Time,MeasuredAFR#2") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
+//            EquationEvaluater.evaluate("($(Time,MeasuredAFR#1) + $(Time,MeasuredAFR#2)) / 2 ", dataset.getDataMap(), "Time,AFRAveraged");
+//            EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
+//            EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
+//        }
+//       
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#6[volts]") && !dataset.getDataMap().tags.contains("Time,rawyAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#6[volts]) + .055) / .55) - 3) * (0 - 1.818) * (0 - 1)", dataset.getDataMap(), "Time,rawyAccel[g]");
+//        }
+//        
+//        if(dataset.getDataMap().tags.contains("Time,Analog#7[volts]") && !dataset.getDataMap().tags.contains("Time,rawxAccel[g]")) {
+//            EquationEvaluater.evaluate("((($(Time,Analog#7[volts]) + .04) / .55) - 3) * (0 - 1.1724) * (0 - 1)", dataset.getDataMap(), "Time,rawxAccel[g]");
+//        }
+//        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
+//            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
         // Old calc applied ($([Wheelspeed Sensor]) / 20) * 3.14159 * 20.2 / 63360 * 3600
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
             EquationEvaluater.evaluate("$(Time,WSFL)", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
+        
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
@@ -2006,6 +2044,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
@@ -2114,7 +2154,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             fileDirectory = home + "\\AppData\\Local\\DataAnalyzer\\Temp\\temp.dfr";
         } else
             fileDirectory = "/Applications/DataAnalyzer/Temp/temp.dfr";
-        
+    
+        boolean ifEqual = true;    
         File temp = new File(fileDirectory);
             
         //try to open a file writer
@@ -2129,7 +2170,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: FileWriter could not be opened", true).setVisible(true);
         }
         File orig = new File(filename);
-        boolean ifEqual = true;
         
         try {
             // Compares content of the file
@@ -2138,8 +2178,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
-        // deletes the temporary file when done
-        temp.delete();
+        // only saves changes in the temp file to the original if the save button was pressed
+        if( fileWasSaved == true ){
+                temp.renameTo(orig);    
+            } 
+        
         return ifEqual;
     }
     
@@ -2190,6 +2233,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //open the filechooser at the default directory
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(filename));
+            // Set the size of the JFileChooser
+            chooser.setPreferredSize(new Dimension(1100, 700));
             
             //result code
             int result = chooser.showSaveDialog(null);
@@ -2323,10 +2368,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } catch (IOException e) {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
-        
-        // deletes the temporary file when done
-        temp.delete();
-        return ifEqual;
+       
+       // only saves changes in the temp file to the original if the save button was pressed
+       if( fileWasSaved == true ){
+           temp.renameTo(orig);    
+        }
+       
+       return ifEqual;
     }
     //OPEN FILES OF MULTIPLE TYPES
     //THESE ARE MEANT TO OPEN A FILE IN A NEW WINDOW
