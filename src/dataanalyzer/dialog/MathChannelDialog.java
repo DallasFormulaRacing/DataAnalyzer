@@ -77,11 +77,15 @@ public class MathChannelDialog extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         summationCheckBox = new javax.swing.JCheckBox();
         rateCheckBox = new javax.swing.JCheckBox();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        fileMathChannelMenu = new javax.swing.JMenu();
+        editMathChannelMenu = new javax.swing.JMenu();
+        insertMathChannelMenu = new javax.swing.JMenu();
+        functionOfMenuItem = new javax.swing.JMenuItem();
 
         jCheckBox1.setText("jCheckBox1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(714, 222));
 
         jScrollPane1.setToolTipText("Channel Name");
 
@@ -143,6 +147,26 @@ public class MathChannelDialog extends javax.swing.JFrame {
             }
         });
 
+        fileMathChannelMenu.setText("File");
+        jMenuBar1.add(fileMathChannelMenu);
+
+        editMathChannelMenu.setText("Edit");
+        jMenuBar1.add(editMathChannelMenu);
+
+        insertMathChannelMenu.setText("Insert");
+
+        functionOfMenuItem.setText("Change Domain");
+        functionOfMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                functionOfMenuItemActionPerformed(evt);
+            }
+        });
+        insertMathChannelMenu.add(functionOfMenuItem);
+
+        jMenuBar1.add(insertMathChannelMenu);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -185,7 +209,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel1)
@@ -287,6 +311,11 @@ public class MathChannelDialog extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_createChannelButtonPressed
 
+    private void functionOfMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_functionOfMenuItemActionPerformed
+        //add string for changing function at the end of the current string
+        equationField.setText(equationField.getText() + " asFunctionOf(DOMAIN)");
+    }//GEN-LAST:event_functionOfMenuItemActionPerformed
+
     private void summationCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_summationCheckBoxItemStateChanged
         // unselect rate if summation is selected
         if(evt.getStateChange() == ItemEvent.SELECTED) {
@@ -383,11 +412,16 @@ public class MathChannelDialog extends javax.swing.JFrame {
     private javax.swing.JList<String> availableVariablesList;
     private javax.swing.JTextPane channelTitleText;
     private javax.swing.JButton createChannelButton;
+    private javax.swing.JMenu editMathChannelMenu;
     private javax.swing.JTextArea equationField;
+    private javax.swing.JMenu fileMathChannelMenu;
+    private javax.swing.JMenuItem functionOfMenuItem;
+    private javax.swing.JMenu insertMathChannelMenu;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

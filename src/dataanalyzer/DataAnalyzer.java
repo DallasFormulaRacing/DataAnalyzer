@@ -8,7 +8,6 @@ package dataanalyzer;
 import dataanalyzer.dialog.VehicleDataDialog;
 import dataanalyzer.dialog.AskVehicleDialog;
 import dataanalyzer.dialog.MathChannelDialog;
-import dataanalyzer.dialog.MathChannelV2Dialog;
 import com.arib.toast.Toast;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -249,32 +248,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
-        // Applies PE3 Post Processing
-        JMenuItem postProc = new JMenuItem("Apply PP");
-        postProc.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                
-                LoadingDialog loading = new LoadingDialog("Post Processing");
-                loading.setVisible(true);
-
-                SwingWorker worker = new SwingWorker<Void, Void>() {
-
-                    public Void doInBackground() {
-                        applyPE3PostProcessing(dataset);
-                        return null;
-                    }
-
-                    public void done() {
-                        //Destroy the Loading Dialog
-                        loading.stop();
-                    }
-                };
-
-                worker.execute();
-            }
-        });
-                
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -332,7 +305,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         datasetSubMenu.add(engineMenu);
         datasetSubMenu.add(vehicleMenu);
         datasetSubMenu.add(vitals);
-        datasetSubMenu.add(postProc);
         
         return datasetSubMenu;
     }
@@ -493,7 +465,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         settingsMenuItem = new javax.swing.JMenuItem();
         closeMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
-        editMathChannelButton = new javax.swing.JMenuItem();
         addMathChannelButton = new javax.swing.JMenuItem();
         addLapConditionMenuItem = new javax.swing.JMenuItem();
         addNotesMenuItem = new javax.swing.JMenuItem();
@@ -515,11 +486,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
+
+        desktop.setLayout(null);
         getContentPane().add(desktop, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -528,7 +501,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newWindowMenuItem);
 
-        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openBtn.setText("Open");
         openBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -537,7 +510,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(openBtn);
 
-        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveMenuButton.setText("Save");
         saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -546,7 +519,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveMenuButton);
 
-        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         saveAsMenuItem.setText("Save As");
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -555,7 +528,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveAsMenuItem);
 
-        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         exportMenuItem.setText("Export");
         exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -564,7 +537,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(exportMenuItem);
 
-        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         resetMenuItem.setText("Reset");
         resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -581,7 +554,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(settingsMenuItem);
 
-        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         closeMenuItem.setText("Exit");
         closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -594,14 +567,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         editMenu.setText("Edit");
 
-        editMathChannelButton.setText("Edit Math Channels");
-        editMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editMathChannelButtonActionPerformed(evt);
-            }
-        });
-        editMenu.add(editMathChannelButton);
-
         addMathChannelButton.setLabel("Add Math Channel");
         addMathChannelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -610,7 +575,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         editMenu.add(addMathChannelButton);
 
-        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
         addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -639,7 +604,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         fullscreenMenuItem.setText("Fullscreen");
         fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -688,7 +653,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(swapChartsMenuItem);
 
-        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         addChartMenuItem.setText("Add Chart");
         addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1340,11 +1305,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
         }
     }//GEN-LAST:event_saveChartConfigurationActionPerformed
-
-    private void editMathChannelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editMathChannelButtonActionPerformed
-        // TODO add your handling code here:
-        new MathChannelV2Dialog(chartManager.getDatasets()).setVisible(true);
-    }//GEN-LAST:event_editMathChannelButtonActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -1577,10 +1537,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     
     public static void applyPE3PostProcessing(Dataset dataset) {
-        //Change PE3 -> our standards. (So fuel mapper and such work)  
+        //Change PE3 -> our standards. (So fuel mapper and such work)
+        
         if(dataset.getDataMap().tags.contains("Time,MeasuredAFR#1") && !dataset.getDataMap().tags.contains("Time,AFRAveraged")) {
             EquationEvaluater.evaluate("$(Time,MeasuredAFR#1)", dataset.getDataMap(), "Time,AFRAveraged");
-
             EquationEvaluater.evaluate("$(Time,AFRAveraged) / 14.7", dataset.getDataMap(), "Time,Lambda");
         }
         
@@ -1619,28 +1579,27 @@ public class DataAnalyzer extends javax.swing.JFrame {
 //        if(dataset.getDataMap().tags.contains("Time,Analog#8[volts]") && !dataset.getDataMap().tags.contains("Time,rawzAccel[g]"))
 //            EquationEvaluater.evaluate("((($(Time,Analog#8[volts]) + .83) / .55) - 3) * 3.7037", dataset.getDataMap(), "Time,rawzAccel[g]");
         
-        // Old calc applied ($([Wheelspeed Sensor]) / 20) * 3.14159 * 20.2 / 63360 * 3600
         if(dataset.getDataMap().tags.contains("Time,WSFL") && !dataset.getDataMap().tags.contains("Time,WheelspeedFL[mph]")) {
-            EquationEvaluater.evaluate("$(Time,WSFL)", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
+            EquationEvaluater.evaluate("($(Time,WSFL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFL[mph]");
         }
         
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFL");
         
         if(dataset.getDataMap().tags.contains("Time,WSRL") && !dataset.getDataMap().tags.contains("Time,WheelspeedRL[mph]")) {
-            EquationEvaluater.evaluate("$(Time,WSRL)", dataset.getDataMap(), "Time,WheelspeedRL[mph]");
+            EquationEvaluater.evaluate("($(Time,WSRL) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRL[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRL");
         
         if(dataset.getDataMap().tags.contains("Time,WSFR") && !dataset.getDataMap().tags.contains("Time,WheelspeedFR[mph]")) {
-            EquationEvaluater.evaluate("$(Time,WSFR)", dataset.getDataMap(), "Time,WheelspeedFR[mph]");
+            EquationEvaluater.evaluate("($(Time,WSFR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedFR[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSFR");
         
         if(dataset.getDataMap().tags.contains("Time,WSRR") && !dataset.getDataMap().tags.contains("Time,WheelspeedRR[mph]")) {
-            EquationEvaluater.evaluate("$(Time,WSRR)", dataset.getDataMap(), "Time,WheelspeedRR[mph]");
+            EquationEvaluater.evaluate("($(Time,WSRR) / 20) * 3.14159 * 20.2 / 63360 * 3600", dataset.getDataMap(), "Time,WheelspeedRR[mph]");
         }
         //delete frequency signal
         dataset.getDataMap().remove("Time,WSRR");
@@ -3021,7 +2980,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenu datasetMenu;
     private javax.swing.JMenuItem defaultTheme_menuitem;
     protected javax.swing.JDesktopPane desktop;
-    private javax.swing.JMenuItem editMathChannelButton;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JFileChooser fileChooser;
