@@ -1636,41 +1636,43 @@ public class DataAnalyzer extends javax.swing.JFrame {
         dataset.getDataMap().remove("Time,WSRR");
         
         //get x y z data as arrays
-        ArrayList<LogObject> x,y,z;
-        x = new ArrayList<>(dataset.getDataMap().getList("Time,rawxAccel[g]"));
-        y = new ArrayList<>(dataset.getDataMap().getList("Time,rawyAccel[g]"));
-        z = new ArrayList<>(dataset.getDataMap().getList("Time,rawzAccel[g]"));
-        
-        double[][] rot = CoordinateTransformer.performTransformation();
-        LinkedList<LogObject> newX = new LinkedList<>();
-        LinkedList<LogObject> newY = new LinkedList<>();
-        LinkedList<LogObject> newZ = new LinkedList<>();
-        
-        for(int i = 0; i < x.size(); i++) {
-            //get current accel values
-            double xVal = 0, yVal = 0, zVal = 0;
-            if(x.get(i) instanceof SimpleLogObject) {
-                xVal = ((SimpleLogObject)x.get(i)).getValue();
+        if(dataset.getDataMap().tags.contains("Time,rawxAccel[g]") && dataset.getDataMap().tags.contains("Time,rawyAccel[g]") && dataset.getDataMap().tags.contains("Time,rawzAccel[g]")) {
+            ArrayList<LogObject> x,y,z;
+            x = new ArrayList<>(dataset.getDataMap().getList("Time,rawxAccel[g]"));
+            y = new ArrayList<>(dataset.getDataMap().getList("Time,rawyAccel[g]"));
+            z = new ArrayList<>(dataset.getDataMap().getList("Time,rawzAccel[g]"));
+
+            double[][] rot = CoordinateTransformer.performTransformation();
+            LinkedList<LogObject> newX = new LinkedList<>();
+            LinkedList<LogObject> newY = new LinkedList<>();
+            LinkedList<LogObject> newZ = new LinkedList<>();
+
+            for(int i = 0; i < x.size(); i++) {
+                //get current accel values
+                double xVal = 0, yVal = 0, zVal = 0;
+                if(x.get(i) instanceof SimpleLogObject) {
+                    xVal = ((SimpleLogObject)x.get(i)).getValue();
+                }
+                if(y.get(i) instanceof SimpleLogObject) {
+                    yVal = ((SimpleLogObject)y.get(i)).getValue();
+                }
+                if(z.get(i) instanceof SimpleLogObject) {
+                    zVal = ((SimpleLogObject)z.get(i)).getValue();
+                }
+                //apply rotation
+                double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
+                //add to new list
+                newX.add(new SimpleLogObject("Time,xAccel[g]", rotated[0], x.get(i).getTime()));
+                newY.add(new SimpleLogObject("Time,yAccel[g]", rotated[1], y.get(i).getTime()));
+                newZ.add(new SimpleLogObject("Time,zAccel[g]", rotated[2], z.get(i).getTime()));
             }
-            if(y.get(i) instanceof SimpleLogObject) {
-                yVal = ((SimpleLogObject)y.get(i)).getValue();
+
+            //save to dataset
+            if(!dataset.getDataMap().tags.contains("Time,xAccel[g]") && !dataset.getDataMap().tags.contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("Time,zAccel[g]")) {
+                dataset.getDataMap().put(newX);
+                dataset.getDataMap().put(newY);
+                dataset.getDataMap().put(newZ);
             }
-            if(z.get(i) instanceof SimpleLogObject) {
-                zVal = ((SimpleLogObject)z.get(i)).getValue();
-            }
-            //apply rotation
-            double[] rotated = Mathematics.multiplyVector3(new double[] {xVal, yVal, zVal}, rot);
-            //add to new list
-            newX.add(new SimpleLogObject("Time,xAccel[g]", rotated[0], x.get(i).getTime()));
-            newY.add(new SimpleLogObject("Time,yAccel[g]", rotated[1], y.get(i).getTime()));
-            newZ.add(new SimpleLogObject("Time,zAccel[g]", rotated[2], z.get(i).getTime()));
-        }
-        
-        //save to dataset
-        if(!dataset.getDataMap().tags.contains("Time,xAccel[g]") && !dataset.getDataMap().tags.contains("Time,yAccel[g]") && !dataset.getDataMap().tags.contains("Time,zAccel[g]")) {
-            dataset.getDataMap().put(newX);
-            dataset.getDataMap().put(newY);
-            dataset.getDataMap().put(newZ);
         }
 
         //add g graph charts
@@ -1764,7 +1766,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         
         //Clean gear data signal here
-        cleanDataSignal(dataset);
+        if(dataset.getDataMap().tags.contains("Time,GearRatio"))
+            cleanDataSignal(dataset);
         
         if(dataset.getDataMap().tags.contains("Time,Analog#5[volts]") && !dataset.getDataMap().tags.contains("Time,OilPressure[psi]")) {
             EquationEvaluater.evaluate("100 * ($(Time,Analog#5[volts]) - .5) / (4.5 - .5)", dataset.getDataMap(), "Time,OilPressure[psi]");
