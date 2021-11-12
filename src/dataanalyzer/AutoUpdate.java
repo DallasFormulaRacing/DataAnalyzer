@@ -26,7 +26,7 @@ import junit.framework.Test;
  */
 public class AutoUpdate {
     
-    public static void checkForUpdate() throws UnsupportedEncodingException, URISyntaxException, ProtocolException, IOException, MalformedURLException, IndexOutOfBoundsException {
+    public static boolean checkForUpdate() throws UnsupportedEncodingException, URISyntaxException, ProtocolException, IOException, MalformedURLException, IndexOutOfBoundsException {
         
         //get current location of file
         String path = Test.class.getProtectionDomain().getCodeSource().getLocation().getPath();
@@ -68,7 +68,7 @@ public class AutoUpdate {
         
         //check if the filenames are the same, if so we are done no need to update
         if(currentVersion.equals(newFileName))
-            return;
+            return false;
         
         /**
          * Copies the data to a file
@@ -81,6 +81,8 @@ public class AutoUpdate {
         FileOutputStream fos = new FileOutputStream(pathToDownload + newFileName);
         //write the new file.
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        
+        return true;
     }
     
 }

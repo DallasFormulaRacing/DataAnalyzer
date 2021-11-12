@@ -218,7 +218,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         if(settings.getSetting("AutoCheckForUpdates").equals("true")) {
             //check for an update
             try {
-                AutoUpdate.checkForUpdate();
+                boolean isUpdate = AutoUpdate.checkForUpdate();
+                //ask user to move to new version
+                if(isUpdate) {
+                    boolean shouldRelaunch = createConfirmDialog("New Update Found", "New update found! Launch new application?");
+                    if(shouldRelaunch) {
+                        //TODO: Implement relaunch here.
+                    }
+                }
             } catch(UnsupportedEncodingException e) {
                 Toast.makeToast(this, "Something fucked up during autoupdate.", Toast.DURATION_SHORT);
                 System.out.println("Error");
