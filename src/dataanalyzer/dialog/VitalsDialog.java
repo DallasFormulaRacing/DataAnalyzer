@@ -7,6 +7,7 @@ package dataanalyzer.dialog;
 
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.LogObject;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class VitalsDialog extends javax.swing.JDialog {
     public VitalsDialog(java.awt.Frame parent, boolean modal, CategoricalHashMap dataMap) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);

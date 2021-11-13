@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.Referencer;
+import dataanalyzer.ScreenLocation;
 
 /**
  *
@@ -21,11 +22,13 @@ public class FileNameDialog extends javax.swing.JDialog {
     public FileNameDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
     }
     
     public FileNameDialog(java.awt.Frame parent, boolean modal, Referencer<String> name) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         this.name = name;
     }
 

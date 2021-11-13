@@ -65,7 +65,7 @@ import java.nio.file.StandardCopyOption;
  * @author aribdhuka
  */
 public class DataAnalyzer extends javax.swing.JFrame {
-
+    
     //Stores the current filepath
     private String openedFilePath;
 
@@ -177,6 +177,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 heightFrame = getHeight();
                 widthFrame = getWidth();
+                
+                ScreenLocation sc = ScreenLocation.getInstance();
+                sc.update(curr);
+                
             }
         });
         
@@ -233,6 +237,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 System.out.println("Had trouble parsing your app name. Please don't change your appname.");
             }
         }
+        
+        ScreenLocation.getInstance().update(this);
     }
     
     private void initializeDatasetMenu() {

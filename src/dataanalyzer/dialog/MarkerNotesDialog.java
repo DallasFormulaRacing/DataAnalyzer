@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.CategorizedValueMarker;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.dialog.MessageBox;
 
 /**
@@ -21,10 +22,12 @@ public class MarkerNotesDialog extends javax.swing.JFrame {
      */
     public MarkerNotesDialog() {
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
     }
     
     public MarkerNotesDialog(StaticMarkersFrame parent, CategorizedValueMarker[] markers) {
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         //save parent
         this.parent = parent;
         //save the array locally

@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.Referencer;
+import dataanalyzer.ScreenLocation;
 
 /**
  * Dialog that allows the user to enter notes relating to the file.
@@ -23,6 +24,7 @@ public class FileNotesDialog extends javax.swing.JDialog {
         super(parent, modal);
         this.reference = reference;
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         notesField.setText(reference.get());
     }
 
