@@ -20,17 +20,20 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     private static double targetAFR;
     private static double acceptedError;
     private static int injectorTimeColorMap;
+    private static boolean includeFullyLeanValues;
 
     /**
      * Creates new form LambdaMapSettings
      */
-    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError, int injectorTimeColorMap) {
+    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError, int injectorTimeColorMap, boolean includeFullyLeanValues) {
         super(parent, modal);
         this.maxRPM = maxRPM;
         this.targetAFR = targetAFR;
         this.acceptedError = acceptedError;
         this.injectorTimeColorMap = injectorTimeColorMap;
+        this.includeFullyLeanValues = includeFullyLeanValues;
         initComponents();
+        includeFullyLeanValuesCheckBox.setSelected(includeFullyLeanValues);
     }
 
     /**
@@ -52,6 +55,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         applyButton = new javax.swing.JButton();
         injectorTimeLabel = new javax.swing.JLabel();
         injectorTimeComboBox = new javax.swing.JComboBox<>();
+        includeFullyLeanValuesCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setFocusCycleRoot(false);
@@ -92,25 +96,30 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         injectorTimeComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Lambda Average", "Lambda Max", "Lambda Min"}));
         injectorTimeComboBox.setSelectedIndex(injectorTimeColorMap);
 
+        includeFullyLeanValuesCheckBox.setText("Include Fully Lean Values");
+        includeFullyLeanValuesCheckBox.setToolTipText("");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(injectorTimeLabel)
-                    .addComponent(afrErrorLabel)
-                    .addComponent(targetAFRLabel)
-                    .addComponent(maxRPMLabel)
-                    .addComponent(maxRpmField)
-                    .addComponent(targetAfrField)
-                    .addComponent(afrOffsetField)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(cancelButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
-                        .addComponent(applyButton))
-                    .addComponent(injectorTimeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(includeFullyLeanValuesCheckBox)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(injectorTimeLabel)
+                        .addComponent(afrErrorLabel)
+                        .addComponent(targetAFRLabel)
+                        .addComponent(maxRPMLabel)
+                        .addComponent(maxRpmField)
+                        .addComponent(targetAfrField)
+                        .addComponent(afrOffsetField)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(cancelButton)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                            .addComponent(applyButton))
+                        .addComponent(injectorTimeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap(25, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -132,7 +141,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addComponent(injectorTimeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(injectorTimeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(includeFullyLeanValuesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(applyButton))
@@ -166,6 +177,8 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             
             injectorTimeColorMap = injectorTimeComboBox.getSelectedIndex();
             
+            includeFullyLeanValues = includeFullyLeanValuesCheckBox.isSelected();
+            
             close();
         }
         //displays a message box with an error when exceptions are thrown
@@ -174,20 +187,24 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_settingsApplied
 
-    public Referencer<Integer> getMaxRPM() {
-        return new Referencer(maxRPM);
+    public static int getMaxRPM() {
+        return maxRPM;
     }
 
-    public Referencer<Double> getTargetAFR() {
-        return new Referencer(targetAFR);
+    public static double getTargetAFR() {
+        return targetAFR;
     }
 
-    public Referencer<Double> getAcceptedError() {
-        return new Referencer(acceptedError);
+    public static double getAcceptedError() {
+        return acceptedError;
     }
-    
-    public Referencer<Integer> getInjectorTimeColorMap(){
-        return new Referencer(injectorTimeColorMap);
+
+    public static int getInjectorTimeColorMap() {
+        return injectorTimeColorMap;
+    }
+
+    public static boolean isIncludeFullyLeanValues() {
+        return includeFullyLeanValues;
     }
     
     public void close() {
@@ -224,7 +241,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError, injectorTimeColorMap);
+                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError, injectorTimeColorMap, includeFullyLeanValues);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -241,6 +258,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     private javax.swing.JTextField afrOffsetField;
     private javax.swing.JButton applyButton;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JCheckBox includeFullyLeanValuesCheckBox;
     private javax.swing.JComboBox<String> injectorTimeComboBox;
     private javax.swing.JLabel injectorTimeLabel;
     private javax.swing.JLabel maxRPMLabel;
