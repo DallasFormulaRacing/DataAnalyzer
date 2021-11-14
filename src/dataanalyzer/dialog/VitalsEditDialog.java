@@ -8,6 +8,7 @@ package dataanalyzer.dialog;
 import com.arib.toast.Toast;
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.Installer;
+import dataanalyzer.Referencer;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -189,8 +191,9 @@ public class VitalsEditDialog extends javax.swing.JDialog {
 
     private void addVitalsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addVitalsButtonActionPerformed
         Vital newVital = new Vital();
-        new NewVitalDialog(this, newVital, dataMap).setVisible(true);
-        if(newVital != null) {
+        Referencer<Boolean> isCanceled = new Referencer<>(false);
+        new NewVitalDialog(this, newVital, isCanceled, dataMap).setVisible(true);
+        if(newVital != null && !isCanceled.get()) {
             vitals.add(newVital);
             buildList();
         }
@@ -199,18 +202,23 @@ public class VitalsEditDialog extends javax.swing.JDialog {
     private void editVitalsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editVitalsButtonActionPerformed
         // TODO add your handling code here:
         int index = vitalsList.getSelectedIndex();
-        Vital vital = vitals.get(index);
-        new NewVitalDialog(this, vital, dataMap).setVisible(true);
-        buildList();
+        Referencer<Boolean> isCanceled = new Referencer<>(false);
+        if(index != -1) {
+            Vital vital = vitals.get(index);
+            new NewVitalDialog(this, vital, isCanceled, dataMap).setVisible(true);
+            buildList();
+        }
     }//GEN-LAST:event_editVitalsButtonActionPerformed
 
     private void deleteVitalsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteVitalsButtonActionPerformed
         // TODO add your handling code here:
         int index = vitalsList.getSelectedIndex();
-        //unselect list
-        vitalsList.setSelectedIndex(Integer.MAX_VALUE);
-        vitals.remove(index);
-        buildList();
+        if(index != -1) {
+            //unselect list
+            vitalsList.setSelectedIndex(Integer.MAX_VALUE);
+            vitals.remove(index);
+            buildList();
+        }
         
     }//GEN-LAST:event_deleteVitalsButtonActionPerformed
 
