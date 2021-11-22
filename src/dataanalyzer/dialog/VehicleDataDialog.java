@@ -5,6 +5,7 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.VehicleData;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class VehicleDataDialog extends javax.swing.JDialog {
     public VehicleDataDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         //create new vehicle data if not provided
         vehicleData = new VehicleData();
         //set last index visited to 0

@@ -8,6 +8,7 @@ package dataanalyzer.dialog;
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.Dataset;
 import dataanalyzer.EquationEvaluater;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.VehicleData;
 import java.awt.event.ItemEvent;
@@ -37,6 +38,7 @@ public class MathChannelDialog extends javax.swing.JFrame {
      */
     public MathChannelDialog(LinkedList<Dataset> datasets) {
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         lastIndex = 0;
         this.datasets = datasets;
         configureVariablesList();

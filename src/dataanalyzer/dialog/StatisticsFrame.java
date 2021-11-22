@@ -8,6 +8,7 @@ package dataanalyzer.dialog;
 import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.FunctionOfLogObject;
 import dataanalyzer.LogObject;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -26,6 +27,7 @@ public class StatisticsFrame extends javax.swing.JFrame {
     
     public StatisticsFrame(TreeMap<String, LinkedList<LogObject>> chosenTags) {
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         this.chosenTags = chosenTags;
         calculateStatistics();
     }

@@ -7,6 +7,7 @@ package dataanalyzer.dialog;
 
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.Referencer;
+import dataanalyzer.ScreenLocation;
 
 /**
  * @author Morgan
@@ -34,6 +35,8 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         this.includeFullyLeanValues = includeFullyLeanValues;
         initComponents();
         includeFullyLeanValuesCheckBox.setSelected(includeFullyLeanValues);
+        ScreenLocation.getInstance().calculateCenter(this);
+
     }
 
     /**
