@@ -200,7 +200,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
                         break;
                     }
                     //if the element contains the search box text
-                    if(s.contains(searchField.getText())) {
+                    if(s.toLowerCase().contains(searchField.getText().toLowerCase())) {
                         //add it to the array list
                         newTitles.add(s);
                     }
