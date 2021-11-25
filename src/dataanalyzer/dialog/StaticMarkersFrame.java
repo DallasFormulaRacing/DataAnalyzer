@@ -11,6 +11,7 @@ import dataanalyzer.CategorizedValueMarker;
 import dataanalyzer.Dataset;
 import dataanalyzer.FunctionOfLogObject;
 import dataanalyzer.LogObject;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.Selection;
 import dataanalyzer.SimpleLogObject;
 import java.awt.event.KeyAdapter;
@@ -40,6 +41,7 @@ public class StaticMarkersFrame extends javax.swing.JDialog {
         this.datasets = datasets;
         this.selection = selection;
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         populateList();
         
         staticMarkersList.addMouseListener(new MouseAdapter() {
