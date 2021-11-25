@@ -14,6 +14,7 @@ import dataanalyzer.Selection;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,12 +35,12 @@ public class AddChartCommand extends Command {
         ChartAssembly ca = da.getChartManager().addChart();
         Selection selection = ca.getSelection();
         //get all unique datasets needed
-        ArrayList<Dataset> datasets = new ArrayList<>();
+        LinkedList<Dataset> datasets = da.getChartManager().getDatasets();
         for(int i = 1; i < cmd.length; i++) {
             if(!cmd[i].contains(".")){
                 break;
             }
-            String datasetName = cmd[i].split(".")[0];
+            String datasetName = (cmd[i]).split("\\.")[0] + "." + (cmd[i]).split("\\.")[1];
             boolean exists = false;
             for(Dataset dataset : datasets) {
                 if(dataset.getName().equals(datasetName)) {
@@ -67,7 +68,7 @@ public class AddChartCommand extends Command {
                 ArrayList<Integer> laps = new ArrayList<>();
                 for(String channel : selectedTags) {
                     if(channel.matches(dataset.getName() + ".*")) {
-                        seltagsds.add(channel.split(".")[1]);
+                        seltagsds.add(channel.split("\\.")[2]);
                     }
                 }
                 selection.addDatasetSelection(new DatasetSelection(dataset, seltagsds, laps));

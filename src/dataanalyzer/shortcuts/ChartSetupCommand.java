@@ -5,9 +5,14 @@
  */
 package dataanalyzer.shortcuts;
 
+import dataanalyzer.ChartConfiguration;
 import dataanalyzer.DataAnalyzer;
+import dataanalyzer.Installer;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -21,7 +26,16 @@ public class ChartSetupCommand extends Command {
 
     @Override
     public void doAction(String[] cmd, DataAnalyzer da) {
-        
+        if(cmd.length > 1) {
+            String chartName = Installer.getInstallationPath()+ "ChartConfigurations/" + cmd[1] + ".dfrchartconfig";
+            try {
+                ChartConfiguration.openChartConfiguration(chartName, da, da.getChartManager());
+            } catch (FileNotFoundException e) {
+                System.err.println("Couldn't find the chart config you were looking for!");
+            } catch (IOException | ParseException e) {
+                System.err.println("Couldn't find the chart config you were looking for!");
+            }
+        }
     }
     
     

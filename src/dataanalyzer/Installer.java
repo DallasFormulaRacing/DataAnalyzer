@@ -144,4 +144,28 @@ public class Installer {
         }
     }
     
+    /**
+     * Helper function that auto declares OS from getOS() method
+     * @return path of settings file
+     */
+    public static String getInstallationPath() {
+        return getInstallationPath(getOS());
+    }
+    
+    /**
+     * Get path for settings
+     * @param os given an operating system
+     * @return path of settings file
+     */
+    public static String getInstallationPath(String os) {
+        if(os.equals("Windows")) {
+            String home = System.getProperty("user.home");
+            return home + "\\AppData\\Local\\DataAnalyzer\\";
+        } else {
+            return "/Applications/DataAnalyzer/";
+        }
+    }
+    
+        
+    
 }

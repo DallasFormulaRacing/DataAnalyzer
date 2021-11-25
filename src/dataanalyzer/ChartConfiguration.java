@@ -109,7 +109,7 @@ public class ChartConfiguration {
             
 
         } else {
-            System.err.println("That is not the correct file type");
+            System.err.println("That is not the correct file type. Could not find: " + filename);
         }
     }
     
