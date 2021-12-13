@@ -8,6 +8,7 @@ package dataanalyzer;
 import com.arib.categoricalhashtable.CategoricalHashTable;
 import com.arib.toast.Toast;
 import dataanalyzer.dialog.MessageBox;
+import dataanalyzer.readout.ReadoutAssembly;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -36,6 +37,9 @@ public class ChartManager {
     //holds all active charts
     ArrayList<ChartAssembly> charts;
     
+    //holds active readout
+    ReadoutAssembly readout;
+    
     //holds if swapper is active
     int swapActive;
     //holds charts being swapped;
@@ -52,6 +56,7 @@ public class ChartManager {
         cutDataActive = -2;
         newLap = new Lap();
         charts = new ArrayList<>();
+        readout = null;
         first = null;
         second = null;
         listeners = new ArrayList<>();
@@ -68,6 +73,7 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
+        readout.getReadoutPanel().updateTable(xCor);
     }
     
     //adds a new chart
@@ -77,6 +83,15 @@ public class ChartManager {
         parent.desktop.add(chart.chartFrame);
         charts.add(chart);
         return chart;
+    }
+    
+    public ReadoutAssembly addReadout() {
+        if(readout != null) {
+            readout.getChartFrame().dispose();
+        }
+        readout = new ReadoutAssembly(this);
+        parent.desktop.add(readout.getChartFrame());
+        return readout;
     }
     
     public void clearCharts() {

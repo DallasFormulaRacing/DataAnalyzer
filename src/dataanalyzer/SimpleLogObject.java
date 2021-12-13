@@ -9,7 +9,7 @@ package dataanalyzer;
  *
  * @author aribdhuka
  */
-public class SimpleLogObject extends LogObject {
+public class SimpleLogObject extends LogObject implements Valueable{
     
     protected double value;
     
@@ -24,6 +24,7 @@ public class SimpleLogObject extends LogObject {
         this.time = time;
     }
 
+    @Override
     public double getValue() {
         return value;
     }
@@ -32,6 +33,7 @@ public class SimpleLogObject extends LogObject {
         this.value = value;
     }
     
+    @Override
     public String toString() {
         return time + "," + value;
     }

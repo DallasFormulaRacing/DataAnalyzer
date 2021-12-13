@@ -9,7 +9,7 @@ package dataanalyzer;
  *
  * @author aribdhuka
  */
-public class GPSLogObject extends LogObject {
+public class GPSLogObject extends LogObject{
     
     double lat;
     double longi;
