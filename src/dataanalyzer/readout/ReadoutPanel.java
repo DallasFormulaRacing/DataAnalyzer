@@ -11,12 +11,16 @@ import dataanalyzer.Dataset;
 import dataanalyzer.LogObject;
 import dataanalyzer.SimpleLogObject;
 import dataanalyzer.Valueable;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -33,7 +37,7 @@ public class ReadoutPanel extends javax.swing.JPanel {
     public ReadoutPanel(ChartManager chartManager) {
         initComponents(); 
         this.chartManager = chartManager;
-       
+        
         LinkedList<Dataset> datasets = this.chartManager.getDatasets();
         String[] datasetNames = new String[datasets.size()];
         for(int i = 0; i < datasetNames.length; i++) {
@@ -50,15 +54,26 @@ public class ReadoutPanel extends javax.swing.JPanel {
         //create a 2-d array of 2 columns and "tag size" rows
         Object[][] data = new Object[chosenDataset.getDataMap().getTags().size()][2];
         for(int r = 0; r < data.length; r++) {
-            String tag = chosenDataset.getDataMap().getTags().get(0);
+            String tag = chosenDataset.getDataMap().getTags().get(r);
+            tag = tag.split(",")[1];
+            String units = "";
+            //simple check if tag has units
+            if(tag.contains("[")) {
+                units = tag.substring(tag.indexOf("["));
+                tag = tag.substring(0, tag.indexOf("["));
+            }
             data[r][0] = tag;
             //need to find and interpolate data
-            LinkedList<LogObject> dataList = chosenDataset.getDataMap().getList(tag);
+            LinkedList<LogObject> dataList = chosenDataset.getDataMap().getList(chosenDataset.getDataMap().getTags().get(r));
             
             double upperdom = 0;
             double lowerdom = 0;
             double upperval = 0;
             double lowerval = 0;
+            //pretty inefficient. selecting items at the end of the dataset would require an entire pass of the data
+            //A data structure that might work would be to create a static class that holds the current value markers from the chartpanel and them read them here.
+            //TODO: Improve efficiency
+            //TODO: handle distance!
             for(LogObject lo : dataList) {
                 if(lo.getTime() < xCor) {
                     lowerdom = lo.getTime();
@@ -73,7 +88,7 @@ public class ReadoutPanel extends javax.swing.JPanel {
             }
             
             //now that we have dom and value, interpolate
-            data[r][1] = (lowerval * (upperdom - xCor) + upperval * (xCor - lowerdom)) / (upperdom - lowerdom);
+            data[r][1] = String.format( "%.2f", (lowerval * (upperdom - xCor) + upperval * (xCor - lowerdom)) / (upperdom - lowerdom)) + units;
         }
         
         
@@ -83,6 +98,9 @@ public class ReadoutPanel extends javax.swing.JPanel {
         
         
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+        
+        readoutTable.setModel(tableModel);
+        
     }
 
     /**
@@ -132,23 +150,27 @@ public class ReadoutPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(datasetComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(datasetComboBox, 0, 280, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(datasetComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 402, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                .addGap(12, 12, 12))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    protected void setTableSize(Dimension d) {
+        jScrollPane2.setSize(d);
+        readoutTable.setSize(d);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> datasetComboBox;

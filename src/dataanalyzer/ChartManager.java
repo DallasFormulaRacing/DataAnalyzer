@@ -73,7 +73,9 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
-        readout.getReadoutPanel().updateTable(xCor);
+        
+        if(readout != null)
+            readout.getReadoutPanel().updateTable(xCor);
     }
     
     //adds a new chart

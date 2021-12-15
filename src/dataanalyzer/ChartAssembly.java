@@ -90,7 +90,7 @@ public class ChartAssembly implements ChartMouseListener {
     
     ChartTheme currentTheme;
     
-    public ChartAssembly(ChartManager manager) {        
+    public ChartAssembly(ChartManager manager) { 
         this.manager = manager;
         selection = new Selection();
         showingHistogram = false;

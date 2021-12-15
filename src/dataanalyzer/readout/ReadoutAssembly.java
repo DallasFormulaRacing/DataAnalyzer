@@ -6,7 +6,10 @@ package dataanalyzer.readout;
 
 import dataanalyzer.ChartFrame;
 import dataanalyzer.ChartManager;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import javax.swing.JInternalFrame;
 
 /**
@@ -22,11 +25,18 @@ public class ReadoutAssembly {
     
     public ReadoutAssembly(ChartManager chartManager) {
         chartFrame = new ChartFrame();
-        chartFrame.setSize(new Dimension(800,600));
+        chartFrame.setSize(new Dimension(300,500));
         chartFrame.setResizable(true);
         readoutPanel = new ReadoutPanel(chartManager);
-        readoutPanel.setSize(new Dimension(800,600));
+        chartFrame.setLayout(null);
         chartFrame.add(readoutPanel);
+        
+        chartFrame.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent componentEvent) {
+                readoutPanel.setSize(chartFrame.getSize());
+            }
+        });
         
         this.chartManager = chartManager;
         
