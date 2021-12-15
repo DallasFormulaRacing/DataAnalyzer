@@ -10,6 +10,7 @@ import dataanalyzer.ChartManager;
 import dataanalyzer.Dataset;
 import dataanalyzer.LogObject;
 import dataanalyzer.SimpleLogObject;
+import dataanalyzer.SizeListener;
 import dataanalyzer.Valueable;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -27,7 +28,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author arib
  */
-public class ReadoutPanel extends javax.swing.JPanel {
+public final class ReadoutPanel extends javax.swing.JPanel {
 
     ChartManager chartManager;
     /**
@@ -38,23 +39,41 @@ public class ReadoutPanel extends javax.swing.JPanel {
         initComponents(); 
         this.chartManager = chartManager;
         
+        this.chartManager.addDatasetSizeChangeListener(new SizeListener() {
+            @Override
+            public void sizeUpdate() {
+                setupDatasetComboBox();
+            }
+        });
+        
+        setupDatasetComboBox();
+        updateTable(0);
+    }
+    
+    public final void setupDatasetComboBox() {
         LinkedList<Dataset> datasets = this.chartManager.getDatasets();
         String[] datasetNames = new String[datasets.size()];
         for(int i = 0; i < datasetNames.length; i++) {
             datasetNames[i] = datasets.get(i).getName();
         }
         datasetComboBox.setModel(new DefaultComboBoxModel<>(datasetNames));
-        
-        updateTable(0);
     }
     
     public void updateTable(double xCor) {
         Dataset chosenDataset = chartManager.getDataset(datasetComboBox.getSelectedItem() + "");
         
+        //Switch between time and distance (and other distances) here.
+        
         //create a 2-d array of 2 columns and "tag size" rows
-        Object[][] data = new Object[chosenDataset.getDataMap().getTags().size()][2];
+        ArrayList<String> tags = new ArrayList<>();
+        for(String tag : chosenDataset.getDataMap().getTags()) {
+            if(tag.matches("Time,.*")) {
+                tags.add(tag);
+            }
+        }
+        Object[][] data = new Object[tags.size()][2];
         for(int r = 0; r < data.length; r++) {
-            String tag = chosenDataset.getDataMap().getTags().get(r);
+            String tag = tags.get(r);
             tag = tag.split(",")[1];
             String units = "";
             //simple check if tag has units
@@ -64,7 +83,7 @@ public class ReadoutPanel extends javax.swing.JPanel {
             }
             data[r][0] = tag;
             //need to find and interpolate data
-            LinkedList<LogObject> dataList = chosenDataset.getDataMap().getList(chosenDataset.getDataMap().getTags().get(r));
+            LinkedList<LogObject> dataList = chosenDataset.getDataMap().getList(tags.get(r));
             
             double upperdom = 0;
             double lowerdom = 0;
