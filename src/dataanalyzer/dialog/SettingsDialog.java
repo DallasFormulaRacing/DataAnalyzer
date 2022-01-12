@@ -47,9 +47,16 @@ public class SettingsDialog extends javax.swing.JDialog {
                 //see if its being closed by something that is not the apply or cancel buttons
                 if(!applyOrCancel) {
                     //TODO: see if any changes have actually been made
-                    //Make the user confirm that the window should be closed
-                    if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changed. Confirm Close?"))
-                        //if user accepts, then dispose
+                    boolean theme = settings.getSetting("PreferredTheme").equals(preferredThemeComboBox.getSelectedItem().toString());
+                    boolean update = settings.getSetting("AutoCheckForUpdates").equals(autoCheckForUpdates.isSelected() + "");
+                    boolean process = settings.getSetting("AlwaysApplyPostProcessing").equals(alwaysApplyPostProcessingComboBox.getSelectedItem().toString());
+                    if(!(theme && update && process)) {
+                        //Make the user confirm that the window should be closed
+                        if(dataanalyzer.DataAnalyzer.createConfirmDialog("Close", "Unsaved Changes. Confirm Close?"))
+                            //if user accepts, then dispose
+                            ev.getWindow().dispose();
+                    }
+                    else
                         ev.getWindow().dispose();
                 }
             }
