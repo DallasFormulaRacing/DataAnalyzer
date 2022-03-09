@@ -68,7 +68,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     //Stores the current filepath
     private String openedFilePath;
-
+   
     //holds if file operations are currently ongoing
     private boolean openingAFile;
     
@@ -739,7 +739,136 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+   
+    // Starts up DataAnalyzer from a .dfr file when .dfr file is double clicked
+    private void doubleClickDfr( String filepath ){
+            boolean applyPostProcessing = false;
+            File chosenFile = new File(filepath);
+            boolean multipleWindows = true;
+            if(chosenFile.exists())
+                multipleWindows = createConfirmDialog("Multiple Windows?", "Should these files be opened in independent windows?");
+            //should we create a new window?
+            boolean toCreateNewWindow = false;
+            //holds new window number opened
+            int windowCount = 0;
+                //if we need to create a new window
+                if(toCreateNewWindow) {
+                    //new window object
+                    DataAnalyzer da = new DataAnalyzer();
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName().substring(0, chosenFile.getName().lastIndexOf('.')));
+                    try {
+                        da.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                     
+                    }
+                    
+                    //set vehicle data
+                    da.getChartManager().getMainDataset().setVehicleData(chartManager.getMainDataset().getVehicleData());
+                    //get file path
+                    String chosenFilePath = chosenFile.getAbsolutePath();
+                    //set the file path for that object
+                    new MessageBox(this, chosenFilePath, true).setVisible(true);
+                    da.openedFilePath = chosenFilePath;
+                    //get index of the last.
+                    int lastIndex = chosenFilePath.lastIndexOf(".");
+                    //get file extension
+                    String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
+                    
+                    //if its a created file
+                    if(fileExtension.equals(".dfr")) {
+                        da.openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        da.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
+                    }
+                    //if its a new import
+                    else {
+                        //if its a csv
+                        if(fileExtension.equals(".csv")) {
+                            //make the new window import a PE3 file
+                            try {
+                                da.openPE3Files(dataset, chosenFile, applyPostProcessing);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                              
+                            }
+                        //else if its a TXT make the new window import a CSV
+                        } else if (fileExtension.equals(".txt")) {
+                            da.openTXT(dataset, chosenFilePath);
+                        }
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                            da.applyPostProcessing(dataset);
+                    }
+                    
+                    da.setVisible(true);
+                    if(chosenFilePath.lastIndexOf('/') != -1) {
+                        da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                    } else {
+                        da.setTitle("DataAnalyzer - " + chosenFilePath);
+                    }
+                    da.setLocation(100*windowCount, 100*windowCount);
+                    da.openingAFile = false;
+                //if we are not to create a new window
+                } else {
+                    //create dataset, and add it to the window
+                    Dataset dataset = new Dataset(chosenFile.getName());
+                    try {
+                        this.getChartManager().addDataset(dataset);
+                    } catch (DuplicateDatasetNameException ex) {
+                        new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                        
+                    }
+                    //get file path
+                    String chosenFilePath = chosenFile.getAbsolutePath();
+                    //set this windows last opened filepath to the current filepath
+                    openedFilePath = chosenFilePath;
+                    //get the index of last .
+                    int lastIndex = openedFilePath.lastIndexOf(".");
+                    //get file extension
+                    String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+                    
+                    //if its a created file or assembly
+                    if(fileExtension.equals(".dfr")) {
+                        openFile(dataset, chosenFilePath);
+                    }
+                    else if(fileExtension.equals(".dfrasm")) {
+                        //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                        this.getChartManager().removeDataset(chosenFile.getName());
+                        //open the file assembly. It will create and add its own datasets.
+                        openFileAssembly(chosenFilePath);
+                    }
+                    //if its a new import
+                    else {
+                        //if its a csv
+                        if(fileExtension.equals(".csv")) {
+                            //make the new window import a PE3 file
+                            try {
+                                openPE3Files(dataset, chosenFile, applyPostProcessing);
+                            } catch (FileNotFoundException e) {
+                                Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                                
+                            }
+                        //else if its a TXT make the new window import a CSV
+                        } else if (fileExtension.equals(".txt")) {
+                            openTXT(dataset, chosenFilePath);
+                        }
+                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                            applyPostProcessing(dataset);
+                    }
+                    if(multipleWindows)
+                        toCreateNewWindow = true;
+                    openingAFile = false;
+                }
+                windowCount++;
+            
+        
+        }
+    
     private void openBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBtnClicked
         
         // Open a separate dialog to select a .csv file
@@ -870,6 +999,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //get file path
                     String chosenFilePath = chosenFile.getAbsolutePath();
                     //set the file path for that object
+                    new MessageBox(this, chosenFilePath, true).setVisible(true);
                     da.openedFilePath = chosenFilePath;
                     //get index of the last.
                     int lastIndex = chosenFilePath.lastIndexOf(".");
@@ -1559,12 +1689,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         //</editor-fold>
         
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DataAnalyzer().setVisible(true);
+           
+            DataAnalyzer da = new DataAnalyzer();
+            da.setVisible(true);
+            
+            // opens data analyzer graph from a double click of a .dfr file.
+            if( args.length > 0 ){
+                da.doubleClickDfr( args[0] );
+            }
             }
         });
+        
+      
     }
     
     public static void applyPE3PostProcessing(Dataset dataset) {
@@ -2168,10 +2308,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
-        if( fileWasSaved == true ){
+        if(fileWasSaved == true){
           try {
               Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
           } catch(IOException e){
@@ -2365,8 +2505,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
        
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
         if( fileWasSaved == true ){
           try {
