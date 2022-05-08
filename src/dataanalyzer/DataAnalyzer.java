@@ -2177,10 +2177,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
-        if( fileWasSaved == true ){
+        if(fileWasSaved == true){
           try {
               Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
           } catch(IOException e){
@@ -2374,10 +2374,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
        
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
-        if( fileWasSaved == true ){
+        if(fileWasSaved == true){
           try {
               Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
           } catch(IOException e){
