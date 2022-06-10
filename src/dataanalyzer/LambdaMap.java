@@ -52,10 +52,10 @@ public class LambdaMap extends javax.swing.JFrame {
     private int maxRPM;
     private double targetAFR;
     private double afrError;
-    private double targetCountLow;
     private double targetCountHigh;
     private int injectorTimeColorMap;
     private boolean includeFullyLeanValues;
+    private boolean hideLowDataCountValues;
 
     //Contains the current lambda view (avg=0, max=1, min=2, injector=3)
     private int currentLambdaView;
@@ -73,8 +73,9 @@ public class LambdaMap extends javax.swing.JFrame {
         this.targetAFR = 12;
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
-        this.targetCountLow = 10;
+        this.includeFullyLeanValues = false;
         this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -96,6 +97,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
         this.includeFullyLeanValues = false;
+        this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -125,6 +128,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = afrError;
         this.injectorTimeColorMap = 0;
         this.includeFullyLeanValues = includeFullyLeanValues;
+        this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -366,7 +371,7 @@ public class LambdaMap extends javax.swing.JFrame {
         }
     }
     
-    private Color getDataCountColorVal(int col, int row, double targetCountLow, double targetCountHigh) {
+    private Color getDataCountColorVal(int col, int row, double targetCountHigh) {
         double val = dataCountTable[col - 1][table.getRowCount() - 1 - row];
 
         //The saturation and brightness values need for the color format HSB
@@ -377,17 +382,13 @@ public class LambdaMap extends javax.swing.JFrame {
         if (val == 0 || val == Double.MAX_VALUE) {
             return Color.LIGHT_GRAY;
         //Checks if value is low
-        } else if (val <= targetCountLow){
-            //return red
-            return Color.getHSBColor(0.0f, saturation, brightness);
-            //check if high
         } else if(val >= targetCountHigh){
             //return green
             return Color.getHSBColor(0.3f, saturation, brightness);
             //if inbetween
         } else {
             //hue is scaled between green and red
-            float hue = (float)(((val/(targetCountHigh-targetCountLow)-1.0)*-1.0)*.7)+.3f;
+            float hue = (float)(((val/(targetCountHigh)-1.0)*-1.0)*.7)+.3f;
             return Color.getHSBColor(hue, saturation, brightness);
         }
     }
@@ -434,12 +435,15 @@ public class LambdaMap extends javax.swing.JFrame {
                 if (col == 0) {
                     return this.getTableHeader().getDefaultRenderer()
                     .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);
-                } else if (currentLambdaView == 3) {
+                } else if (hideLowDataCountValues && isLowData(col, row)) {
+                    component.setBackground(getColorVal(0.0, targetAFR, afrError));
+                    return component;
+                }else if (currentLambdaView == 3) {
                     component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));
                     return component;
                 } else if (currentLambdaView == 4) {
                     //set colors for data count to see if data points are significant
-                    component.setBackground(getDataCountColorVal(col, row, targetCountLow, targetCountHigh));
+                    component.setBackground(getDataCountColorVal(col, row, targetCountHigh));
                     return component;
                 }else {
                     component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));
@@ -621,7 +625,7 @@ public class LambdaMap extends javax.swing.JFrame {
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
         //Creates a lambda map settings dialog box
-        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap, includeFullyLeanValues, targetCountLow, targetCountHigh);
+        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap, includeFullyLeanValues, hideLowDataCountValues, targetCountHigh);
         settings.setVisible(true);
 
         //Sets table setting values equal to user updated dialog setting values
@@ -630,8 +634,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = settings.getAcceptedError();
         this.injectorTimeColorMap = settings.getInjectorTimeColorMap();
         this.includeFullyLeanValues = settings.isIncludeFullyLeanValues();
-        this.targetCountLow = settings.getTargetCountLow();
         this.targetCountHigh = settings.getTargetCountHigh();
+        this.hideLowDataCountValues = settings.isHideLowDataCountValues();
 
         //Initializes new table model with new max RPM
         initTableModel(maxRPM, 100);
@@ -673,6 +677,10 @@ public class LambdaMap extends javax.swing.JFrame {
         populateTable(dataCountTable);
     }//GEN-LAST:event_showLambdaDataCountMenuItemActionPerformed
 
+    private boolean isLowData(int col, int row){
+        return dataCountTable[col - 1][table.getRowCount() - 1 - row] < this.targetCountHigh;
+    }
+    
     /**
      * @param args the command line arguments
      */
