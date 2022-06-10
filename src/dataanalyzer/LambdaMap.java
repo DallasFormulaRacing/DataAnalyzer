@@ -318,7 +318,11 @@ public class LambdaMap extends javax.swing.JFrame {
                     dec = toSet[y][table.getRowCount() - 1 - x];
                 }
                 //Sets jTable's cell vaule equal to the formatted array cell value
+                
                 table.setValueAt(afrFormat.format(dec), x, y + 1);
+                if (hideLowDataCountValues && isLowData(y + 1, x)){
+                    table.setValueAt(0, x, y + 1);
+                }
             }
         }
     }
