@@ -37,6 +37,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private double[][] afrMinTable;
     private double[][] afrMaxTable;
     private double[][] injectorTimingTable;
+    private double[][] dataCountTable;
 
     //Decimal Formats for rendering floating point integers in the table
     DecimalFormat afrFormat = new DecimalFormat("##.##");
@@ -51,8 +52,10 @@ public class LambdaMap extends javax.swing.JFrame {
     private int maxRPM;
     private double targetAFR;
     private double afrError;
+    private double targetCountHigh;
     private int injectorTimeColorMap;
     private boolean includeFullyLeanValues;
+    private boolean hideLowDataCountValues;
 
     //Contains the current lambda view (avg=0, max=1, min=2, injector=3)
     private int currentLambdaView;
@@ -70,6 +73,9 @@ public class LambdaMap extends javax.swing.JFrame {
         this.targetAFR = 12;
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
+        this.includeFullyLeanValues = false;
+        this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -91,6 +97,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = 1;
         this.injectorTimeColorMap = 0;
         this.includeFullyLeanValues = false;
+        this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -120,6 +128,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = afrError;
         this.injectorTimeColorMap = 0;
         this.includeFullyLeanValues = includeFullyLeanValues;
+        this.targetCountHigh = 100;
+        this.hideLowDataCountValues = false;
 
         //Initializes table application
         initTableModel(maxRPM, 100);
@@ -212,7 +222,8 @@ public class LambdaMap extends javax.swing.JFrame {
 
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
-
+        dataCountTable = new double[table.getColumnCount()][table.getRowCount()];
+        
         for (int x = 0; x < afrMinTable.length; x++) {
             Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
         }
@@ -273,6 +284,9 @@ public class LambdaMap extends javax.swing.JFrame {
                 //update Min and Max tables
                 afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
                 afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
+                
+                //add data point to count table
+                dataCountTable[column][row] += 1;
             }
         }
 
@@ -304,7 +318,11 @@ public class LambdaMap extends javax.swing.JFrame {
                     dec = toSet[y][table.getRowCount() - 1 - x];
                 }
                 //Sets jTable's cell vaule equal to the formatted array cell value
+                
                 table.setValueAt(afrFormat.format(dec), x, y + 1);
+                if (hideLowDataCountValues && isLowData(y + 1, x)){
+                    table.setValueAt(0, x, y + 1);
+                }
             }
         }
     }
@@ -356,6 +374,28 @@ public class LambdaMap extends javax.swing.JFrame {
             return Color.getHSBColor(0.45f + (0.18f * (float) offsetPerc), saturation, brightness);
         }
     }
+    
+    private Color getDataCountColorVal(int col, int row, double targetCountHigh) {
+        double val = dataCountTable[col - 1][table.getRowCount() - 1 - row];
+
+        //The saturation and brightness values need for the color format HSB
+        float saturation = 0.85f;
+        float brightness = 0.75f;
+        
+        //Checks if value is equal to zero or Double.MAX_VALUE
+        if (val == 0 || val == Double.MAX_VALUE) {
+            return Color.LIGHT_GRAY;
+        //Checks if value is low
+        } else if(val >= targetCountHigh){
+            //return green
+            return Color.getHSBColor(0.3f, saturation, brightness);
+            //if inbetween
+        } else {
+            //hue is scaled between green and red
+            float hue = (float)(((val/(targetCountHigh)-1.0)*-1.0)*.7)+.3f;
+            return Color.getHSBColor(hue, saturation, brightness);
+        }
+    }
 
     /**
      * Returns a color on the gradient from blue to green to red for the target
@@ -399,10 +439,17 @@ public class LambdaMap extends javax.swing.JFrame {
                 if (col == 0) {
                     return this.getTableHeader().getDefaultRenderer()
                     .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);
-                } else if (currentLambdaView == 3) {
+                } else if (hideLowDataCountValues && isLowData(col, row)) {
+                    component.setBackground(getColorVal(0.0, targetAFR, afrError));
+                    return component;
+                }else if (currentLambdaView == 3) {
                     component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));
                     return component;
-                } else {
+                } else if (currentLambdaView == 4) {
+                    //set colors for data count to see if data points are significant
+                    component.setBackground(getDataCountColorVal(col, row, targetCountHigh));
+                    return component;
+                }else {
                     component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));
                     return component;
                 }
@@ -420,6 +467,7 @@ public class LambdaMap extends javax.swing.JFrame {
         showLambdaMaxMenuItem = new javax.swing.JMenuItem();
         showLambdaMinMenuItem = new javax.swing.JMenuItem();
         showInjectorTimesMenuItem = new javax.swing.JMenuItem();
+        showLambdaDataCountMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1350, 780));
@@ -500,6 +548,14 @@ public class LambdaMap extends javax.swing.JFrame {
         });
         viewMenu.add(showInjectorTimesMenuItem);
 
+        showLambdaDataCountMenuItem.setText("Lambda Data Count");
+        showLambdaDataCountMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showLambdaDataCountMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(showLambdaDataCountMenuItem);
+
         jMenuBar.add(viewMenu);
 
         setJMenuBar(jMenuBar);
@@ -573,7 +629,7 @@ public class LambdaMap extends javax.swing.JFrame {
 
     private void lambdaMapSettingsCalled(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lambdaMapSettingsCalled
         //Creates a lambda map settings dialog box
-        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap, includeFullyLeanValues);
+        LambdaMapSettings settings = new LambdaMapSettings(this, true, maxRPM, targetAFR, afrError, injectorTimeColorMap, includeFullyLeanValues, hideLowDataCountValues, targetCountHigh);
         settings.setVisible(true);
 
         //Sets table setting values equal to user updated dialog setting values
@@ -582,6 +638,8 @@ public class LambdaMap extends javax.swing.JFrame {
         this.afrError = settings.getAcceptedError();
         this.injectorTimeColorMap = settings.getInjectorTimeColorMap();
         this.includeFullyLeanValues = settings.isIncludeFullyLeanValues();
+        this.targetCountHigh = settings.getTargetCountHigh();
+        this.hideLowDataCountValues = settings.isHideLowDataCountValues();
 
         //Initializes new table model with new max RPM
         initTableModel(maxRPM, 100);
@@ -610,11 +668,23 @@ public class LambdaMap extends javax.swing.JFrame {
             case 2: //Minimum labda view
                 this.populateTable(afrMinTable);
                 break;
-            default: //Injecotr time view
+            case 3: //Injecotr time view
                 this.populateTable(injectorTimingTable);
+            default: //Injecotr time view
+                this.populateTable(dataCountTable);
         }
     }//GEN-LAST:event_lambdaMapSettingsCalled
 
+    private void showLambdaDataCountMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLambdaDataCountMenuItemActionPerformed
+        currentLambdaView = 4;
+        currentViewLabel.setText("Current View: Lambda Data Count");
+        populateTable(dataCountTable);
+    }//GEN-LAST:event_showLambdaDataCountMenuItemActionPerformed
+
+    private boolean isLowData(int col, int row){
+        return dataCountTable[col - 1][table.getRowCount() - 1 - row] < this.targetCountHigh;
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -660,6 +730,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private javax.swing.JTable jTable;
     private javax.swing.JMenuItem showInjectorTimesMenuItem;
     private javax.swing.JMenuItem showLambdaAverageMenuItem;
+    private javax.swing.JMenuItem showLambdaDataCountMenuItem;
     private javax.swing.JMenuItem showLambdaMaxMenuItem;
     private javax.swing.JMenuItem showLambdaMinMenuItem;
     private javax.swing.JMenu tableMenu;

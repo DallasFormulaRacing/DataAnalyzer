@@ -20,21 +20,26 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     private static int maxRPM;
     private static double targetAFR;
     private static double acceptedError;
+    private static double targetCountHigh;
     private static int injectorTimeColorMap;
     private static boolean includeFullyLeanValues;
+    private static boolean hideLowDataCountValues;
 
     /**
      * Creates new form LambdaMapSettings
      */
-    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError, int injectorTimeColorMap, boolean includeFullyLeanValues) {
+    public LambdaMapSettings(java.awt.Frame parent, boolean modal, int maxRPM, double targetAFR, double acceptedError, int injectorTimeColorMap, boolean includeFullyLeanValues, boolean hideLowDataCountValues, double targetCountHigh) {
         super(parent, modal);
         this.maxRPM = maxRPM;
         this.targetAFR = targetAFR;
         this.acceptedError = acceptedError;
         this.injectorTimeColorMap = injectorTimeColorMap;
         this.includeFullyLeanValues = includeFullyLeanValues;
+        this.targetCountHigh = targetCountHigh;
+        this.hideLowDataCountValues = hideLowDataCountValues;
         initComponents();
         includeFullyLeanValuesCheckBox.setSelected(includeFullyLeanValues);
+        hideLowDataCountValuesCheckBox.setSelected(hideLowDataCountValues);
         ScreenLocation.getInstance().calculateCenter(this);
 
     }
@@ -59,6 +64,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         injectorTimeLabel = new javax.swing.JLabel();
         injectorTimeComboBox = new javax.swing.JComboBox<>();
         includeFullyLeanValuesCheckBox = new javax.swing.JCheckBox();
+        dataCountLabel = new javax.swing.JLabel();
+        dataCountField = new javax.swing.JTextField();
+        hideLowDataCountValuesCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setFocusCycleRoot(false);
@@ -102,6 +110,14 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         includeFullyLeanValuesCheckBox.setText("Include Fully Lean Values");
         includeFullyLeanValuesCheckBox.setToolTipText("");
 
+        dataCountLabel.setText("Target Data Count (Low/High)");
+
+        dataCountField.setText(String.valueOf(targetCountHigh));
+        dataCountField.setToolTipText("Enter High target for data point amounts");
+
+        hideLowDataCountValuesCheckBox.setText("Hide Low Data Count Values");
+        hideLowDataCountValuesCheckBox.setToolTipText("");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,8 +125,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(includeFullyLeanValuesCheckBox)
+                    .addComponent(hideLowDataCountValuesCheckBox)
+                    .addComponent(dataCountLabel)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(includeFullyLeanValuesCheckBox)
                         .addComponent(injectorTimeLabel)
                         .addComponent(afrErrorLabel)
                         .addComponent(targetAFRLabel)
@@ -118,12 +136,13 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                         .addComponent(maxRpmField)
                         .addComponent(targetAfrField)
                         .addComponent(afrOffsetField)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(injectorTimeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
                             .addComponent(cancelButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                             .addComponent(applyButton))
-                        .addComponent(injectorTimeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(25, Short.MAX_VALUE))
+                        .addComponent(dataCountField)))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -146,7 +165,13 @@ public class LambdaMapSettings extends javax.swing.JDialog {
                 .addComponent(injectorTimeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(includeFullyLeanValuesCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dataCountLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dataCountField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(hideLowDataCountValuesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
                     .addComponent(applyButton))
@@ -162,6 +187,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         close();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    
     private void settingsApplied(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsApplied
         //checks for valid data in table settings
         try {
@@ -182,6 +208,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             
             includeFullyLeanValues = includeFullyLeanValuesCheckBox.isSelected();
             
+            targetCountHigh = Double.parseDouble(dataCountField.getText());
+            hideLowDataCountValues = hideLowDataCountValuesCheckBox.isSelected();
+            
             close();
         }
         //displays a message box with an error when exceptions are thrown
@@ -189,6 +218,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
             new MessageBox(this, "Error validating your settings." + "\n" + "Please make sure your numbers are correct.\n" + e.getMessage(), true).setVisible(true);
         }
     }//GEN-LAST:event_settingsApplied
+    
+    public static double getTargetCountHigh() {
+        return targetCountHigh;
+    }
 
     public static int getMaxRPM() {
         return maxRPM;
@@ -208,6 +241,10 @@ public class LambdaMapSettings extends javax.swing.JDialog {
 
     public static boolean isIncludeFullyLeanValues() {
         return includeFullyLeanValues;
+    }
+    
+    public static boolean isHideLowDataCountValues() {
+        return hideLowDataCountValues;
     }
     
     public void close() {
@@ -244,7 +281,7 @@ public class LambdaMapSettings extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError, injectorTimeColorMap, includeFullyLeanValues);
+                LambdaMapSettings dialog = new LambdaMapSettings(new javax.swing.JFrame(), true, maxRPM, targetAFR, acceptedError, injectorTimeColorMap, includeFullyLeanValues, hideLowDataCountValues, targetCountHigh);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -261,6 +298,9 @@ public class LambdaMapSettings extends javax.swing.JDialog {
     private javax.swing.JTextField afrOffsetField;
     private javax.swing.JButton applyButton;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JTextField dataCountField;
+    private javax.swing.JLabel dataCountLabel;
+    private javax.swing.JCheckBox hideLowDataCountValuesCheckBox;
     private javax.swing.JCheckBox includeFullyLeanValuesCheckBox;
     private javax.swing.JComboBox<String> injectorTimeComboBox;
     private javax.swing.JLabel injectorTimeLabel;
