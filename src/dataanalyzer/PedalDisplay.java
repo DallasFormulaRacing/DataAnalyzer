@@ -20,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -40,7 +41,7 @@ public class PedalDisplay{
     public PedalDisplay(ChartManager manager){
         this.manager = manager;
         panel = new PedalPanel();
-        chartFrame = new JInternalFrame();
+        chartFrame = new ChartFrame();
         chartFrame.setSize(new Dimension(200, 200));
         chartFrame.setResizable(true);
         chartFrame.setContentPane(panel);
