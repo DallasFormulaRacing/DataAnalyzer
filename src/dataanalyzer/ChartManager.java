@@ -35,6 +35,7 @@ public class ChartManager {
     
     //holds all active charts
     ArrayList<ChartAssembly> charts;
+    ArrayList<PedalDisplay> pedals;
     
     //holds if swapper is active
     int swapActive;
@@ -52,6 +53,7 @@ public class ChartManager {
         cutDataActive = -2;
         newLap = new Lap();
         charts = new ArrayList<>();
+        pedals = new ArrayList<>();
         first = null;
         second = null;
         listeners = new ArrayList<>();
@@ -68,6 +70,11 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
+        if (!pedals.isEmpty()){
+            for(PedalDisplay pedal : pedals){
+                pedal.updateOverlay(xCor);
+            }        
+        }
     }
     
     //adds a new chart
@@ -79,10 +86,22 @@ public class ChartManager {
         return chart;
     }
     
+    public PedalDisplay addPedalDisplay() {
+        PedalDisplay pedalDisplay = new PedalDisplay(this);
+        parent.desktop.add(pedalDisplay.chartFrame);
+        pedals.add(pedalDisplay);
+        return pedalDisplay;
+    }
+    
     public void clearCharts() {
         while(!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
             chart.chartFrame.dispose();
+            charts.remove(0);
+        }
+        while(!pedals.isEmpty()){
+            PedalDisplay pedal = pedals.get(0);
+            pedal.chartFrame.dispose();
             charts.remove(0);
         }
     }
@@ -240,7 +259,8 @@ public class ChartManager {
     public JFrame getParentFrame() {
         return parent;
     }
-
+    
+    //May need to be changed for has overlay and for chartassembly
     public ArrayList<ChartAssembly> getCharts() {
         return charts;
     }
