@@ -499,4 +499,24 @@ public class Selection {
         return datasetSelections;
     }
     
+    public void modeUpdate(DomainMode mode) {
+        for (DatasetSelection ds : datasetSelections ) {
+            ArrayList<String> tags = ds.selectedTags;
+            for(int i = 0; i < tags.size(); i++) {
+                if (mode == DomainMode.DISTANCE) {
+                    //swap all Time,X to Distance,X
+                    if (tags.get(i).matches("Time,.*")) {
+                        tags.set(i, "Distance," + tags.get(i).split(",")[1]);
+                    }
+                } else if (mode == DomainMode.TIME) {
+                    //swap all Distance,X to Time,X
+                    if (tags.get(i).matches("Distance,.*")) {
+                        tags.set(i, "Time," + tags.get(i).split(",")[1]);
+                    }
+                }
+            }
+        }
+        
+    }
+    
 }

@@ -206,6 +206,13 @@ public class ChartManager {
         }
     }
     
+    public void triggerChartDomainUpdate() {
+        for (ChartAssembly ca : charts) {
+            ca.selection.modeUpdate((DomainMode) parent.appParameters.get("domainMode"));
+            ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
+        }
+    }
+    
     
     /**
      * 
@@ -237,7 +244,7 @@ public class ChartManager {
         this.newLap = newLap;
     }
 
-    public JFrame getParentFrame() {
+    public DataAnalyzer getParentFrame() {
         return parent;
     }
 

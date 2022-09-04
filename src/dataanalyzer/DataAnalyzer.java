@@ -11,6 +11,7 @@ import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import dataanalyzer.controlbar.ControlBar;
 import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
 import dataanalyzer.dialog.LoadingDialog;
@@ -59,6 +60,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 
 /**
  *
@@ -91,15 +93,32 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //holds if file save button was pressed
     private boolean fileWasSaved = false;
     
+    //holds the ControlBar for this window
+    ControlBar controlBar;
+    private final int CONTROL_BAR_SIZE = 75;
+    
+    //class that holds global parameters
+    public HashMap<String, Object> appParameters;
+    
     public DataAnalyzer() {
         initComponents();
+        
+        //parameters instance
+        appParameters = new HashMap<>();
         
         // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
         
         // uses JDesktopPane to manage windows
-        this.setContentPane(desktop);
+//        this.add(desktop);
+        desktop.setSize(this.getSize());
+        
+        //setup the bottom control bar
+        controlBar = new ControlBar(this);
+        this.add(controlBar);
+        controlBar.setLocation(0, heightFrame-25);
+        controlBar.setVisible(true);
         
         //Setup directories
         Installer.runInstaller();
@@ -177,6 +196,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 heightFrame = getHeight();
                 widthFrame = getWidth();
+                desktop.setSize(widthFrame, heightFrame-CONTROL_BAR_SIZE);
+                controlBar.setSize(widthFrame, 25);
+                controlBar.setLocation(0, heightFrame-CONTROL_BAR_SIZE);
                 
                 ScreenLocation sc = ScreenLocation.getInstance();
                 sc.update(curr);
@@ -237,7 +259,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 System.out.println("Had trouble parsing your app name. Please don't change your appname.");
             }
         }
-        
+
         ScreenLocation.getInstance().update(this);
     }
     
@@ -451,7 +473,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         ChartAssembly chart = chartManager.addChart();
         chart.getChartFrame().setLocation(0, 0);
         Dimension frameSize = this.getSize();
-        chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
+        chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())) - CONTROL_BAR_SIZE);
     }
     
     private void twoVerticalView() {
@@ -3136,6 +3158,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         return version;
     }
     
+    public HashMap<String, Object> getAppParameters() {
+        return appParameters;
+    }
+    
     public long getLastTime(Dataset dataset) {
         //get the datamap
         CategoricalHashMap datamap = dataset.getDataMap();
@@ -3159,6 +3185,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //returns chartManager
     public ChartManager getChartManager() {
         return chartManager;
+    }
+    
+    public void triggerChartDomainUpdate() {
+        chartManager.triggerChartDomainUpdate();
     }
     
     public boolean isOpeningAFile() {
