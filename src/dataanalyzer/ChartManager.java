@@ -93,6 +93,11 @@ public class ChartManager {
         }
         readout = new ReadoutAssembly(this);
         parent.desktop.add(readout.getChartFrame());
+        //set location to bind to right side and fit height
+        ScreenLocation sl = ScreenLocation.getInstance();
+        readout.getChartFrame().setLocation(sl.getWidth() - readout.getChartFrame().getWidth(), 0);
+        readout.getChartFrame().setSize(readout.getChartFrame().getWidth(), sl.getHeight() - 25);
+        readout.getChartFrame().requestFocus();
         return readout;
     }
     
