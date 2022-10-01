@@ -25,7 +25,7 @@ public class ReadoutAssembly {
     
     public ReadoutAssembly(ChartManager chartManager) {
         chartFrame = new ChartFrame();
-        chartFrame.setSize(new Dimension(300,500));
+        chartFrame.setSize(new Dimension(200,500));
         chartFrame.setResizable(true);
         readoutPanel = new ReadoutPanel(chartManager);
         chartFrame.setLayout(null);
