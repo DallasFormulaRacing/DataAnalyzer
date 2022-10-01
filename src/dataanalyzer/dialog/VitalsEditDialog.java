@@ -122,8 +122,18 @@ public class VitalsEditDialog extends javax.swing.JDialog {
         jScrollPane1.setViewportView(vitalsList);
 
         importVitlasButton.setText("Import");
+        importVitlasButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importVitlasButtonActionPerformed(evt);
+            }
+        });
 
         exportVitalsButton.setText("Export");
+        exportVitalsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportVitalsButtonActionPerformed(evt);
+            }
+        });
 
         addVitalsButton.setText("Add");
         addVitalsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -221,6 +231,14 @@ public class VitalsEditDialog extends javax.swing.JDialog {
         }
         
     }//GEN-LAST:event_deleteVitalsButtonActionPerformed
+
+    private void importVitlasButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importVitlasButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_importVitlasButtonActionPerformed
+
+    private void exportVitalsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportVitalsButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_exportVitalsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addVitalsButton;

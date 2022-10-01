@@ -351,6 +351,17 @@ public class VitalsDialog extends javax.swing.JDialog {
             public void actionPerformed(ActionEvent e) {
                 //create VitalsEditDialog
                 new VitalsEditDialog(VitalsDialog.this, true, vitals, dataset.getDataMap()).setVisible(true);
+                //reset main panel
+                mainPanel = new JPanel();
+                mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+                VitalsDialog.this.setContentPane(mainPanel);
+                mainPanel.setVisible(true);
+                //redraw components
+                runVitals(dataset.getDataMap());
+                setupButtons();
+                //rebuild window
+                VitalsDialog.this.pack();
+                VitalsDialog.this.setSize(498, 300);
             }
         });
         
