@@ -27,14 +27,14 @@ import java.util.*;
  *
  * @author aribdhuka & kayla :) <3
  */
-public class GraphExmaple extends javax.swing.JFrame{
+public class GraphExample extends javax.swing.JFrame{
     
     Panel2 drawingPanel;
 
     /**
      * Creates new form ForMyIdiotKayla
      */
-    public GraphExmaple() {
+    public GraphExample() {
  
         //create stuffs
         initComponents();

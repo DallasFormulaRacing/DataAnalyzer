@@ -284,6 +284,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        JMenuItem trackMap = new JMenuItem("Track Map");
+        trackMap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showTrackMap(dataset);
+            }
+        });
+        
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -339,6 +347,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(saveVehicle);
         
         datasetSubMenu.add(engineMenu);
+        datasetSubMenu.add(trackMap);
         datasetSubMenu.add(vehicleMenu);
         datasetSubMenu.add(vitals);
         datasetSubMenu.add(postProc);
@@ -438,7 +447,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
 
-    
+    // Add track map to be 
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
@@ -1652,6 +1661,28 @@ public class DataAnalyzer extends javax.swing.JFrame {
             fot.selection = selection;
             fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
+    }
+    
+    private void showTrackMap(Dataset dataset) {//GEN-FIRST:event_showTrackMapActionPerformed
+        GPSGraphInternalFrame trackMapInternalFrame;
+        
+        //calls the correct constructor based on wheather data has been loaded
+        if(dataset.getDataMap().isEmpty()){
+            trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
+        } else {
+            trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
+        }
+        trackMapInternalFrame.setVisible(true);
+        
+        //adds the trackMapInternalFrame to a list, to keep track of them
+        
+        //sets the location and size of the trackMapInternalFrame
+        Dimension frameSize = this.getSize();
+        trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+        trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+        
+        //adds the trackMapInternalFrame to the DataAnalyzer frame
+        desktop.add(trackMapInternalFrame);
     }
     
     public void invertRangeMarkersActive() {
