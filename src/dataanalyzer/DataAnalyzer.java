@@ -1700,6 +1700,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         else{
              new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
         }
+        
+        //work on clearChart next
     }
             
     
