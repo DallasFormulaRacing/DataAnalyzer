@@ -284,6 +284,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        
         JMenuItem trackMap = new JMenuItem("Track Map");
         trackMap.addActionListener(new ActionListener() {
             @Override
@@ -292,6 +293,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+       
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -1663,9 +1665,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
-    private void showTrackMap(Dataset dataset) {//GEN-FIRST:event_showTrackMapActionPerformed
+    
+    private void showTrackMap(Dataset dataset) {                                             
         GPSGraphInternalFrame trackMapInternalFrame;
         
+       //boolean to check if contains
+        boolean ifContains = false;
+        
+        //if tags include lat and long then set to true
+        if(dataset.getDataMap().tags.contains("Time,Latitude") && dataset.getDataMap().tags.contains("Time,Longitude")){
+            ifContains = true;
+        }
+        
+        //if contains is true
+        if(ifContains){
+        //all of this only happens if the correct file is chosen
         //calls the correct constructor based on wheather data has been loaded
         if(dataset.getDataMap().isEmpty()){
             trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
@@ -1675,7 +1689,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         trackMapInternalFrame.setVisible(true);
         
         //adds the trackMapInternalFrame to a list, to keep track of them
-        
         //sets the location and size of the trackMapInternalFrame
         Dimension frameSize = this.getSize();
         trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
@@ -1683,7 +1696,12 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //adds the trackMapInternalFrame to the DataAnalyzer frame
         desktop.add(trackMapInternalFrame);
+        }
+        else{
+             new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
+        }
     }
+            
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
