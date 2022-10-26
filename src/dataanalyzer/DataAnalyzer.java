@@ -449,13 +449,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
 
-    // Add track map to be 
+    // Add track map to be cleared
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        desktop.removeAll();
     }
     
     private void initializeBasicView() {
@@ -1589,8 +1590,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
         lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
         
-        //set charts data
-
+        
         //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
                 dataset.getDataMap().getTags().contains("Time,TPS[%]") && 
@@ -1666,9 +1666,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     }
     
     
-    private void showTrackMap(Dataset dataset) {                                             
-        GPSGraphInternalFrame trackMapInternalFrame;
+    private void showTrackMap(Dataset dataset) {         
         
+        GPSGraphInternalFrame trackMapInternalFrame;
+     
        //boolean to check if contains
         boolean ifContains = false;
         
@@ -1679,29 +1680,28 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //if contains is true
         if(ifContains){
-        //all of this only happens if the correct file is chosen
-        //calls the correct constructor based on wheather data has been loaded
-        if(dataset.getDataMap().isEmpty()){
-            trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
-        } else {
-            trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
-        }
-        trackMapInternalFrame.setVisible(true);
+           
+            //calls the correct constructor based on wheather data has been loaded
+            if(dataset.getDataMap().isEmpty()){
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
+            } else {
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
+            }
+                trackMapInternalFrame.setVisible(true);
         
-        //adds the trackMapInternalFrame to a list, to keep track of them
-        //sets the location and size of the trackMapInternalFrame
-        Dimension frameSize = this.getSize();
-        trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
-        trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+            //adds the trackMapInternalFrame to a list, to keep track of them
+            //sets the location and size of the trackMapInternalFrame
+            Dimension frameSize = this.getSize();
+            trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+            trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+            
+            //adds the trackMapInternalFrame to the DataAnalyzer frame
+            desktop.add(trackMapInternalFrame);
+            }
+            else{
+                 new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
+         }
         
-        //adds the trackMapInternalFrame to the DataAnalyzer frame
-        desktop.add(trackMapInternalFrame);
-        }
-        else{
-             new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
-        }
-        
-        //work on clearChart next
     }
             
     

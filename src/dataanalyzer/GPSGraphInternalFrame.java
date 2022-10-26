@@ -99,6 +99,7 @@ public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
         initComponents();
     }
     
+    
     public void setXCor (double xCor) {
         panel.setXCor(xCor);
     }
