@@ -38,7 +38,16 @@ public class LambdaMap extends javax.swing.JFrame {
     private double[][] afrMaxTable;
     private double[][] injectorTimingTable;
     private double[][] dataCountTable;
-
+    
+    private double[][] mapAfrAvgTable;
+    private double[][] mapAfrMinTable;
+    private double[][] mapAfrMaxTable;
+    private double[][] mapInjectorTimingTable;
+    private double[][] mapDataCountTable;
+    
+    // Toggles 
+    boolean useMAP = false;
+    
     //Decimal Formats for rendering floating point integers in the table
     DecimalFormat afrFormat = new DecimalFormat("##.##");
 
@@ -219,22 +228,32 @@ public class LambdaMap extends javax.swing.JFrame {
         LinkedList<LogObject> list2 = dataMap.getList("Time,TPS[%]");
         LinkedList<LogObject> list3 = dataMap.getList("Time,Lambda");
         LinkedList<LogObject> list4 = dataMap.getList("Time,FuelOpenTime[ms]");
+        LinkedList<LogObject> list5 = dataMap.getList("Time,MAP[psi]");
 
         afrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
         afrMinTable = new double[table.getColumnCount()][table.getRowCount()];
         dataCountTable = new double[table.getColumnCount()][table.getRowCount()];
         
+        mapAfrAvgTable = new double[table.getColumnCount()][table.getRowCount()];
+        mapAfrMinTable = new double[table.getColumnCount()][table.getRowCount()];
+        mapDataCountTable = new double[table.getColumnCount()][table.getRowCount()];
+        
         for (int x = 0; x < afrMinTable.length; x++) {
             Arrays.fill(afrMinTable[x], Double.MAX_VALUE);
+            Arrays.fill(mapAfrMinTable[x], Double.MAX_VALUE);
         }
 
         afrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
         injectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
-
+        
+        mapAfrMaxTable = new double[table.getColumnCount()][table.getRowCount()];
+        mapInjectorTimingTable = new double[table.getColumnCount()][table.getRowCount()];
+        
         int[][] avg = new int[table.getColumnCount()][table.getRowCount()];
+        int[][] mapAvg = new int[table.getColumnCount()][table.getRowCount()];
 
         for (int i = 0; i < list.size(); i++) {
-            double rpm = 0, tps = 0, lambda = 0, injectorTime = 0;
+            double rpm = 0, tps = 0, lambda = 0, injectorTime = 0, map = 0;
             
             boolean include = true;
 
@@ -253,6 +272,9 @@ public class LambdaMap extends javax.swing.JFrame {
                 LogObject injectorObj = list4.pop();
                 injectorTime = ((SimpleLogObject) injectorObj).value;
                 
+                LogObject mapObj = list5.pop();
+                map = ((SimpleLogObject) mapObj).value;
+                
                 //if we are to include fully lean values, don't remove them.
                 if(!includeFullyLeanValues) {
                     //remove fully lean entry
@@ -265,28 +287,38 @@ public class LambdaMap extends javax.swing.JFrame {
                 list2.addLast(tpsObj);
                 list3.addLast(lambdaObj);
                 list4.addLast(injectorObj);
+                list5.addLast(mapObj);
 
             } catch (Exception e) {
                 System.out.println(e);
             }
-
+            
+            int maxMAP = 15;
             if (include && rpm <= maxRPM) {
                 //Finds which column the data should go into
                 int column = squeeze(rpm, 0, maxRPM, 0, table.getColumnCount() - 1);
-                int row = squeeze(tps, 0, 100, 0, table.getRowCount() - 1);
-
+                int rowTPS = squeeze(tps, 0, 100, 0, table.getRowCount() - 1);
+                int rowMAP = squeeze(map, 0, maxMAP, 0, table.getRowCount() - 1);
+                
                 //adds the respective value to its slot and increments how many values
                 //in that particular slot
-                afrAvgTable[column][row] += lambda;
-                injectorTimingTable[column][row] += injectorTime;
-                avg[column][row] += 1;
+                afrAvgTable[column][rowTPS] += lambda;
+                mapAfrAvgTable[column][rowMAP] += lambda;
+                injectorTimingTable[column][rowTPS] += injectorTime;
+                mapInjectorTimingTable[column][rowMAP] += injectorTime;
+                avg[column][rowTPS] += 1;
+                mapAvg[column][rowMAP] += 1;
 
                 //update Min and Max tables
-                afrMinTable[column][row] = Math.min(lambda, afrMinTable[column][row]);
-                afrMaxTable[column][row] = Math.max(lambda, afrMaxTable[column][row]);
+                afrMinTable[column][rowTPS] = Math.min(lambda, afrMinTable[column][rowTPS]);
+                afrMaxTable[column][rowTPS] = Math.max(lambda, afrMaxTable[column][rowTPS]);
+                
+                afrMinTable[column][rowMAP] = Math.min(lambda, afrMinTable[column][rowMAP]);
+                afrMaxTable[column][rowMAP] = Math.max(lambda, afrMaxTable[column][rowMAP]);
                 
                 //add data point to count table
-                dataCountTable[column][row] += 1;
+                dataCountTable[column][rowTPS] += 1;
+                dataCountTable[column][rowMAP] += 1;
             }
         }
 
@@ -298,6 +330,13 @@ public class LambdaMap extends javax.swing.JFrame {
                     afrMaxTable[y][x] = afr(afrMaxTable[y][x]);
                     afrAvgTable[y][x] = afr(afrAvgTable[y][x] / avg[y][x]);
                     injectorTimingTable[y][x] = injectorTimingTable[y][x] / avg[y][x];
+                }
+                
+                if (mapAvg[y][x] != 0) {
+                    mapAfrMinTable[y][x] = afr(mapAfrMinTable[y][x]);
+                    mapAfrMaxTable[y][x] = afr(mapAfrMaxTable[y][x]);
+                    mapAfrAvgTable[y][x] = afr(mapAfrAvgTable[y][x] / mapAvg[y][x]);
+                    mapInjectorTimingTable[y][x] = mapInjectorTimingTable[y][x] / mapAvg[y][x];
                 }
             }
         }
@@ -326,7 +365,7 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         }
     }
-
+    
     /**
      * Returns a color on the gradient from blue to green to red for a given a
      * cell value based on how far the cell value is from the target value
@@ -456,9 +495,10 @@ public class LambdaMap extends javax.swing.JFrame {
             }
         };
         RPMLabel = new javax.swing.JLabel();
-        TPSLabel = new javax.swing.JLabel();
+        rowLabel = new javax.swing.JLabel();
         currentViewLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        toggleMap = new javax.swing.JToggleButton();
         jMenuBar = new javax.swing.JMenuBar();
         tableMenu = new javax.swing.JMenu();
         tableSettingsMenuItem = new javax.swing.JMenuItem();
@@ -496,11 +536,18 @@ public class LambdaMap extends javax.swing.JFrame {
 
         RPMLabel.setText("RPM");
 
-        TPSLabel.setText("TPS");
+        rowLabel.setText("TPS");
 
         currentViewLabel.setText("Current View: Average Lambda Map");
 
         jLabel1.setText("<html><font color='#d11f1f'>■</font> Above Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#1fd131'>■</font> At Target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#1f46d1'>■</font> Below Target</html>");
+
+        toggleMap.setText("View MAP");
+        toggleMap.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                toggleMapItemStateChanged(evt);
+            }
+        });
 
         tableMenu.setText("Table");
 
@@ -567,10 +614,12 @@ public class LambdaMap extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(RPMLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(toggleMap)
+                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(7, 7, 7)
-                .addComponent(TPSLabel)
+                .addComponent(rowLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 999, Short.MAX_VALUE)
                 .addContainerGap())
@@ -585,11 +634,13 @@ public class LambdaMap extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(RPMLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(RPMLabel)
+                    .addComponent(toggleMap))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(325, 325, 325)
-                        .addComponent(TPSLabel))
+                        .addComponent(rowLabel))
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 653, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -681,6 +732,49 @@ public class LambdaMap extends javax.swing.JFrame {
         populateTable(dataCountTable);
     }//GEN-LAST:event_showLambdaDataCountMenuItemActionPerformed
 
+    private void toggleMapItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_toggleMapItemStateChanged
+        // TODO add your handling code here:
+        if (toggleMap.isSelected()) {
+            toggleMap.setText("View TPS");
+            rowLabel.setText("MAP");
+            switch (currentLambdaView) {
+            case 0: //Average lambda view
+                this.populateTable(mapAfrAvgTable);
+                break;
+            case 1: //Maximum lambda view
+                this.populateTable(mapAfrMaxTable);
+                break;
+            case 2: //Minimum labda view
+                this.populateTable(mapAfrMinTable);
+                break;
+            case 3: //Injecotr time view
+                this.populateTable(mapInjectorTimingTable);
+            default: //Injecotr time view
+                this.populateTable(mapDataCountTable);
+            }
+            initTableModel(maxRPM, 15);
+        } else {
+            toggleMap.setText("View MAP");
+            rowLabel.setText("TPS");
+            switch (currentLambdaView) {
+            case 0: //Average lambda view
+                this.populateTable(afrAvgTable);
+                break;
+            case 1: //Maximum lambda view
+                this.populateTable(afrMaxTable);
+                break;
+            case 2: //Minimum labda view
+                this.populateTable(afrMinTable);
+                break;
+            case 3: //Injecotr time view
+                this.populateTable(injectorTimingTable);
+            default: //Injecotr time view
+                this.populateTable(dataCountTable);
+            }
+            initTableModel(maxRPM, 100);
+        }
+    }//GEN-LAST:event_toggleMapItemStateChanged
+
     private boolean isLowData(int col, int row){
         return dataCountTable[col - 1][table.getRowCount() - 1 - row] < this.targetCountHigh;
     }
@@ -722,12 +816,12 @@ public class LambdaMap extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel RPMLabel;
-    private javax.swing.JLabel TPSLabel;
     private javax.swing.JLabel currentViewLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JTable jTable;
+    private javax.swing.JLabel rowLabel;
     private javax.swing.JMenuItem showInjectorTimesMenuItem;
     private javax.swing.JMenuItem showLambdaAverageMenuItem;
     private javax.swing.JMenuItem showLambdaDataCountMenuItem;
@@ -735,6 +829,7 @@ public class LambdaMap extends javax.swing.JFrame {
     private javax.swing.JMenuItem showLambdaMinMenuItem;
     private javax.swing.JMenu tableMenu;
     private javax.swing.JMenuItem tableSettingsMenuItem;
+    private javax.swing.JToggleButton toggleMap;
     private javax.swing.JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }
