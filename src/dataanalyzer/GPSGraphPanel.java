@@ -196,8 +196,8 @@ class TrackMap extends Polygon{
         LinkedList<LogObject> longlist = null;
         LinkedList<LogObject> latlist = null;
         try{
-            longlist = data.getList("Time,Longitude");
-            latlist = data.getList("Time,Latitude");
+            latlist = data.getList("Time,Longitude");
+            longlist = data.getList("Time,Latitude");
         }catch(Exception e){
             System.out.println("Please make sure Data map has GPS data. It seems it is not there");
             return;

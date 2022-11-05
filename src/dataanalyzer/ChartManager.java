@@ -36,6 +36,9 @@ public class ChartManager {
     //holds all active charts
     ArrayList<ChartAssembly> charts;
     
+    //holds all track maps
+    ArrayList<GPSGraphInternalFrame> tracks;
+    
     //holds if swapper is active
     int swapActive;
     //holds charts being swapped;
@@ -56,6 +59,7 @@ public class ChartManager {
         second = null;
         listeners = new ArrayList<>();
         datasets = new LinkedList<>();
+        tracks = new ArrayList<>();
     }
     
     public void updateChartZooms(ChartPanel chartPanel) {
@@ -68,6 +72,10 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
+        for(GPSGraphInternalFrame track : tracks) {
+            track.setXCor(xCor);
+            track.repaint();
+        }
     }
     
     //adds a new chart
@@ -79,13 +87,25 @@ public class ChartManager {
         return chart;
     }
     
+    public GPSGraphInternalFrame addTrackMap(GPSGraphInternalFrame track) {
+        parent.desktop.add(track);
+        tracks.add(track);
+        return track;
+    }
+    
     public void clearCharts() {
         while(!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
             chart.chartFrame.dispose();
             charts.remove(0);
         }
+        while(!tracks.isEmpty()){
+            GPSGraphInternalFrame track = track.get(0);
+            track.dispose();
+            tracks.remove(0);
+        }
     }
+    
     
     /**
      * Provides ability to move charts around the window without dragging.
