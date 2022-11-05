@@ -15,6 +15,7 @@ import javax.swing.Box;
  *
  * @author Peter Glass
  */
+//GPS internal frame holds all of the content that will be on screen
 public class GPSGraphInternalFrame extends javax.swing.JInternalFrame {
     //class variables
     CategoricalHashMap dataMap;
