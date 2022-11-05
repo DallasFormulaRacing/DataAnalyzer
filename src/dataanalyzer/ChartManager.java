@@ -35,6 +35,8 @@ public class ChartManager {
     
     //holds all active charts
     ArrayList<ChartAssembly> charts;
+    //adding track map position sensor to the avaiable charts
+    ArrayList<GPSGraphInternalFrame> tracks;
     
     //holds if swapper is active
     int swapActive;
@@ -52,6 +54,7 @@ public class ChartManager {
         cutDataActive = -2;
         newLap = new Lap();
         charts = new ArrayList<>();
+        tracks = new ArrayList<>();
         first = null;
         second = null;
         listeners = new ArrayList<>();
@@ -68,6 +71,14 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
+        
+        if(!tracks.isEmpty()){
+            for(GPSGraphInternalFrame track: tracks){
+                track.updateOverlay(xCor);
+            }
+        }
+        
+        
     }
     
     //adds a new chart
@@ -77,6 +88,16 @@ public class ChartManager {
         parent.desktop.add(chart.chartFrame);
         charts.add(chart);
         return chart;
+    }
+    
+
+    //adding mapOverlay
+    public GPSGraphInternalFrame addtrackMap(){
+        GPSGraphInternalFrame track = new GPSGraphInternalFrame(parent);
+        parent.desktop.add(track);
+        tracks.add(track);
+        return track;
+        
     }
     
     public void clearCharts() {
