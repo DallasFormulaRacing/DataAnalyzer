@@ -456,7 +456,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chart.getChartFrame().dispose();
         }
         charts.clear();
-        desktop.removeAll();
+        chartManager.clearCharts();
     }
     
     private void initializeBasicView() {
@@ -1427,8 +1427,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1695,8 +1694,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
             trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
             
-            //adds the trackMapInternalFrame to the DataAnalyzer frame
-            desktop.add(trackMapInternalFrame);
+            chartManager.addTrackMap(trackMapInternalFrame);
             }
             else{
                  new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);

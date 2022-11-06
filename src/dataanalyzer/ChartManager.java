@@ -1,4 +1,4 @@
-/*
+z/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -20,33 +20,32 @@ import org.jfree.chart.*;
  * @author aribdhuka
  */
 public class ChartManager {
-    
+
     private final DataAnalyzer parent;
-    //status of lapBreakerTool
+    // status of lapBreakerTool
     private int lapBreakerActive;
-    //lap that will be created and applied to lapBreaker list
+    // lap that will be created and applied to lapBreaker list
     private Lap newLap;
-    
-    //status of cut dataTool
+
+    // status of cut dataTool
     private long cutDataActive;
-    
-    //holds all the datasets in this application instance
+
+    // holds all the datasets in this application instance
     private LinkedList<Dataset> datasets;
-    
-    //holds all active charts
+
+    // holds all active charts
     ArrayList<ChartAssembly> charts;
-    //adding track map position sensor to the avaiable charts
+    // adding track map position sensor to the avaiable charts
     ArrayList<GPSGraphInternalFrame> tracks;
-    
-    //holds if swapper is active
+
+    // holds if swapper is active
     int swapActive;
-    //holds charts being swapped;
+    // holds charts being swapped;
     ChartAssembly first, second;
-    
-    //dataset size change listener
+
+    // dataset size change listener
     private ArrayList<SizeListener> listeners;
-    
-    
+
     public ChartManager(DataAnalyzer parent) {
         this.parent = parent;
         lapBreakerActive = -1;
@@ -59,19 +58,19 @@ public class ChartManager {
         second = null;
         listeners = new ArrayList<>();
         datasets = new LinkedList<>();
+        tracks = new ArrayList<>();
     }
-    
+
     public void updateChartZooms(ChartPanel chartPanel) {
         chartPanel.getZoomInFactor();
     }
-    
+
     public void updateOverlays(double xCor, ChartAssembly requestFrom) {
-        for(ChartAssembly chart : charts) {
-            if(chart == requestFrom)
+        for (ChartAssembly chart : charts) {
+            if (chart == requestFrom)
                 continue;
             chart.updateOverlay(xCor);
         }
-        
         /*
         if(!tracks.isEmpty()){
             for(GPSGraphInternalFrame track: tracks){
@@ -82,77 +81,73 @@ public class ChartManager {
         
         
     }
-    
-    //adds a new chart
-    public ChartAssembly addChart() {
-        ChartAssembly chart = new ChartAssembly(this);
-        chart.getOverlay().rangeMarkersActive = parent.rangeMarkersActive;
-        parent.desktop.add(chart.chartFrame);
         charts.add(chart);
         return chart;
     }
-    
 
-    //adding mapOverlay
-    public GPSGraphInternalFrame addtrackMap(){
-        GPSGraphInternalFrame track = new GPSGraphInternalFrame(parent);
+    public GPSGraphInternalFrame addTrackMap(GPSGraphInternalFrame track) {
         parent.desktop.add(track);
         tracks.add(track);
         return track;
-        
     }
-    
+
     public void clearCharts() {
-        while(!charts.isEmpty()) {
+        while (!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
             chart.chartFrame.dispose();
             charts.remove(0);
         }
+        while (!tracks.isEmpty()) {
+            GPSGraphInternalFrame track = tracks.get(0);
+            track.dispose();
+            tracks.remove(0);
+        }
     }
-    
+
     /**
      * Provides ability to move charts around the window without dragging.
      * Trades two charts by swapping the charts position and size.
+     * 
      * @param first
-     * @param second 
+     * @param second
      */
     protected void swapCharts(ChartAssembly first, ChartAssembly second) {
-        //check to make sure they aren't the same first
-        if(first == second)
+        // check to make sure they aren't the same first
+        if (first == second)
             return;
-        //store location and size so that we don't lose the data
+        // store location and size so that we don't lose the data
         Dimension tempSize = first.getChartFrame().getSize();
         Point tempLocation = first.getChartFrame().getLocation();
-        //set first's attributes to seconds
+        // set first's attributes to seconds
         first.getChartFrame().setSize(second.getChartFrame().getSize());
         first.getChartFrame().setLocation(second.getChartFrame().getLocation());
-        //set second's attributes to first's old attributes
+        // set second's attributes to first's old attributes
         second.getChartFrame().setSize(tempSize);
         second.getChartFrame().setLocation(tempLocation);
     }
-    
-    //called when a chart is clicked
+
+    // called when a chart is clicked
     protected void chartClicked(ChartAssembly ca) {
-        //if first chart is still to be defined
-        if(swapActive == 0) {
-            //store clicked chart
+        // if first chart is still to be defined
+        if (swapActive == 0) {
+            // store clicked chart
             first = ca;
-            
-            //notify click
+
+            // notify click
             Toast.makeToast(ca.getChartFrame(), "First chart chosen!", Toast.DURATION_SHORT);
-            
-            //move to next swap step
+
+            // move to next swap step
             swapActive++;
         }
-        //else if second chart still needs to be defined
+        // else if second chart still needs to be defined
         else if (swapActive == 1) {
-            //store second chart
+            // store second chart
             second = ca;
-            
-            //swap charts
+
+            // swap charts
             swapCharts(first, second);
-            
-            //reset swapper
+
+            // reset swapper
             swapActive = -1;
             first = null;
             second = null;
@@ -161,85 +156,83 @@ public class ChartManager {
 
     public ArrayList<Integer> getUsedLapNumbers() {
         ArrayList<Integer> usedLapNumbers = new ArrayList<>();
-        for(Dataset dataset : datasets) {
-            for(Lap l : dataset.getLapBreaker()) {
-                if(!usedLapNumbers.contains(l.getLapNumber())) {
+        for (Dataset dataset : datasets) {
+            for (Lap l : dataset.getLapBreaker()) {
+                if (!usedLapNumbers.contains(l.getLapNumber())) {
                     usedLapNumbers.add(l.getLapNumber());
                 }
             }
         }
-        
+
         return usedLapNumbers;
-        
+
     }
-    
+
     public void addDatasetSizeChangeListener(SizeListener sizeListener) {
         listeners.add(sizeListener);
     }
-    
-    
+
     public void addDataset(Dataset d) throws DuplicateDatasetNameException {
-        for(Dataset dataset : getDatasets()) {
-            if(dataset.getName().equals(d.getName())) {
+        for (Dataset dataset : getDatasets()) {
+            if (dataset.getName().equals(d.getName())) {
                 throw new DuplicateDatasetNameException(d.getName());
             }
         }
         datasets.add(d);
-        //on new element entry of dataMap, update the view
+        // on new element entry of dataMap, update the view
         d.getDataMap().addTagSizeChangeListener(new SizeListener() {
             @Override
             public void sizeUpdate() {
-                if(!parent.isOpeningAFile()) {
+                if (!parent.isOpeningAFile()) {
                     Lap.applyToDataset(d.getDataMap(), d.getLapBreaker());
 
                 }
             }
         });
-        for(SizeListener l : listeners)
+        for (SizeListener l : listeners)
             l.sizeUpdate();
     }
-    
+
     public void removeDataset(String name) {
-        //search for dataset by name and remove it
-        for(int i = 0; i < datasets.size(); i++) {
-            if(datasets.get(i).getName().equals(name)) {
+        // search for dataset by name and remove it
+        for (int i = 0; i < datasets.size(); i++) {
+            if (datasets.get(i).getName().equals(name)) {
                 datasets.remove(i);
-                for(SizeListener l : listeners)
+                for (SizeListener l : listeners)
                     l.sizeUpdate();
             }
         }
     }
-    
+
     public Dataset getDataset(String name) {
-        for(Dataset dataset : datasets) {
-            if(dataset.getName().equals(name))
+        for (Dataset dataset : datasets) {
+            if (dataset.getName().equals(name))
                 return dataset;
         }
-        
+
         return null;
     }
-    
+
     public void updateDataset(String name, Dataset updated) {
-        for(int i = 0; i < datasets.size(); i++) {
-            if(datasets.get(i).getName().equals(name)) {
+        for (int i = 0; i < datasets.size(); i++) {
+            if (datasets.get(i).getName().equals(name)) {
                 datasets.set(i, updated);
-                for(SizeListener l : listeners)
+                for (SizeListener l : listeners)
                     l.sizeUpdate();
             }
         }
     }
-    
-    
+
     /**
      * 
      * 
      * 
-     *  GETTERS AND SETTERS
+     * GETTERS AND SETTERS
      * 
      * 
      * 
      */
-    
+
     public Dataset getMainDataset() {
         return datasets.getFirst();
     }
@@ -267,7 +260,7 @@ public class ChartManager {
     public ArrayList<ChartAssembly> getCharts() {
         return charts;
     }
-    
+
     public int getNumberOfCharts() {
         return charts.size();
     }
@@ -279,7 +272,7 @@ public class ChartManager {
     public void setDatasets(LinkedList<Dataset> datasets) {
         this.datasets = datasets;
     }
-    
+
     public long getCutDataActive() {
         return cutDataActive;
     }
@@ -287,23 +280,23 @@ public class ChartManager {
     public void setCutDataActive(long cutDataActive) {
         this.cutDataActive = cutDataActive;
     }
-    
-    //enables or disables the swapper
+
+    // enables or disables the swapper
     public void toggleSwapper() {
-        //if swapper is disabled
-        if(swapActive == -1) {
-            //enable it
+        // if swapper is disabled
+        if (swapActive == -1) {
+            // enable it
             swapActive = 0;
-            
-            //show instructions
+
+            // show instructions
             new MessageBox(this.parent, "Click two charts.\nBehold the magic.", false).setVisible(true);
         } else {
-            //disable it
+            // disable it
             swapActive = -1;
-            //clear chosen charts
+            // clear chosen charts
             first = null;
             second = null;
         }
     }
-    
+
 }
