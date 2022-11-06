@@ -72,11 +72,13 @@ public class ChartManager {
             chart.updateOverlay(xCor);
         }
         
+        /*
         if(!tracks.isEmpty()){
             for(GPSGraphInternalFrame track: tracks){
                 track.updateOverlay(xCor);
             }
         }
+        */
         
         
     }

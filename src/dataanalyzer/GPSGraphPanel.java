@@ -190,29 +190,51 @@ class TrackMap extends Polygon{
         resize();
     }
     
+    //reading in the long lat data to map the track
     private void readData(){
         points = new ArrayList<>();
         //Get the lists
+        //creating two linked lists of classs LogObject
         LinkedList<LogObject> longlist = null;
         LinkedList<LogObject> latlist = null;
+        
+        //checking to make sure the values are actually there
         try{
-            longlist = data.getList("Time,Longitude");
-            latlist = data.getList("Time,Latitude");
+            latlist = data.getList("Time,Longitude");
+            longlist = data.getList("Time,Latitude");
         }catch(Exception e){
             System.out.println("Please make sure Data map has GPS data. It seems it is not there");
             return;
         }
         
-        //Loop through Lists
+        //creating a counter out side the loop to keep track of the number of iteratoins
+        int lapCount;
+        LogObject initLongPos;
+        LogObject initLatPos;
+        
+        //Loop through Lists, list is the csv values being passed in
         for(int i = 0; i<longlist.size(); i++){
+            
+            //setting counter equal to i, first set of data points being returned
+            lapCount = i;
+            
+            /*when the lap count is 0 get the first x cor and y cor, this will
+            be the start line */
+            if(lapCount == 0){
+                initLongPos = longlist.pop();
+                initLatPos = longlist.pop();
+            }
+            
+            //pop to get the first x cor in the data set
             //xCordinates
-            LogObject longitude = longlist.pop();
+            LogObject longitude = longlist.pop(); //popping becasue it is linkedlist
             longlist.addLast(longitude);
             
+            //pop to get the frist y cor in the data set
             //yCordinates
             LogObject latitude = latlist.pop();
             latlist.addLast(latitude);
-            
+                        
             Point p = new Point();
             
             try{
