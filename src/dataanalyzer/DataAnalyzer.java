@@ -456,6 +456,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        chartManager.clearCharts();
     }
     
     private void initializeBasicView() {
@@ -1426,8 +1427,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();

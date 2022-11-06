@@ -38,9 +38,6 @@ public class ChartManager {
     // adding track map position sensor to the avaiable charts
     ArrayList<GPSGraphInternalFrame> tracks;
 
-    // holds all track maps
-    ArrayList<GPSGraphInternalFrame> tracks;
-
     // holds if swapper is active
     int swapActive;
     // holds charts being swapped;
@@ -102,7 +99,7 @@ public class ChartManager {
             charts.remove(0);
         }
         while (!tracks.isEmpty()) {
-            GPSGraphInternalFrame track = track.get(0);
+            GPSGraphInternalFrame track = tracks.get(0);
             track.dispose();
             tracks.remove(0);
         }
