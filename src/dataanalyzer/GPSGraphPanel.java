@@ -209,6 +209,8 @@ class TrackMap extends Polygon{
         
         //creating a counter out side the loop to keep track of the number of iteratoins
         int lapCount;
+        
+        //creating variables to hold the init long and init lat
         LogObject initLongPos;
         LogObject initLatPos;
         
@@ -236,11 +238,22 @@ class TrackMap extends Polygon{
             latlist.addLast(latitude);
                         
             Point p = new Point();
-            
+            //creating a point for the initial lap pos
+            Point l = new Point();
+                        
             try{
                 p.x = ((SimpleLogObject) longitude).value;
                 p.y = ((SimpleLogObject) latitude).value;
                 p.time = ((SimpleLogObject) longitude).time;
+                
+                if(lapCount == 0){
+                    l.x = ((SimpleLogObject) longitude).value;
+                    l.y = ((SimpleLogObject) latitude).value;
+                    
+                    //need time for this ? idk
+                    
+                    points.add(l);
+                }
                 
                 xMax = Math.max(p.x, xMax);
                 xMin = Math.min(p.x, xMin);
@@ -254,10 +267,8 @@ class TrackMap extends Polygon{
                 System.out.println(e);
                 return;
             }
-            
         }
         
-        resize();
     }
     
     public Overlay getOverlay(){
@@ -375,13 +386,24 @@ class TrackMap extends Polygon{
             return 0;
         }
         
+        //this is what paints the red dot on the track map
         @Override
         public void paintComponent(Graphics g){
-            Graphics2D g2 = (Graphics2D) g;
             
+            //g2 is the red dot
+            Graphics2D g2 = (Graphics2D) g;
+           
+            //creating another instance of a dot
+            Graphics2D g3 = (Graphics2D) g;
+            
+            
+            //points here is already getting the first pos, do i even need to get the init pos ? 
             int x1 = points.get(0).xScaled;
+            
             int y1 = points.get(0).yScaled;
+            
             int x2 = 0, y2 = 0;
+            
             for(int i = 1; i<logPoints.size(); i++){
                 x2 = points.get(i).xScaled;
                 y2 = points.get(i).yScaled;
