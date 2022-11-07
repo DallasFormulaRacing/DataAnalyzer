@@ -1339,6 +1339,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_exportMenuItemActionPerformed
 
+    //this is the section associated with setting lap start and end points
     //begin the lapbreaker
     private void addLapConditionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLapConditionMenuItemActionPerformed
         //if cut tool is active, then disable it
@@ -1346,10 +1347,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Toast.makeToast(this, "Cut data tool canceled.", Toast.DURATION_SHORT);
             chartManager.setCutDataActive(-2);
         }
+        
         //if the lapbreaker is not already active
         if(chartManager.getLapBreakerActive() == -1) {
+            
+            //setting new lap based on where the marker is being placed
             chartManager.setNewLap(new Lap());
             //set the lapBreaker to active, this changes the functionality of clicking on the chart
+            
+            //setting the end of the lap this data goes to the chartmanager
             chartManager.setLapBreakerActive(0);
             //Display message box with instructions
             new MessageBox(this, "Use the reticle to find the start of the lap.\nClick where the lap starts.\nClick again where the lap stops.", false).setVisible(true);

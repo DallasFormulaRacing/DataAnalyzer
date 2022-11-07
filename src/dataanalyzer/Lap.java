@@ -12,6 +12,8 @@ import java.util.LinkedList;
  * This is breaking down the data into laps for ease of use
  * @author aribdhuka
  */
+
+//all the processing for the lap happening here
 public class Lap {
         
     protected long start;
@@ -69,6 +71,8 @@ public class Lap {
                 lo.getLaps().clear();
             }
         }
+        
+        //code for making a new lap
         //apply new lap data
         for(Lap lap : lapBreaks) {
             //get all the tags
@@ -143,6 +147,7 @@ public class Lap {
                     //if we didnt trackback, so it was a function of time
                     } else {
                         //if the time is within the bounds
+                        //lo.time is not a thing
                         if(lo.time >= lap.start && lo.time <= lap.stop) {
                             //set the current objects lap counter to the next available.
                             lo.addLap(lap.lapNumber);

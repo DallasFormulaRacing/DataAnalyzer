@@ -22,6 +22,8 @@ import org.jfree.chart.*;
 public class ChartManager {
 
     private final DataAnalyzer parent;
+    
+    //variables for the start and end points of laps
     // status of lapBreakerTool
     private int lapBreakerActive;
     // lap that will be created and applied to lapBreaker list
