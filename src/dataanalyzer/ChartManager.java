@@ -36,7 +36,7 @@ public class ChartManager {
     //holds all active charts
     ArrayList<ChartAssembly> charts;
     ArrayList<PedalDisplay> pedals;
-    
+    ArrayList<SteeringAngleDisplay> steeringAngles;
     //holds if swapper is active
     int swapActive;
     //holds charts being swapped;
@@ -54,6 +54,7 @@ public class ChartManager {
         newLap = new Lap();
         charts = new ArrayList<>();
         pedals = new ArrayList<>();
+        steeringAngles = new ArrayList<>();
         first = null;
         second = null;
         listeners = new ArrayList<>();
@@ -70,12 +71,24 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
-        if (!pedals.isEmpty()){
+        if (!pedals.isEmpty() && !steeringAngles.isEmpty()){
             for(PedalDisplay pedal : pedals){
                 pedal.updateOverlay(xCor);
-            }        
+            }  
+            for(SteeringAngleDisplay steering : steeringAngles){
+               steering.updateOverlay(xCor);
+            }
+            } else if (pedals.isEmpty() && !steeringAngles.isEmpty()){
+             for(SteeringAngleDisplay steering : steeringAngles){
+               steering.updateOverlay(xCor);
+             }
+        }else if(!pedals.isEmpty() && steeringAngles.isEmpty()){
+                 for(PedalDisplay pedal : pedals){
+                pedal.updateOverlay(xCor);
+            }
         }
-    }
+        }
+       
     
     //adds a new chart
     public ChartAssembly addChart() {
@@ -93,6 +106,12 @@ public class ChartManager {
         return pedalDisplay;
     }
     
+     public SteeringAngleDisplay addSteeringAngleDisplay() {
+        SteeringAngleDisplay steeringAngleDisplay = new SteeringAngleDisplay(this);
+        parent.desktop.add(steeringAngleDisplay.chartFrame);
+        steeringAngles.add(steeringAngleDisplay);
+        return steeringAngleDisplay;
+    }
     public void clearCharts() {
         while(!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
@@ -102,6 +121,11 @@ public class ChartManager {
         while(!pedals.isEmpty()){
             PedalDisplay pedal = pedals.get(0);
             pedal.chartFrame.dispose();
+            charts.remove(0);
+        }
+        while(!steeringAngles.isEmpty()){
+            SteeringAngleDisplay steeringAngle = steeringAngles.get(0);
+            steeringAngle.chartFrame.dispose();
             charts.remove(0);
         }
     }

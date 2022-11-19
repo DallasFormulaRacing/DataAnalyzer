@@ -515,6 +515,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
         addPedalDisplay = new javax.swing.JMenuItem();
+        addSteeringAngleDisplay = new javax.swing.JMenuItem();
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
@@ -706,6 +707,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(addPedalDisplay);
+
+        addSteeringAngleDisplay.setText("Add Steering Angle Display");
+        addSteeringAngleDisplay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addSteeringAngleDisplayActionPerformed(evt);
+            }
+        });
+        viewMenu.add(addSteeringAngleDisplay);
 
         defaultTheme_menuitem.setText("Default");
         defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
@@ -1565,6 +1574,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void addChartMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChartMenuItem1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_addChartMenuItem1ActionPerformed
+
+    private void addSteeringAngleDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSteeringAngleDisplayActionPerformed
+        // TODO add your handling code here:
+        chartManager.addSteeringAngleDisplay();
+    }//GEN-LAST:event_addSteeringAngleDisplayActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -3260,6 +3274,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
     private javax.swing.JMenuItem addPedalDisplay;
+    private javax.swing.JMenuItem addSteeringAngleDisplay;
     private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem cutDataMenuItem;
