@@ -13,14 +13,15 @@ import java.util.LinkedList;
  * @author aribdhuka
  */
 
-//all the processing for the lap happening here
+//all the processing for the laping functionality happens here
 public class Lap {
         
-    protected long start;
+    protected long start; //start of the lap
     protected long stop;
-    protected int lapNumber;
+    protected int lapNumber; //needs to get updated
     protected String lapLabel;
 
+    //pubilc code to assign values to the lap
     public Lap() {
         start = 0;
         stop = 0;
@@ -29,6 +30,7 @@ public class Lap {
     }
 
 
+    //why so many contructors ? overloading for different values 
     public Lap(long start, long stop) {
        this.start = start;
        this.stop = stop;
@@ -74,7 +76,9 @@ public class Lap {
         
         //code for making a new lap
         //apply new lap data
+        //for each lap in lapBreaks, lapBreaks is an arryalist of values line 69
         for(Lap lap : lapBreaks) {
+            
             //get all the tags
             ArrayList<String> tags = dataMap.tags;
             //for each tag

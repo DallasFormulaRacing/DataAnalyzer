@@ -99,7 +99,7 @@ public class Dataset {
      * @return 
      */
     public long getDataTimeLength() {
-        return dataMap.getList("Time,RPM").getLast().time;
+        return dataMap.getList("Time,Speed").getLast().time;
     }
     
     /**

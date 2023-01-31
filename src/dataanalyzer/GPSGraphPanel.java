@@ -374,12 +374,15 @@ class TrackMap extends Polygon{
                 g2.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
                 g2.drawLine(x1,y1,x2,y2);
                 
+                
                 x1 = x2;
                 y1 = y2;
             }
-            g2.setColor(Color.RED);
+            g2.setColor(Color.RED );
             int carPointIndex = getCarPoint(xCor);
             g2.fillOval(points.get(carPointIndex).xScaled-5, points.get(carPointIndex).yScaled-5, 10, 10);
+
+            
         }
         
         public boolean isClear(){
