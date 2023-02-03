@@ -4,7 +4,9 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.dialog.TagChooserDialog;
+import java.util.LinkedList;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -37,6 +39,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
+import java.util.Arrays;
 
 /**
  *
@@ -46,10 +49,7 @@ import java.awt.image.AffineTransformOp;
 public class SteeringAngleDisplay{
     private ChartManager manager;
     private int numSteeringElements;
-    private ArrayList<JMenuItem> barMenuItems;
     private Selection[] selections;
-    private JTextField textFields[];
-    private Color colorSteering[];
     JInternalFrame chartFrame;
     private SteeringPanel panel;
     
@@ -60,246 +60,95 @@ public class SteeringAngleDisplay{
         chartFrame.setSize(new Dimension(200, 200));
         chartFrame.setResizable(true);
         chartFrame.setContentPane(panel);
-        numSteeringElements = 0;
+        numSteeringElements = 1;
         addMenuBar();
         chartFrame.setVisible(true);
         panel.repaint();
     }
     
-    private void addMenuBar() {     
-        barMenuItems = new ArrayList<>();
-        JMenuBar frameMenuBar = new JMenuBar();        
-        //create data menuitem for user to choose data in this chart.
-        JMenu SteeringCount = new JMenu("Number Of Wheels");
-        JMenu SteeringInfo = new JMenu("Steering Info");
-        JTextField textIntField = new JTextField();
-        
-        textIntField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String text = textIntField.getText();
-                text = text.replaceAll("[^\\d.]", "");      
-                textIntField.setText(text);
-                int oldNum = numSteeringElements;
-                numSteeringElements = Integer.parseInt(text);
-                if (oldNum != numSteeringElements){
-                    changeNumSteeringElements(oldNum, SteeringInfo);
-                }
-                chartFrame.repaint();
-            }
-        });
-        SteeringCount.add(textIntField);
-        SteeringCount.setText("# of Steering Components");
-        SteeringCount.setVisible(true);
-        frameMenuBar.add(SteeringCount);     
-        frameMenuBar.add(SteeringInfo);  
-        
-        chartFrame.setJMenuBar(frameMenuBar);
+    private void addMenuBar() {        
+        selections = new Selection[1];
     }
     
-    private void changeNumSteeringElements(int oldNum, JMenu menuBar) {
+     //Creates a hardcoded selection for steering data. 
+     protected void setSteering(Dataset dataset) {
+        DataAnalyzer da = manager.getParent();
         
-        if (oldNum == 0){
-            panel.setLayout(new FlowLayout());
-            selections = new Selection[numSteeringElements];
-            colorSteering = new Color[numSteeringElements];
-            textFields = new JTextField[numSteeringElements];
-            for (int x = 0; x < numSteeringElements; x++){
-                colorSteering[x] = Color.red;
-            }
-        } else {
-            Selection[] saveSel = new Selection[numSteeringElements];
-            Color[] colors = new Color[numSteeringElements];
-            JTextField[] fields = new JTextField[numSteeringElements];
-            for (int x = 0; (x < numSteeringElements) && (x < selections.length); x++){
-                if (selections[x] != null){
-                    saveSel[x] = selections[x];
-                }
-                if (colorSteering[x] != null){
-                    colors[x] = colorSteering[x];
-                }
-                if (textFields[x] != null){
-                    fields[x] = textFields[x];
-                }
-            }
-            selections = saveSel;
-            colorSteering = colors;
-            textFields = fields;
+        try{  
+        DatasetSelection ds = new DatasetSelection(dataset, 
+                    new ArrayList<String>(Arrays.asList(new String[] {"Time,SteeringAngle"})), 
+                    new ArrayList<>());
+        LinkedList<DatasetSelection> dsList = new LinkedList<DatasetSelection>();
+        dsList.add(ds);
+        selections[0]= new Selection(dsList);
+        }catch(Exception e){
+         new MessageBox(da, e.getMessage(), true).setVisible(true);
         }
-        
-        for (int x = oldNum; x < numSteeringElements; x++){
-            // make settings for all Steerings
-            JMenu data1 = new JMenu(""+(x+1));
-            JMenuItem dataPicker = new JMenuItem("Choose Data");
-            JMenu colorPicker = new JMenu("Choose Color");
-            JLabel lred = new JLabel("R");
-            JTextField red = new JTextField();
-            red.addActionListener(new SteeringListener(x, 0));
-            JLabel lgreen = new JLabel("G");
-            JTextField green = new JTextField();
-            green.addActionListener(new SteeringListener(x, 1));
-            JLabel lblue = new JLabel("B");
-            JTextField blue = new JTextField();
-            blue.addActionListener(new SteeringListener(x, 2));
-            colorPicker.add(lred);
-            colorPicker.add(red);
-            colorPicker.add(lgreen);
-            colorPicker.add(green);
-            colorPicker.add(lblue);
-            colorPicker.add(blue);
-            JMenu labelPicker = new JMenu("Choose Label");
-            JTextField labelField = new JTextField();
-            
-            textFields[x] = labelField;
-            
-            labelField.addActionListener(new SteeringListener(x));
-            
-            labelPicker.add(labelField);
-            data1.add(dataPicker);
-            data1.add(colorPicker);
-            data1.add(labelPicker);
-            
-            dataPicker.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    //TODO: OPEN DIALOG WITH TAGS, CHOOSE TAGS/LAPS, THEN APPLY.
-                    Selection selec = new Selection();
-                    TagChooserDialog tcd = new TagChooserDialog(manager.getParentFrame(), manager.getDatasets(), selec);
-                    tcd.setVisible(true);
-
-                    //wait for the dialog to finish running
-                    while(tcd.isRunning()) {
-                        try {
-                            Thread.currentThread().sleep(100);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(DataAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-
-                    //set the chart with new params
-                    if(!selec.getUniqueTags().isEmpty())
-                        setSteering(selec, Integer.parseInt(data1.getText())-1);
-                    }
-                }
-            );
-            menuBar.add(data1);
-            barMenuItems.add(data1);
-            
-        }
-        for (int x = oldNum; x> numSteeringElements; x--){
-            menuBar.remove(barMenuItems.get(x-1));
-            barMenuItems.remove(barMenuItems.get(x-1));
-            //selections[x] = null;
-        }
-        chartFrame.setSize(numSteeringElements * 70, 200);
-        updateOverlay(0);
     }
-    
-    protected void setSteering(Selection selection, int num) {
-        selections[num] = selection;
-    }
-    
+     
     public void updateOverlay(double xCor) {
-        //panel.setSize(chartFrame.getWidth(), chartFrame.getHeight());  
         panel.setNumSteeringElements(numSteeringElements);
         panel.xCor = xCor;
         panel.repaint();
-        
     }
     
-    public void updateColor(int num, int value, int color){
-        int red = colorSteering[num].getRed();
-        int green = colorSteering[num].getGreen();
-        int blue = colorSteering[num].getBlue();
-        
-        switch(color){
-            case 0:
-                colorSteering[num] = new Color(value, green, blue);
-                break;
-            case 1:
-                colorSteering[num] = new Color(red, value, blue);
-                break;
-            default:
-                colorSteering[num] = new Color(red, green, value);
-                break;
-                
-        }
-    }
-
     public class SteeringPanel extends JPanel{
         int numSteeringElements;
         double xCor;
-       
         
         public void setNumSteeringElements(int numSteeringElements){this.numSteeringElements = numSteeringElements;}
         @Override
              public void paint(Graphics g){
-            //Background setup
+           
             double val = 0;
+            // Setting up the background image
             Image background = new BufferedImage(panel.getWidth(),panel.getHeight(), 1);
             Graphics bkG = background.getGraphics();
             bkG.setColor(Color.WHITE);
+            
             BufferedImage theImage = null;
+            // loads an image of the steering wheel to display.
             try {
-                File steeringWheelFile = new File("../libs/pictures/Steering Wheel Sprite DFR2.png");
+                File steeringWheelFile = new File("../libs/pictures/Steering Wheel Sprite DFR.png");
                 theImage = ImageIO.read(steeringWheelFile);
                  
             } catch (IOException e1) {
                 
             }
-            //Graphics img2G = theImage.getGraphics();
+            
             Image img = new BufferedImage(panel.getWidth(),panel.getHeight(), 1);
             Graphics imgG = img.getGraphics();
-            imgG.setColor(Color.white);
-            int xOffset;
-            int yOffset;
-            int width;
-             
-            Graphics2D graphics2D = (Graphics2D)g; 
-    
-            //graphics2D.transform(wheelScalling);
+            Graphics2D graphics2D = (Graphics2D)g;
+            
+            // sets image in the foreground.
             imgG.fillRect(0, 0, panel.getWidth(), panel.getHeight());
+            // sets background behind image
             bkG.fillRect(0, 0, panel.getWidth(), panel.getHeight());
             g.drawImage(background, 0,0, panel);
-               for (int x = 0; x < numSteeringElements; x++){
-                //setup for position of each Steering element
-                xOffset = ((panel.getWidth()-panel.getWidth()/(numSteeringElements+2))/(numSteeringElements))*x+panel.getWidth()/(numSteeringElements+2);
-                yOffset = panel.getHeight()/2;
-                width = panel.getWidth()/(2*(numSteeringElements+1));
-                
-               
-                imgG.setColor(Color.WHITE);
-                
-                //Write the text/label input by user
-                String text = textFields[x].getText();
-                imgG.setColor(Color.black);
-                imgG.drawString(text, xOffset, yOffset);
-                
-                //set the color from the user for the Steering
-                imgG.setColor(colorSteering[x]);
-                
-                //Rotate steering wheel based on time and data
-                if (selections != null && 0 < selections.length && selections[x] != null){
-                    Selection s = selections[x];  
+            if(numSteeringElements == 1){
+                // Rotate steering wheel based on time and steering angle data
+                if (selections != null && 0 < selections.length && selections[0] != null){
+                    Selection s = selections[0];  
                   
-                    //find way to get yval for xcor
+                    // find way to get yval for xcor
                     XYSeriesCollection col = s.getDataCollection()[0];
-                    double upper = col.getRangeUpperBound(true);
-                    double lower = col.getRangeLowerBound(true);
-                        // Get the y value for the current series.
+                    // Get the y value for the current series.
                     try {
+                        // checks for mouse input from beyond the left edge of the chart.
                         if(xCor < 0){
                             val = 0;
                         }else
                           val = DatasetUtilities.findYValue(col, 0, xCor);
-                        
+                        // checks for right end of graph with no data.
+                        if(Double.valueOf(val).isNaN()){
+                            val = 0;
+                        }
                         double angle = val;
-                        double diff = (val-lower)/(upper-lower);
                         
-                     int imgWidth = 200;
-                     int imgHeight = 200;   
-                     //rotates the steering wheel about the center of the panel.  
-                     graphics2D.rotate(Math.toRadians(angle), panel.getWidth()/2, panel.getHeight()/2);
+                        int imgWidth = 200;
+                        int imgHeight = 200;   
+                        // rotates the steering wheel about the center of the panel.  
+                        graphics2D.rotate(Math.toRadians(angle), panel.getWidth()/2, panel.getHeight()/2);
                     } catch(IllegalArgumentException e2) {
 
                     }
@@ -314,43 +163,6 @@ public class SteeringAngleDisplay{
             AffineTransform wheelScalling =  AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
             AffineTransformOp shrinkImage = new AffineTransformOp(wheelScalling,null);
             graphics2D.drawImage(theImage, shrinkImage, (int)(panel.getWidth()/2-((200/2)*scaleFactor)),(int)(panel.getHeight()/2-((200/2)*scaleFactor)));          
-           
-          //  if(val == 0)
-            //  g.drawImage(img, 0, 0, panel);
         }
-            
-            
-}
-    
-    public class SteeringListener implements ActionListener {
-
-        protected int x;
-        protected int col;
-        protected boolean isColorListener;
-        // 0 = red, 1 = green, 2 = blue
-        public SteeringListener(int x, int col){
-            this.x = x;
-            this.col = col;
-            isColorListener = true;
-        }
-        
-        public SteeringListener(int x){
-            this.x = x;
-            isColorListener = false;
-        }
-        
-        
-        
-        @Override
-        public void actionPerformed(ActionEvent e){
-            if (isColorListener){
-                try {
-                    int value = Integer.parseInt(((JTextField)e.getSource()).getText());
-                    updateColor(x, value, col);
-                } catch (NumberFormatException ex){}
-            }
-          panel.repaint();
-        }
-        
-    }
+}  
 }

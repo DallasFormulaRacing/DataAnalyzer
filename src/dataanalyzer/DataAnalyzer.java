@@ -71,12 +71,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
    
     //holds if file operations are currently ongoing
     private boolean openingAFile;
-    
+  
     private enum FileType { EMPTY, DFR, DFRASM };
-    
+
     protected boolean rangeMarkersActive;
                
     ChartManager chartManager;
+    SteeringAngleDisplay saGraph;
     int heightFrame;
     int widthFrame;
     Settings settings;
@@ -97,7 +98,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
-        
+       
         // uses JDesktopPane to manage windows
         this.setContentPane(desktop);
         
@@ -284,6 +285,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        //Steering Angle Display menu
+        JMenuItem steeringAngle = new JMenuItem("Steering Angle");
+        steeringAngle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSteeringAngle(dataset);  
+            }
+        });
+        
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -340,6 +350,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         datasetSubMenu.add(engineMenu);
         datasetSubMenu.add(vehicleMenu);
+        datasetSubMenu.add(steeringAngle);
         datasetSubMenu.add(vitals);
         datasetSubMenu.add(postProc);
         
@@ -515,11 +526,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
         addPedalDisplay = new javax.swing.JMenuItem();
-        addSteeringAngleDisplay = new javax.swing.JMenuItem();
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
-        addChartMenuItem1 = new javax.swing.JMenuItem();
         chartMenu = new javax.swing.JMenu();
         saveChartConfiguration = new javax.swing.JMenuItem();
         datasetMenu = new javax.swing.JMenu();
@@ -708,14 +717,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(addPedalDisplay);
 
-        addSteeringAngleDisplay.setText("Add Steering Angle Display");
-        addSteeringAngleDisplay.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addSteeringAngleDisplayActionPerformed(evt);
-            }
-        });
-        viewMenu.add(addSteeringAngleDisplay);
-
         defaultTheme_menuitem.setText("Default");
         defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -739,15 +740,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(darkTheme_menuitem);
-
-        addChartMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        addChartMenuItem1.setText("Add Chart");
-        addChartMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addChartMenuItem1ActionPerformed(evt);
-            }
-        });
-        viewMenu.add(addChartMenuItem1);
 
         menuBar.add(viewMenu);
 
@@ -1104,7 +1096,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     int lastIndex = chosenFilePath.lastIndexOf(".");
                     //get file extension
                     String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
-                    
+    
                     //if its a created file
                     if(fileExtension.equals(".dfr")) {
                         da.openFile(dataset, chosenFilePath);
@@ -1194,7 +1186,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     openingAFile = false;
                 }
                 windowCount++;
-            }
+                }
         
         }
     }//GEN-LAST:event_openBtnClicked
@@ -1570,15 +1562,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         // TODO add your handling code here:
         chartManager.addPedalDisplay();
     }//GEN-LAST:event_addPedalDisplayActionPerformed
-
-    private void addChartMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addChartMenuItem1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_addChartMenuItem1ActionPerformed
-
-    private void addSteeringAngleDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSteeringAngleDisplayActionPerformed
-        // TODO add your handling code here:
-        chartManager.addSteeringAngleDisplay();
-    }//GEN-LAST:event_addSteeringAngleDisplayActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -1691,6 +1674,19 @@ public class DataAnalyzer extends javax.swing.JFrame {
             //assign this selection to our chart assembly
             fot.selection = selection;
             fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+        }
+    }
+    
+    private void showSteeringAngle(Dataset dataset){
+        /* 
+         * checks for steering data within the dataset, and if so it creates a steering angle display.
+         * The steering angle graph automatically rotates with hovering input to a chart data loaded.
+        */
+        if(dataset.getDataMap().getTags().contains("Time,SteeringAngle")){
+            saGraph = chartManager.addSteeringAngleDisplay();
+            saGraph.setSteering(dataset);
+        } else{
+            new MessageBox(DataAnalyzer.this, "Please use a dataset containing the tag \"Time,Steering\".", true).setVisible(true);
         }
     }
     
@@ -3269,12 +3265,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem addChartMenuItem;
-    private javax.swing.JMenuItem addChartMenuItem1;
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
     private javax.swing.JMenuItem addPedalDisplay;
-    private javax.swing.JMenuItem addSteeringAngleDisplay;
     private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem cutDataMenuItem;

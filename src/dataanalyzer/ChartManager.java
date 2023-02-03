@@ -45,6 +45,9 @@ public class ChartManager {
     //dataset size change listener
     private ArrayList<SizeListener> listeners;
     
+    public DataAnalyzer getParent(){
+        return parent;
+    }
     
     public ChartManager(DataAnalyzer parent) {
         this.parent = parent;
@@ -112,6 +115,7 @@ public class ChartManager {
         steeringAngles.add(steeringAngleDisplay);
         return steeringAngleDisplay;
     }
+     
     public void clearCharts() {
         while(!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
