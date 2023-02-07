@@ -99,10 +99,12 @@
               <EmptySpace max="32767" attributes="0"/>
               <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
+              <Component id="toggleMap" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-              <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="rowLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane" pref="999" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -119,12 +121,15 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="toggleMap" min="-2" max="-2" attributes="0"/>
+              </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="325" max="-2" attributes="0"/>
-                      <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="rowLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -176,7 +181,7 @@
         <Property name="text" type="java.lang.String" value="RPM"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="TPSLabel">
+    <Component class="javax.swing.JLabel" name="rowLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="TPS"/>
       </Properties>
@@ -192,6 +197,14 @@
           <Connection code="&quot;&lt;html&gt;&lt;font color=&apos;#d11f1f&apos;&gt;&#x25a0;&lt;/font&gt; Above Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1fd131&apos;&gt;&#x25a0;&lt;/font&gt; At Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1f46d1&apos;&gt;&#x25a0;&lt;/font&gt; Below Target&lt;/html&gt;&quot;" type="code"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="toggleMap">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="View MAP"/>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="toggleMapItemStateChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
