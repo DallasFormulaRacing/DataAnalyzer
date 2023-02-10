@@ -3191,6 +3191,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         return version;
     }
     
+    //this is where the error with the lap adding is coming from
+    //this function cant be invoked because the return value of categorical hashmap is returning as null
     public long getLastTime(Dataset dataset) {
         //get the datamap
         CategoricalHashMap datamap = dataset.getDataMap();

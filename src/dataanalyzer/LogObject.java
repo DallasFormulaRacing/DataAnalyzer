@@ -11,9 +11,15 @@ import java.util.ArrayList;
  * 
  * @author aribdhuka
  */
+/*
+    this file if responsible for logging the object
+    lap is not working correctly because the tag is not working properly?
+
+*/
 public abstract class LogObject implements Comparable {
     protected long time;
     protected String TAG;
+    //this is the lap counter
     protected ArrayList<Integer> laps;
     protected String creationMethod;
     
@@ -70,7 +76,5 @@ public abstract class LogObject implements Comparable {
         }
             
     }
-    
-   
-    
+     
 }

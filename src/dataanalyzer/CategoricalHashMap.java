@@ -197,6 +197,8 @@ public class CategoricalHashMap {
     }
     
     //get function
+    //this is returning as null
+    //returning null because the table is not found hence the function returns null
     public LinkedList<LogObject> getList(String TAG) {
         //for each linkedlist in the hash table
         for (LinkedList<LogObject> table1 : table) {
