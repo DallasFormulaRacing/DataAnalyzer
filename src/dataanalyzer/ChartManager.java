@@ -125,12 +125,12 @@ public class ChartManager {
         while(!pedals.isEmpty()){
             PedalDisplay pedal = pedals.get(0);
             pedal.chartFrame.dispose();
-            charts.remove(0);
+            pedals.remove(0);
         }
         while(!steeringAngles.isEmpty()){
             SteeringAngleDisplay steeringAngle = steeringAngles.get(0);
             steeringAngle.chartFrame.dispose();
-            charts.remove(0);
+            steeringAngles.remove(0);
         }
     }
     
