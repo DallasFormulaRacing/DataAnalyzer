@@ -1835,6 +1835,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
       
     }
     
+    
+    //this is where the new post processing through a file system will be done
+    public static void applyPE3PostProcessing2(){
+        //we want to check the tags from the tagCheck file
+        File tagCheck = new File("tagCheck.txt");
+    }
+    
     public static void applyPE3PostProcessing(Dataset dataset) {
         //Change PE3 -> our standards. (So fuel mapper and such work)
         
@@ -1904,7 +1911,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         dataset.getDataMap().remove("Time,WSRR");
         
         //get x y z data as arrays
-        if(dataset.getDataMap().tags.contains("Time,rawxAccel[g]") && dataset.getDataMap().tags.contains("Time,rawyAccel[g]") && dataset.getDataMap().tags.contains("Time,rawzAccel[g]")) {
+        if(dataset.getDataMap().tags.contains("Time,rawxAccel[g]") && dataset.getDataMap().tags.contains("Time,rawyAccel[g]") && 
+                dataset.getDataMap().tags.contains("Time,rawzAccel[g]")) {
             ArrayList<LogObject> x,y,z;
             x = new ArrayList<>(dataset.getDataMap().getList("Time,rawxAccel[g]"));
             y = new ArrayList<>(dataset.getDataMap().getList("Time,rawyAccel[g]"));
