@@ -34,6 +34,7 @@ public class Installer {
         File chartConfig = new File(home + "\\AppData\\Local\\DataAnalyzer\\ChartConfigurations\\");
         File settings = new File(home + "\\AppData\\Local\\DataAnalyzer\\Settings\\");
         File temp = new File(home + "\\AppData\\Local\\DataAnalyzer\\Temp\\");
+        File mathChannels = new File(home + "\\AppData\\Local\\DataAnalyzer\\MathChannels\\");
         
         if (!dataAnalyzer.isDirectory()) {
            dataAnalyzer.mkdirs();
@@ -54,6 +55,10 @@ public class Installer {
         if (!temp.isDirectory()){
             temp.mkdirs();
         }
+        
+        if (!mathChannels.isDirectory()){
+            mathChannels.mkdirs();
+        }
     }
     
     private static void runLinuxInstaller() {
@@ -64,6 +69,7 @@ public class Installer {
         File chartConfig = new File("/Applications/DataAnalyzer/ChartConfigurations/");
         File settings = new File("/Applications/DataAnalyzer/Settings/");
         File temp = new File("/Applications/DataAnalyzer/Temp/");
+        File mathChannels = new File("/Applications/DataAnalyzer/MathChannels/");
         
         if(!applicationsFolder.isDirectory()) {
             boolean created = applicationsFolder.mkdir();
@@ -97,6 +103,10 @@ public class Installer {
         
         if (!temp.isDirectory()){
             temp.mkdirs();
+        }
+        
+        if (!mathChannels.isDirectory()){
+            mathChannels.mkdirs();
         }
     }
     
