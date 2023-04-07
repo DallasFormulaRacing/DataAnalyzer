@@ -1832,10 +1832,30 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+    }
+    
+    private void readPostProcessFile(){
+        
+        //get the path of the process from the installer
+        String postProcessingFile = Installer.getProcessPath(Installer.getOS()) + "test.txt";
+        Scanner scan;
+        
+        try{
+            scan = new Scanner (new File(postProcessingFile));
+        }catch(FileNotFoundException ex){
+            System.out.println("File not found");
+        }
+        
+        //for each line
+        while(scan.hasNextLine()){
+            
+        }
+
       
     }
     
     
+
     //this is where the new post processing through a file system will be done
     public static void applyPE3PostProcessing2(){
         //we want to check the tags from the tagCheck file

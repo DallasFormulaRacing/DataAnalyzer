@@ -140,6 +140,13 @@ public class Installer {
         return getSettingsPath(getOS());
     }
     
+    /*
+      *return path of the postprocessing file
+    */
+    public static String getProcessPath(){
+        return getProcessPath(getOS());
+    }
+    
     /**
      * Get path for settings
      * @param os given an operating system
@@ -151,6 +158,23 @@ public class Installer {
             return home + "\\AppData\\Local\\DataAnalyzer\\Settings\\";
         } else {
             return "/Applications/DataAnalyzer/Settings/";
+        }
+    }
+    
+    /**
+     * Get path for settings
+     * @param os given an operating system
+     * @return path of post processing file
+     * Author: Noel Johnson
+     */
+    public static String getProcessPath(String os) {
+        if(os.equals("Windows")) {
+            String home = System.getProperty("user.home");
+            return home + "\\AppData\\Local\\DataAnalyzer\\Temp\\";
+        } 
+        //else its mac
+        else {
+            return "/Applications/DataAnalyzer/Temp/";
         }
     }
     
