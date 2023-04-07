@@ -101,7 +101,7 @@ public class SteeringAngleDisplay{
              public void paint(Graphics g){
            
             double val = 0;
-            // Setting up the background image
+            // Setting up the background image            
             Image background = new BufferedImage(panel.getWidth(),panel.getHeight(), 1);
             Graphics bkG = background.getGraphics();
             bkG.setColor(Color.WHITE);
@@ -119,7 +119,7 @@ public class SteeringAngleDisplay{
             Image img = new BufferedImage(panel.getWidth(),panel.getHeight(), 1);
             Graphics imgG = img.getGraphics();
             Graphics2D graphics2D = (Graphics2D)g;
-            
+           
             // sets image in the foreground.
             imgG.fillRect(0, 0, panel.getWidth(), panel.getHeight());
             // sets background behind image
@@ -147,6 +147,16 @@ public class SteeringAngleDisplay{
                         
                         int imgWidth = 200;
                         int imgHeight = 200;   
+                        imgG.setColor(Color.GREEN);
+                        // larger rectangle of steering slider.
+                        imgG.fillRect(panel.getWidth()/4,7*panel.getHeight()/8,panel.getWidth()/2,panel.getHeight()/5);
+                        imgG.setColor(Color.ORANGE);
+                        /*
+                        * makes a moving rectangle that has the function of xPosition = midPanel + 84 /360 * angle within the above rectangle for panel width 200.
+                        * This moving rectangle mirrors the steering wheel movements to 
+                        */
+                        imgG.fillRect(panel.getWidth()/2-panel.getWidth()/20+(int)((((angle)*(0.42*panel.getWidth()))/360.0)),7*panel.getHeight()/8,panel.getWidth()/10,panel.getHeight()/5);
+                        g.drawImage(img,0,0,panel);
                         // rotates the steering wheel about the center of the panel.  
                         graphics2D.rotate(Math.toRadians(angle), panel.getWidth()/2, panel.getHeight()/2);
                     } catch(IllegalArgumentException e2) {
@@ -160,8 +170,10 @@ public class SteeringAngleDisplay{
             if(scaleFactor == 0){
                 scaleFactor = 1;
             }
+            // Symetric scaling of the steering wheel based on the panel size
             AffineTransform wheelScalling =  AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
             AffineTransformOp shrinkImage = new AffineTransformOp(wheelScalling,null);
+            // Draws the steering wheel about the center of the panel with increasing scale factor for larger panel sizes.
             graphics2D.drawImage(theImage, shrinkImage, (int)(panel.getWidth()/2-((200/2)*scaleFactor)),(int)(panel.getHeight()/2-((200/2)*scaleFactor)));          
         }
 }  
