@@ -1833,24 +1833,37 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         
     }
-    
+     /**
+     * reading in post processing file
+     */
     private void readPostProcessFile(){
         
         //get the path of the process from the installer
         String postProcessingFile = Installer.getProcessPath(Installer.getOS()) + "test.txt";
+        //opening the file
         Scanner scan;
-        
         try{
-            scan = new Scanner (new File(postProcessingFile));
-        }catch(FileNotFoundException ex){
-            System.out.println("File not found");
+             scan = new Scanner(new File(postProcessingFile));
+        }
+        catch(FileNotFoundException ex){
+            System.out.println("File not Found");
+            return;
         }
         
         //for each line
         while(scan.hasNextLine()){
-            
+            //seperating the input string from the file into lines
+            String line = scan.nextLine();
+            //if the line is empty we skip the line
+            if(line.isEmpty()){
+                continue;
+            }
+            else{
+                //for each line we want to break it up with the delimiter here 
+                //and store in DS
+                
+            }
         }
-
       
     }
     
