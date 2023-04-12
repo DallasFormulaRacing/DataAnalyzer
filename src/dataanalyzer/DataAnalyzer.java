@@ -117,6 +117,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         this.setTitle("DataAnalyzer");
              
         //set window listener
+        //window refers to the data analyzer window
         DataAnalyzer curr = this;
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -147,7 +148,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                             } else {
                                 saveFile(openedFilePath);
                             }
-                            System.exit(0); 
+                            System.exit(0);
                             break;
                         case JOptionPane.NO_OPTION : System.exit(0); break;
                         case JOptionPane.CANCEL_OPTION : break;
