@@ -35,6 +35,9 @@ public class ChartManager {
 
     // holds all active charts
     ArrayList<ChartAssembly> charts;
+    ArrayList<PedalDisplay> pedals;
+    ArrayList<SteeringAngleDisplay> steeringAngles;
+    //holds if swapper is active
     // adding track map position sensor to the avaiable charts
     ArrayList<GPSGraphInternalFrame> tracks;
 
@@ -46,6 +49,10 @@ public class ChartManager {
     // dataset size change listener
     private ArrayList<SizeListener> listeners;
 
+    public DataAnalyzer getParent(){
+        return parent;
+    }
+
     public ChartManager(DataAnalyzer parent) {
         this.parent = parent;
         lapBreakerActive = -1;
@@ -53,6 +60,8 @@ public class ChartManager {
         cutDataActive = -2;
         newLap = new Lap();
         charts = new ArrayList<>();
+        pedals = new ArrayList<>();
+        steeringAngles = new ArrayList<>();
         tracks = new ArrayList<>();
         first = null;
         second = null;
@@ -71,13 +80,30 @@ public class ChartManager {
                 continue;
             chart.updateOverlay(xCor);
         }
+
+        if (!pedals.isEmpty() && !steeringAngles.isEmpty()){
+            for(PedalDisplay pedal : pedals){
+                pedal.updateOverlay(xCor);
+            }  
+            for(SteeringAngleDisplay steering : steeringAngles){
+               steering.updateOverlay(xCor);
+            }
+            } else if (pedals.isEmpty() && !steeringAngles.isEmpty()){
+             for(SteeringAngleDisplay steering : steeringAngles){
+               steering.updateOverlay(xCor);
+             }
+        }else if(!pedals.isEmpty() && steeringAngles.isEmpty()){
+                 for(PedalDisplay pedal : pedals){
+                pedal.updateOverlay(xCor);
+            }
+        }
+        }
+       
         for (GPSGraphInternalFrame track : tracks) {
             track.setXCor(xCor);
             track.repaint();
         }
     }
-
-    // adds a new chart
     public ChartAssembly addChart() {
         ChartAssembly chart = new ChartAssembly(this);
         chart.getOverlay().rangeMarkersActive = parent.rangeMarkersActive;
@@ -85,23 +111,48 @@ public class ChartManager {
         charts.add(chart);
         return chart;
     }
+    
+    public PedalDisplay addPedalDisplay() {
+        PedalDisplay pedalDisplay = new PedalDisplay(this);
+        parent.desktop.add(pedalDisplay.chartFrame);
+        pedals.add(pedalDisplay);
+        return pedalDisplay;
+    }
+    
+     public SteeringAngleDisplay addSteeringAngleDisplay() {
+        SteeringAngleDisplay steeringAngleDisplay = new SteeringAngleDisplay(this);
+        parent.desktop.add(steeringAngleDisplay.chartFrame);
+        steeringAngles.add(steeringAngleDisplay);
+        return steeringAngleDisplay;
+    }
 
     public GPSGraphInternalFrame addTrackMap(GPSGraphInternalFrame track) {
         parent.desktop.add(track);
         tracks.add(track);
         return track;
     }
-
     public void clearCharts() {
         while (!charts.isEmpty()) {
             ChartAssembly chart = charts.get(0);
             chart.chartFrame.dispose();
             charts.remove(0);
         }
+
+        while(!pedals.isEmpty()){
+            PedalDisplay pedal = pedals.get(0);
+            pedal.chartFrame.dispose();
+            charts.remove(0);
+        }
+        while(!steeringAngles.isEmpty()){
+            SteeringAngleDisplay steeringAngle = steeringAngles.get(0);
+            steeringAngle.chartFrame.dispose();
+            charts.remove(0);
+
         while (!tracks.isEmpty()) {
             GPSGraphInternalFrame track = tracks.get(0);
             track.dispose();
             tracks.remove(0);
+
         }
     }
 
@@ -257,7 +308,8 @@ public class ChartManager {
     public JFrame getParentFrame() {
         return parent;
     }
-
+    
+    //May need to be changed for has overlay and for chartassembly
     public ArrayList<ChartAssembly> getCharts() {
         return charts;
     }
