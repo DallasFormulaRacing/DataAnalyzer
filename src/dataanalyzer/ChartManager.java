@@ -141,18 +141,18 @@ public class ChartManager {
         while(!pedals.isEmpty()){
             PedalDisplay pedal = pedals.get(0);
             pedal.chartFrame.dispose();
-            charts.remove(0);
+            pedals.remove(0);
         }
         while(!steeringAngles.isEmpty()){
             SteeringAngleDisplay steeringAngle = steeringAngles.get(0);
             steeringAngle.chartFrame.dispose();
+            steeringAngles.remove(0);
             charts.remove(0);
 
         while (!tracks.isEmpty()) {
             GPSGraphInternalFrame track = tracks.get(0);
             track.dispose();
             tracks.remove(0);
-
         }
     }
 
