@@ -1,0 +1,28 @@
+{
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "libs/CategoricalHashTable-1.0.jar",
+        "libs/comm-2.0.jar",
+        "libs/commons-io-2.8.0.jar",
+        "libs/flatlaf-1.0-rc3.jar",
+        "libs/hamcrest-core-1.3.jar",
+        "libs/jcommon-1.0.23.jar",
+        "libs/jfreechart-1.0.19-experimental.jar",
+        "libs/jfreechart-1.0.19-swt.jar",
+        "libs/jfreechart-1.0.19.jar",
+        "libs/jfreesvg-2.0.jar",
+        "libs/json-simple-1.1.1.jar",
+        "libs/jssc.jar",
+        "libs/junit-4.11.jar",
+        "libs/orsoncharts-1.4-eval-nofx.jar",
+        "libs/orsonpdf-1.6-eval.jar",
+        "libs/ProgressBar.jar",
+        "libs/servlet.jar",
+        "libs/Slider.jar",
+        "libs/swtgraphics2d.jar",
+        "libs/Toast-1.0.jar"
+    ]
+}
