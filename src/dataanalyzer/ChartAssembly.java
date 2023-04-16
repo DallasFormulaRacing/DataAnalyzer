@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import org.biojava.nbio.structure.gui.WrapLayout;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -167,6 +168,8 @@ public class ChartAssembly implements ChartMouseListener {
     private void addMenuBar() {
         //830
         JMenuBar frameMenuBar = new JMenuBar();
+        frameMenuBar.setLayout(new WrapLayout(1));
+        
         //create data menuitem for user to choose data in this chart.
         JMenuItem data = new JMenuItem("Choose Data");
         data.addActionListener(new ActionListener() {
@@ -204,7 +207,7 @@ public class ChartAssembly implements ChartMouseListener {
             }
         });
         histogram.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.ALT_MASK));
-        
+           
         //create filtering menu to filter current chart
         JMenuItem filtering = new JMenuItem("Filtering");
         filtering.addActionListener(new ActionListener() {

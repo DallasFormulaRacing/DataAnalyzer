@@ -285,6 +285,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+
         //Steering Angle Display menu
         JMenuItem steeringAngle = new JMenuItem("Steering Angle");
         steeringAngle.addActionListener(new ActionListener() {
@@ -294,6 +295,15 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+        JMenuItem trackMap = new JMenuItem("Track Map");
+        trackMap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showTrackMap(dataset);
+            }
+        });
+        
+
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -349,6 +359,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(saveVehicle);
         
         datasetSubMenu.add(engineMenu);
+        datasetSubMenu.add(trackMap);
         datasetSubMenu.add(vehicleMenu);
         datasetSubMenu.add(steeringAngle);
         datasetSubMenu.add(vitals);
@@ -449,13 +460,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
 
-    
+    // Add track map to be cleared
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        chartManager.clearCharts();
     }
     
     private void initializeBasicView() {
@@ -1433,8 +1445,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1601,8 +1612,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
         lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
         
-        //set charts data
-
+        
         //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
                 dataset.getDataMap().getTags().contains("Time,TPS[%]") && 
@@ -1677,6 +1687,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
     
+
     private void showSteeringAngle(Dataset dataset){
         /* 
          * checks for steering data within the dataset, and if so it creates a steering angle display.
@@ -1689,6 +1700,44 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(DataAnalyzer.this, "Please use a dataset containing the tag \"Time,Steering\".", true).setVisible(true);
         }
     }
+    
+    private void showTrackMap(Dataset dataset) {         
+        
+        GPSGraphInternalFrame trackMapInternalFrame;
+     
+       //boolean to check if contains
+        boolean ifContains = false;
+        
+        //if tags include lat and long then set to true
+        if(dataset.getDataMap().tags.contains("Time,Latitude") && dataset.getDataMap().tags.contains("Time,Longitude")){
+            ifContains = true;
+        }
+        
+        //if contains is true
+        if(ifContains){
+           
+            //calls the correct constructor based on wheather data has been loaded
+            if(dataset.getDataMap().isEmpty()){
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
+            } else {
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
+            }
+                trackMapInternalFrame.setVisible(true);
+        
+            //adds the trackMapInternalFrame to a list, to keep track of them
+            //sets the location and size of the trackMapInternalFrame
+            Dimension frameSize = this.getSize();
+            trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+            trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+            
+            chartManager.addTrackMap(trackMapInternalFrame);
+            }
+            else{
+                 new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
+         }
+        
+    }
+            
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
