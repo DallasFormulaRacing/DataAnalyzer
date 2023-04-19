@@ -97,7 +97,6 @@ public class ChartManager {
                 pedal.updateOverlay(xCor);
             }
         }
-        }
        
         for (GPSGraphInternalFrame track : tracks) {
             track.setXCor(xCor);
@@ -155,7 +154,7 @@ public class ChartManager {
 
         }
     }
-
+    }
     /**
      * Provides ability to move charts around the window without dragging.
      * Trades two charts by swapping the charts position and size.
