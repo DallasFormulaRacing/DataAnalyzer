@@ -59,7 +59,6 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.graphics2d.Args;
 import org.jfree.ui.RectangleEdge;
-import sun.java2d.pipe.SpanShapeRenderer;
 
 /**
  * 
