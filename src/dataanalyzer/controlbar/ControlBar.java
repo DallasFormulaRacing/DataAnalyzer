@@ -7,6 +7,8 @@ package dataanalyzer.controlbar;
 
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.DomainMode;
+import dataanalyzer.InfiniteProgressPanel;
+import dataanalyzer.SizeListener;
 import java.util.HashMap;
 
 /**
@@ -20,6 +22,9 @@ public class ControlBar extends javax.swing.JPanel {
     
     DataAnalyzer parent;
     
+    private int openedFiles = 0;
+    private InfiniteProgressPanel ipp;
+    
     /**
      * Creates new form ControlBar
      */
@@ -28,11 +33,37 @@ public class ControlBar extends javax.swing.JPanel {
         this.parent = parent;
         mode = DomainMode.TIME;
         this.parent.getAppParameters().put("domainMode", mode);
+        loadingText.setText("");
 
+        parent.getChartManager().addDatasetSizeChangeListener(new SizeListener() {
+            @Override
+            public void sizeUpdate(int newSize) {
+                openedFiles = newSize;
+                filesOpenLabel.setText(""+openedFiles);
+            }
+        });
     }
     
     public DomainMode getMode() {
         return mode;
+    }
+    
+    public void setLoading(boolean isLoading, String text) {
+        if (isLoading) {
+            ipp = new InfiniteProgressPanel();
+            ipp.setSize(20, 20);
+            loadingPanel.add(ipp);
+            ipp.start();
+            loadingText.setText(text);
+        } else {
+            if(ipp != null) {
+                ipp.interrupt();
+                ipp = null;
+                loadingPanel.removeAll();
+            }
+            loadingText.setText(text);
+        }
+        
     }
 
     /**
@@ -49,6 +80,9 @@ public class ControlBar extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         filesOpenLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        loadingPanel = new javax.swing.JPanel();
+        loadingText = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(1100, 20));
         setRequestFocusEnabled(false);
@@ -69,6 +103,25 @@ public class ControlBar extends javax.swing.JPanel {
 
         filesOpenLabel.setText("0");
 
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        loadingPanel.setMaximumSize(new java.awt.Dimension(20, 20));
+        loadingPanel.setMinimumSize(new java.awt.Dimension(20, 20));
+        loadingPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+
+        javax.swing.GroupLayout loadingPanelLayout = new javax.swing.GroupLayout(loadingPanel);
+        loadingPanel.setLayout(loadingPanelLayout);
+        loadingPanelLayout.setHorizontalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 20, Short.MAX_VALUE)
+        );
+        loadingPanelLayout.setVerticalGroup(
+            loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 20, Short.MAX_VALUE)
+        );
+
+        loadingText.setText("jLabel4");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -78,7 +131,13 @@ public class ControlBar extends javax.swing.JPanel {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filesOpenLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 821, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(loadingText)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 704, Short.MAX_VALUE)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(domainSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -93,7 +152,10 @@ public class ControlBar extends javax.swing.JPanel {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(jLabel2)
                 .addComponent(jLabel3)
-                .addComponent(filesOpenLabel))
+                .addComponent(filesOpenLabel)
+                .addComponent(loadingText))
+            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -120,6 +182,9 @@ public class ControlBar extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel loadingPanel;
+    private javax.swing.JLabel loadingText;
     // End of variables declaration//GEN-END:variables
 
 }

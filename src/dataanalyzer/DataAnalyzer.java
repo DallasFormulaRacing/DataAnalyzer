@@ -14,7 +14,6 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import dataanalyzer.controlbar.ControlBar;
 import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
-import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.dialog.SettingsDialog;
 import dataanalyzer.dialog.VitalsDialog;
@@ -114,12 +113,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
 //        this.add(desktop);
         desktop.setSize(this.getSize());
         
-        //setup the bottom control bar
-        controlBar = new ControlBar(this);
-        this.add(controlBar);
-        controlBar.setLocation(0, heightFrame-25);
-        controlBar.setVisible(true);
-        
         //Setup directories
         Installer.runInstaller();
         
@@ -131,6 +124,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //initialize chart manager
         chartManager = new ChartManager(this);
+                        
+        //setup the bottom control bar after chart manager
+        controlBar = new ControlBar(this);
+        this.add(controlBar);
+        controlBar.setLocation(0, heightFrame-25);
+        controlBar.setVisible(true);
+
         
         //Set the title of the frame
         this.setTitle("DataAnalyzer");
@@ -236,7 +236,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         chartManager.addDatasetSizeChangeListener(new SizeListener() {
             @Override
-            public void sizeUpdate() {
+            public void sizeUpdate(int newSize) {
                 initializeDatasetMenu();
             }
         });
@@ -261,6 +261,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
 
         ScreenLocation.getInstance().update(this);
+        controlBar.setLoading(true, "test");
     }
     
     private void initializeDatasetMenu() {
@@ -277,9 +278,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
         postProc.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                LoadingDialog loading = new LoadingDialog("Post Processing");
-                loading.setVisible(true);
+                
+                controlBar.setLoading(true, "Post Processing");
 
                 SwingWorker worker = new SwingWorker<Void, Void>() {
 
@@ -290,7 +290,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                     public void done() {
                         //Destroy the Loading Dialog
-                        loading.stop();
+                        controlBar.setLoading(false, "");
                     }
                 };
 
@@ -2623,8 +2623,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        controlBar.setLoading(true, "Opening File...");
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -2636,7 +2635,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                loading.stop();
+                controlBar.setLoading(false, "Opened file.");
             }
         };
         
@@ -2709,8 +2708,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void openFile(Dataset dataset, String filepath) {
             
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        controlBar.setLoading(true, "Opening file: " + filepath);
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -2863,7 +2861,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                loading.stop();
+                controlBar.setLoading(false, "Opened file: " + filepath);
             }
         };
         
@@ -2876,8 +2874,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openFileAssembly(String filepath) {
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        controlBar.setLoading(true, "Opening file: " + filepath);
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -3044,7 +3041,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                loading.stop();
+                controlBar.setLoading(false, "Opened file: " + filepath);
             }
         };
         
@@ -3058,8 +3055,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openPE3Files(Dataset dataset, File file, boolean applyPostProcessing) throws FileNotFoundException {
         
-        LoadingDialog loading = new LoadingDialog(file.getName());
-        loading.setVisible(true);
+        controlBar.setLoading(true, "Opening file: " + file.getName());
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3108,7 +3104,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             public void done() {
                 //Destroy the Loading Dialog
-                loading.stop();
+                controlBar.setLoading(false, "Opened file: " + file.getName());
             }
         };
         
@@ -3123,8 +3119,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        controlBar.setLoading(true, "Opening file: " + filepath);
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3136,7 +3131,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                loading.stop();
+                controlBar.setLoading(false, "Opened file: " + filepath);
             }
         };
         

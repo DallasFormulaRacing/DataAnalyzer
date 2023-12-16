@@ -10,5 +10,5 @@ package dataanalyzer;
  * @author aribdhuka
  */
 public interface SizeListener {
-    void sizeUpdate();
+    void sizeUpdate(int newSize);
 }

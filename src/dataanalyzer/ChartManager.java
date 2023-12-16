@@ -165,7 +165,7 @@ public class ChartManager {
         //on new element entry of dataMap, update the view
         d.getDataMap().addTagSizeChangeListener(new SizeListener() {
             @Override
-            public void sizeUpdate() {
+            public void sizeUpdate(int newSize) {
                 if(!parent.isOpeningAFile()) {
                     Lap.applyToDataset(d.getDataMap(), d.getLapBreaker());
 
@@ -173,7 +173,7 @@ public class ChartManager {
             }
         });
         for(SizeListener l : listeners)
-            l.sizeUpdate();
+            l.sizeUpdate(datasets.size());
     }
     
     public void removeDataset(String name) {
@@ -182,7 +182,7 @@ public class ChartManager {
             if(datasets.get(i).getName().equals(name)) {
                 datasets.remove(i);
                 for(SizeListener l : listeners)
-                    l.sizeUpdate();
+                    l.sizeUpdate(datasets.size());
             }
         }
     }
@@ -201,13 +201,16 @@ public class ChartManager {
             if(datasets.get(i).getName().equals(name)) {
                 datasets.set(i, updated);
                 for(SizeListener l : listeners)
-                    l.sizeUpdate();
+                    l.sizeUpdate(datasets.size());
             }
         }
     }
     
     public void triggerChartDomainUpdate() {
         for (ChartAssembly ca : charts) {
+            //error check empty charts (happy vs age preservation)
+            if(ca.selection.getAllSelectedDatasets().size() < 1)
+                continue;
             ca.selection.modeUpdate((DomainMode) parent.appParameters.get("domainMode"));
             ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
         }
