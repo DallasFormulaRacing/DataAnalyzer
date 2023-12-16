@@ -68,15 +68,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
     
     //Stores the current filepath
     private String openedFilePath;
-
+   
     //holds if file operations are currently ongoing
     private boolean openingAFile;
-    
+  
     private enum FileType { EMPTY, DFR, DFRASM };
-    
+
     protected boolean rangeMarkersActive;
                
     ChartManager chartManager;
+    SteeringAngleDisplay saGraph;
     int heightFrame;
     int widthFrame;
     Settings settings;
@@ -97,7 +98,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
-        
+       
         // uses JDesktopPane to manage windows
         this.setContentPane(desktop);
         
@@ -284,6 +285,25 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         
+
+        //Steering Angle Display menu
+        JMenuItem steeringAngle = new JMenuItem("Steering Angle");
+        steeringAngle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSteeringAngle(dataset);  
+            }
+        });
+        
+        JMenuItem trackMap = new JMenuItem("Track Map");
+        trackMap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showTrackMap(dataset);
+            }
+        });
+        
+
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -339,7 +359,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(saveVehicle);
         
         datasetSubMenu.add(engineMenu);
+        datasetSubMenu.add(trackMap);
         datasetSubMenu.add(vehicleMenu);
+        datasetSubMenu.add(steeringAngle);
         datasetSubMenu.add(vitals);
         datasetSubMenu.add(postProc);
         
@@ -438,13 +460,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
 
-    
+    // Add track map to be cleared
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        chartManager.clearCharts();
     }
     
     private void initializeBasicView() {
@@ -514,6 +537,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
+        addPedalDisplay = new javax.swing.JMenuItem();
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
@@ -523,13 +547,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
-
-        desktop.setLayout(null);
         getContentPane().add(desktop, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -538,7 +560,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newWindowMenuItem);
 
-        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         openBtn.setText("Open");
         openBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -547,7 +569,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(openBtn);
 
-        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenuButton.setText("Save");
         saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -556,7 +578,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveMenuButton);
 
-        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAsMenuItem.setText("Save As");
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -565,7 +587,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveAsMenuItem);
 
-        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exportMenuItem.setText("Export");
         exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -574,7 +596,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(exportMenuItem);
 
-        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         resetMenuItem.setText("Reset");
         resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -591,7 +613,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(settingsMenuItem);
 
-        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeMenuItem.setText("Exit");
         closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -612,7 +634,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         editMenu.add(addMathChannelButton);
 
-        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
         addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -641,7 +663,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         fullscreenMenuItem.setText("Fullscreen");
         fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -690,7 +712,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(swapChartsMenuItem);
 
-        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addChartMenuItem.setText("Add Chart");
         addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -698,6 +720,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(addChartMenuItem);
+
+        addPedalDisplay.setText("Add Pedal Display");
+        addPedalDisplay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPedalDisplayActionPerformed(evt);
+            }
+        });
+        viewMenu.add(addPedalDisplay);
 
         defaultTheme_menuitem.setText("Default");
         defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
@@ -745,7 +775,203 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+   
+    // Starts up DataAnalyzer from a .dfr file when .dfr file is double clicked
+    private void doubleClickDfr( String[] filepaths ){
+        File[] chosenFiles = new File[filepaths.length];
+        boolean onlyDFRFiles = true;
+        for (int i = 0; i < filepaths.length; i++) {
+            chosenFiles[i] = new File(filepaths[i]);
+            
+            // check if file actually exists
+            if (chosenFiles[i].exists()) {
+                String pathname = filepaths[i];
+                int lastIndex = pathname.lastIndexOf(".");
+                String fileExtension = pathname.substring(lastIndex, pathname.length());
+                
+                // approve selection if it is a valid file
+                if (!(fileExtension.equals(".dfr") || 
+                        fileExtension.equals(".csv") || 
+                        fileExtension.equals(".txt") || 
+                        fileExtension.equals(".dfrasm"))) {
+                    // display error message - that selection should not be approve
+                    new MessageBox(DataAnalyzer.this, "Error: File(s) could not be opened", true).setVisible(true);
+                    return;
+                }
+                
+                if(!fileExtension.equals(".dfr") && !fileExtension.equals(".dfrasm"))
+                    onlyDFRFiles = false;
+            }
+            else {
+                // display error message - that selection should not be approve
+                new MessageBox(DataAnalyzer.this, "Error: File(s) could not be opened", true).setVisible(true);
+                return;
+            }
+        }  
+        
+        if(chosenFiles.length > 0) {
+            if(chosenFiles[0].exists()) {
+                String filePath = chosenFiles[0].getAbsolutePath();
+                if(filePath.lastIndexOf('/') != -1) {
+                    setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+                } else if(filePath.lastIndexOf('\\') != -1) {
+                    setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('\\')));
+                } else {
+                    setTitle("DataAnalyzer - " + filePath);
+                }
+            }
+        }
+        if(chosenFiles.length > 0) {
+            if(chosenFiles[0].exists()) {
+                String filePath = chosenFiles[0].getAbsolutePath();
+                if(filePath.lastIndexOf('/') != -1) {
+                    setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('/')));
+                } else if(filePath.lastIndexOf('\\') != -1) {
+                    setTitle("DataAnalyzer - " + filePath.substring(filePath.lastIndexOf('\\')));
+                } else {
+                    setTitle("DataAnalyzer - " + filePath);
+                }
+            }
+        }
+        boolean applyPostProcessing = false;
+            
+        if(!onlyDFRFiles) {
+            //ask for post processing
+            String alwaysApply = settings.getSetting("AlwaysApplyPostProcessing");
+            if(alwaysApply.equals("Always"))
+                applyPostProcessing = true;
+            else if(alwaysApply.equals("Never"))
+                applyPostProcessing = false;
+            else
+                applyPostProcessing = askForPostProcessing();
+        
+        }
+        
+        boolean multipleWindows = true;
+        if(chosenFiles.length > 1)
+            multipleWindows = createConfirmDialog("Multiple Windows?", "Should these files be opened in independent windows?");
+        //should we create a new window?
+        boolean toCreateNewWindow = false;
+        //holds new window number opened
+        int windowCount = 0;
+        //for each file
+        for(File chosenFile : chosenFiles) {
+            //if we need to create a new window
+            if(toCreateNewWindow) {
+                //new window object
+                DataAnalyzer da = new DataAnalyzer();
+                //create dataset, and add it to the window
+                Dataset dataset = new Dataset(chosenFile.getName().substring(0, chosenFile.getName().lastIndexOf('.')));
+                try {
+                    da.getChartManager().addDataset(dataset);
+                } catch (DuplicateDatasetNameException ex) {
+                    new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                    continue;
+                }
+                //set vehicle data
+                da.getChartManager().getMainDataset().setVehicleData(chartManager.getMainDataset().getVehicleData());
+                //get file path
+                String chosenFilePath = chosenFile.getAbsolutePath();
+                //set the file path for that object
+                da.openedFilePath = chosenFilePath;
+                //get index of the last.
+                int lastIndex = chosenFilePath.lastIndexOf(".");
+                //get file extension
+                String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
 
+                //if its a created file
+                if(fileExtension.equals(".dfr")) {
+                    da.openFile(dataset, chosenFilePath);
+                }
+                else if(fileExtension.equals(".dfrasm")) {
+                    //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                    da.getChartManager().removeDataset(chosenFile.getName());
+                    //open the file assembly. It will create and add its own datasets.
+                    openFileAssembly(chosenFilePath);
+                }
+                //if its a new import
+                else {
+                    //if its a csv
+                    if(fileExtension.equals(".csv")) {
+                        //make the new window import a PE3 file
+                        try {
+                            da.openPE3Files(dataset, chosenFile, applyPostProcessing);
+                        } catch (FileNotFoundException e) {
+                            Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                            continue;
+                        }
+                    //else if its a TXT make the new window import a CSV
+                    } else if (fileExtension.equals(".txt")) {
+                        da.openTXT(dataset, chosenFilePath);
+                    }
+                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        da.applyPostProcessing(dataset);
+                }
+
+                da.setVisible(true);
+                if(chosenFilePath.lastIndexOf('/') != -1) {
+                    da.setTitle("DataAnalyzer - " + chosenFilePath.substring(chosenFilePath.lastIndexOf('/')));
+                } else {
+                    da.setTitle("DataAnalyzer - " + chosenFilePath);
+                }
+                da.setLocation(100*windowCount, 100*windowCount);
+                da.openingAFile = false;
+            //if we are not to create a new window
+            } else {
+                //create dataset, and add it to the window
+                Dataset dataset = new Dataset(chosenFile.getName());
+                try {
+                    this.getChartManager().addDataset(dataset);
+                } catch (DuplicateDatasetNameException ex) {
+                    new MessageBox(this, "Duplicate dataset name! Could not open file: " + ex.getDatasetName(), false).setVisible(true);
+                    continue;
+                }
+                //get file path
+                String chosenFilePath = chosenFile.getAbsolutePath();
+                //set this windows last opened filepath to the current filepath
+                openedFilePath = chosenFilePath;
+                //get the index of last .
+                int lastIndex = openedFilePath.lastIndexOf(".");
+                //get file extension
+                String fileExtension = openedFilePath.substring(lastIndex, openedFilePath.length());
+
+                //if its a created file or assembly
+                if(fileExtension.equals(".dfr")) {
+                    openFile(dataset, chosenFilePath);
+                }
+                else if(fileExtension.equals(".dfrasm")) {
+                    //so here we need to remove the dataset we just added above so that we do not add any empty datasets.
+                    this.getChartManager().removeDataset(chosenFile.getName());
+                    //open the file assembly. It will create and add its own datasets.
+                    openFileAssembly(chosenFilePath);
+                }
+                //if its a new import
+                else {
+                    //if its a csv
+                    if(fileExtension.equals(".csv")) {
+                        //make the new window import a PE3 file
+                        try {
+                            openPE3Files(dataset, chosenFile, applyPostProcessing);
+                        } catch (FileNotFoundException e) {
+                            Toast.makeToast(this, "File: " + chosenFilePath + " failed to open." , Toast.DURATION_MEDIUM);
+                            continue;
+                        }
+                    //else if its a TXT make the new window import a CSV
+                    } else if (fileExtension.equals(".txt")) {
+                        openTXT(dataset, chosenFilePath);
+                    }
+                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        applyPostProcessing(dataset);
+                }
+                if(multipleWindows)
+                    toCreateNewWindow = true;
+                openingAFile = false;
+            }
+            windowCount++;
+        }
+    }
+    
+ 
     private void openBtnClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBtnClicked
         
         // Open a separate dialog to select a .csv file
@@ -876,12 +1102,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     //get file path
                     String chosenFilePath = chosenFile.getAbsolutePath();
                     //set the file path for that object
+                    new MessageBox(this, chosenFilePath, true).setVisible(true);
                     da.openedFilePath = chosenFilePath;
                     //get index of the last.
                     int lastIndex = chosenFilePath.lastIndexOf(".");
                     //get file extension
                     String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
-                    
+    
                     //if its a created file
                     if(fileExtension.equals(".dfr")) {
                         da.openFile(dataset, chosenFilePath);
@@ -971,7 +1198,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     openingAFile = false;
                 }
                 windowCount++;
-            }
+                }
         
         }
     }//GEN-LAST:event_openBtnClicked
@@ -1218,8 +1445,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1342,6 +1568,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
         }
     }//GEN-LAST:event_saveChartConfigurationActionPerformed
+
+    private void addPedalDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPedalDisplayActionPerformed
+        // TODO add your handling code here:
+        chartManager.addPedalDisplay();
+    }//GEN-LAST:event_addPedalDisplayActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -1381,8 +1612,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
         lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
         
-        //set charts data
-
+        
         //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
                 dataset.getDataMap().getTags().contains("Time,TPS[%]") && 
@@ -1456,6 +1686,58 @@ public class DataAnalyzer extends javax.swing.JFrame {
             fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
     }
+    
+
+    private void showSteeringAngle(Dataset dataset){
+        /* 
+         * checks for steering data within the dataset, and if so it creates a steering angle display.
+         * The steering angle graph automatically rotates with hovering input to a chart data loaded.
+        */
+        if(dataset.getDataMap().getTags().contains("Time,SteeringAngle")){
+            saGraph = chartManager.addSteeringAngleDisplay();
+            saGraph.setSteering(dataset);
+        } else{
+            new MessageBox(DataAnalyzer.this, "Please use a dataset containing the tag \"Time,Steering\".", true).setVisible(true);
+        }
+    }
+    
+    private void showTrackMap(Dataset dataset) {         
+        
+        GPSGraphInternalFrame trackMapInternalFrame;
+     
+       //boolean to check if contains
+        boolean ifContains = false;
+        
+        //if tags include lat and long then set to true
+        if(dataset.getDataMap().tags.contains("Time,Latitude") && dataset.getDataMap().tags.contains("Time,Longitude")){
+            ifContains = true;
+        }
+        
+        //if contains is true
+        if(ifContains){
+           
+            //calls the correct constructor based on wheather data has been loaded
+            if(dataset.getDataMap().isEmpty()){
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
+            } else {
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
+            }
+                trackMapInternalFrame.setVisible(true);
+        
+            //adds the trackMapInternalFrame to a list, to keep track of them
+            //sets the location and size of the trackMapInternalFrame
+            Dimension frameSize = this.getSize();
+            trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+            trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+            
+            chartManager.addTrackMap(trackMapInternalFrame);
+            }
+            else{
+                 new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
+         }
+        
+    }
+            
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -1565,12 +1847,22 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
         //</editor-fold>
         
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DataAnalyzer().setVisible(true);
+        
+                DataAnalyzer da = new DataAnalyzer();
+                da.setVisible(true);
+
+                // opens data analyzer graph from a double click of a .dfr file.
+                if( args.length > 0 ){
+                    da.doubleClickDfr(args);
+                }
             }
         });
+        
+      
     }
     
     public static void applyPE3PostProcessing(Dataset dataset) {
@@ -2177,10 +2469,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
         
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
-        if( fileWasSaved == true ){
+        if(fileWasSaved == true){
           try {
               Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
           } catch(IOException e){
@@ -2374,10 +2666,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
             new MessageBox(this, "Error: Files could not be compared", true).setVisible(true);
         }
        
-        Path tempPath = Paths.get(filename);
-        Path origPath = Paths.get(fileDirectory);
+        Path tempPath = Paths.get(fileDirectory);
+        Path origPath = Paths.get(filename);
         // only saves changes in the temp file to the original if the save button was pressed
-        if( fileWasSaved == true ){
+        if(fileWasSaved == true){
           try {
               Files.move(tempPath, origPath, StandardCopyOption.REPLACE_EXISTING);
           } catch(IOException e){
@@ -3029,6 +3321,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenuItem addPedalDisplay;
     private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem cutDataMenuItem;

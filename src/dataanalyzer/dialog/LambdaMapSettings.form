@@ -33,8 +33,10 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="includeFullyLeanValuesCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="hideLowDataCountValuesCheckBox" min="-2" max="-2" attributes="0"/>
+                  <Component id="dataCountLabel" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="includeFullyLeanValuesCheckBox" min="-2" max="-2" attributes="0"/>
                       <Component id="injectorTimeLabel" min="-2" max="-2" attributes="0"/>
                       <Component id="afrErrorLabel" min="-2" max="-2" attributes="0"/>
                       <Component id="targetAFRLabel" min="-2" max="-2" attributes="0"/>
@@ -42,15 +44,16 @@
                       <Component id="maxRpmField" max="32767" attributes="0"/>
                       <Component id="targetAfrField" alignment="0" max="32767" attributes="0"/>
                       <Component id="afrOffsetField" alignment="0" max="32767" attributes="0"/>
-                      <Group type="102" alignment="1" attributes="0">
+                      <Component id="injectorTimeComboBox" max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
                           <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="66" max="32767" attributes="0"/>
+                          <EmptySpace pref="71" max="32767" attributes="0"/>
                           <Component id="applyButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="injectorTimeComboBox" max="32767" attributes="0"/>
+                      <Component id="dataCountField" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="25" max="32767" attributes="0"/>
+              <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -75,7 +78,13 @@
               <Component id="injectorTimeComboBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="includeFullyLeanValuesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="dataCountLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="dataCountField" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="hideLowDataCountValuesCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="32" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="applyButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -163,6 +172,27 @@
     <Component class="javax.swing.JCheckBox" name="includeFullyLeanValuesCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" value="Include Fully Lean Values"/>
+        <Property name="toolTipText" type="java.lang.String" value=""/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dataCountLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Target Data Count (Low/High)"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="dataCountField">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="String.valueOf(targetCountHigh)" type="code"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="&quot;Enter High target for data point amounts&quot;" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="hideLowDataCountValuesCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Hide Low Data Count Values"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
       </Properties>
     </Component>

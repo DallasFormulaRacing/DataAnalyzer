@@ -56,6 +56,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showInjectorTimesMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showLambdaDataCountMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Lambda Data Count"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showLambdaDataCountMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
       </SubComponents>
@@ -91,10 +99,12 @@
               <EmptySpace max="32767" attributes="0"/>
               <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
+              <Component id="toggleMap" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-              <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="rowLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jScrollPane" pref="999" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -111,12 +121,15 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="RPMLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="toggleMap" min="-2" max="-2" attributes="0"/>
+              </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="325" max="-2" attributes="0"/>
-                      <Component id="TPSLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="rowLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -156,7 +169,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTable()&#xa;{&#xa;    //Overrides prepareRenderer so that the jTable can be formated&#xa;    @Override&#xa;    public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {&#xa;        Component component = super.prepareRenderer(renderer, row, col);&#xa;&#xa;        if (col == 0) {&#xa;            return this.getTableHeader().getDefaultRenderer()&#xa;            .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);&#xa;        } else if (currentLambdaView == 3) {&#xa;            component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));&#xa;            return component;&#xa;        } else {&#xa;            component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));&#xa;            return component;&#xa;        }&#xa;    }&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTable()&#xa;{&#xa;    //Overrides prepareRenderer so that the jTable can be formated&#xa;    @Override&#xa;    public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {&#xa;        Component component = super.prepareRenderer(renderer, row, col);&#xa;&#xa;        if (col == 0) {&#xa;            return this.getTableHeader().getDefaultRenderer()&#xa;            .getTableCellRendererComponent(this, this.getValueAt(row, col), false, false, row, col);&#xa;        } else if (hideLowDataCountValues &amp;&amp; isLowData(col, row)) {&#xa;            component.setBackground(getColorVal(0.0, targetAFR, afrError));&#xa;            return component;&#xa;        }else if (currentLambdaView == 3) {&#xa;            component.setBackground(getInjectorColorVal(col, row, targetAFR, afrError));&#xa;            return component;&#xa;        } else if (currentLambdaView == 4) {&#xa;            //set colors for data count to see if data points are significant&#xa;            component.setBackground(getDataCountColorVal(col, row, targetCountHigh));&#xa;            return component;&#xa;        }else {&#xa;            component.setBackground(getColorVal(Double.valueOf(this.getValueAt(row, col).toString()), targetAFR, afrError));&#xa;            return component;&#xa;        }&#xa;    }&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="//Custom initialization of jTable"/>
             <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="//Renders the row headers&#xa;final JTableHeader header = jTable.getTableHeader();&#xa;header.setDefaultRenderer(new HeaderRenderer(jTable));&#xa;&#xa;//Sets the jTable model to table"/>
           </AuxValues>
@@ -168,7 +181,7 @@
         <Property name="text" type="java.lang.String" value="RPM"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="TPSLabel">
+    <Component class="javax.swing.JLabel" name="rowLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="TPS"/>
       </Properties>
@@ -184,6 +197,14 @@
           <Connection code="&quot;&lt;html&gt;&lt;font color=&apos;#d11f1f&apos;&gt;&#x25a0;&lt;/font&gt; Above Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1fd131&apos;&gt;&#x25a0;&lt;/font&gt; At Target&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;font color=&apos;#1f46d1&apos;&gt;&#x25a0;&lt;/font&gt; Below Target&lt;/html&gt;&quot;" type="code"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="toggleMap">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="View MAP"/>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="toggleMapItemStateChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

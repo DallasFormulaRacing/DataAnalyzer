@@ -11,4 +11,4 @@ Use File>Open to open .dfr/.csv/.txt files
 If multiple files are opened within the same window then File>Save will save a .dfrasm
 
 Most recent version:
-https://github.com/DallasFormulaRacing/DataAnalyzer/raw/master/store/DataAnalyzer4-4.jar
+https://github.com/DallasFormulaRacing/DataAnalyzer/raw/master/store/DataAnalyzer4-6.jar
