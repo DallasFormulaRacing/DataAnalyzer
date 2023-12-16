@@ -261,7 +261,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
 
         ScreenLocation.getInstance().update(this);
-        controlBar.setLoading(true, "test");
     }
     
     private void initializeDatasetMenu() {
