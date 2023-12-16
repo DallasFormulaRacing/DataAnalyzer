@@ -208,8 +208,21 @@ public class Selection {
 
         //We are currently only capable of showing one histogram per chart assembly
         //get data from dataset
-        LinkedList<LogObject> data = datasetSelections.get(0).dataset.getDataMap().getList(getUniqueTags().get(0));
+        LinkedList<LogObject> orig = datasetSelections.get(0).dataset.getDataMap().getList(getUniqueTags().get(0));
+        LinkedList<LogObject> data = new LinkedList<>();
         
+        if(datasetSelections.get(0).selectedLaps != null && datasetSelections.get(0).selectedLaps.size() > 0) {
+            for(LogObject lo : orig) {
+                //still can only handle 1 lap
+                if(lo.getLaps().contains(datasetSelections.get(0).selectedLaps.get(0))) {
+                    data.add(lo);
+                }
+            }
+        } else {
+            data = orig;
+        }
+
+
         //calculate min and max value of the data 
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;

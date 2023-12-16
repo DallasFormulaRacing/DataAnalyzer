@@ -5,6 +5,7 @@
  */
 package dataanalyzer.dialog;
 
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.Settings;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -30,6 +31,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         applyOrCancel = false;
         //creates window
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         //get current settings
         settings = Settings.getInstance();
         //initialize selection boxes and their values

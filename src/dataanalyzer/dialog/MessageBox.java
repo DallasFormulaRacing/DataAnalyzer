@@ -6,6 +6,8 @@
 
 package dataanalyzer.dialog;
 
+import dataanalyzer.ScreenLocation;
+
 public class MessageBox extends javax.swing.JDialog {
     
     //Mostly used to display specific error message
@@ -13,8 +15,10 @@ public class MessageBox extends javax.swing.JDialog {
         super(parent, modal);
 
         initComponents();
-        //Sets textArea to string
         
+        ScreenLocation.getInstance().calculateCenter(this);
+        
+        //Sets textArea to string
         messageArea.setText(text);
     }
 
@@ -22,7 +26,8 @@ public class MessageBox extends javax.swing.JDialog {
        super(parent, modal);
 
         initComponents();
-        //Sets textArea to string
+        
+        ScreenLocation.getInstance().calculateCenter(this);
         
         messageArea.setText(text);
         setVisible(true);

@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.Lap;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.dialog.MessageBox;
 import java.awt.Dialog;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class LapDataDialog extends javax.swing.JDialog {
         toEdit = new Lap();
         running = true;
         int[] usedLaps = null;
+        ScreenLocation.getInstance().calculateCenter(this);
     }
     
     /**
@@ -53,6 +55,7 @@ public class LapDataDialog extends javax.swing.JDialog {
         startTextField.setText(toEdit.getStart() + "");
         stopTextField.setText(toEdit.getStop() + "");
         lapNumberTextField.requestFocus();
+        ScreenLocation.getInstance().calculateCenter(this);
     }
 
     /**

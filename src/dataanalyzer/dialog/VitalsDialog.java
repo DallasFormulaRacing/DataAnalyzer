@@ -15,6 +15,7 @@ import dataanalyzer.FunctionOfLogObject;
 import dataanalyzer.Installer;
 import dataanalyzer.LogObject;
 import dataanalyzer.Selection;
+import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,6 +58,7 @@ public class VitalsDialog extends javax.swing.JDialog {
         vitals = new ArrayList<>();
         this.dataset = dataset;
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);

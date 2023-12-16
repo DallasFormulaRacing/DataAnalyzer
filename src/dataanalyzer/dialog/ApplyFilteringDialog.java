@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.ReturnCode;
+import dataanalyzer.ScreenLocation;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -28,6 +29,7 @@ public class ApplyFilteringDialog extends javax.swing.JDialog {
     public ApplyFilteringDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
         bucketSlider.setValue(1);
         bucketSlider.addChangeListener((ChangeEvent e) -> {
             bucketTextField.setText(""+bucketSlider.getValue());

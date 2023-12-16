@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.InfiniteProgressPanel;
+import dataanalyzer.ScreenLocation;
 import java.awt.Color;
 
 /**
@@ -22,6 +23,7 @@ public class LoadingDialog extends javax.swing.JFrame {
         initComponents();
         this.setTitle(title);
         this.setSize(200, 225);
+        ScreenLocation.getInstance().calculateCenter(this);
         this.setBackground(Color.BLACK);
         prog = new InfiniteProgressPanel();
         prog.setSize(200, 200);

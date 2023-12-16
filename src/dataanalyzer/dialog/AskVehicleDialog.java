@@ -6,6 +6,7 @@
 package dataanalyzer.dialog;
 
 import dataanalyzer.ReturnCode;
+import dataanalyzer.ScreenLocation;
 
 /**
  *
@@ -25,6 +26,7 @@ public class AskVehicleDialog extends javax.swing.JDialog {
     public AskVehicleDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ScreenLocation.getInstance().calculateCenter(this);
     }
     
     /**
