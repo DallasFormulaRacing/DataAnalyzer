@@ -54,12 +54,14 @@ public class VitalsDialog extends javax.swing.JDialog {
     ArrayList<Vital> vitals;
     Dataset dataset;
     DataAnalyzer parent;
+    boolean windowInitialized = false;
 
     /**
      * Creates new form VitalsDialog
      */
     public VitalsDialog(DataAnalyzer parent, boolean modal, Dataset dataset) {
         super(parent, modal);
+        windowInitialized = false;
         this.parent = parent;
         vitals = new ArrayList<>();
         this.dataset = dataset;
@@ -82,6 +84,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             Toast.makeToast(this, "Couldn't find vitals file! Starting fresh!", Toast.DURATION_LONG);
         }
         runVitals(dataset.getDataMap());
+        windowInitialized = true;
     }
     
     /**
@@ -153,6 +156,7 @@ public class VitalsDialog extends javax.swing.JDialog {
         }
         
         JComboBox dropDown = new JComboBox(dsNames);
+        dropDown.setSelectedItem(dataset.getName());
         dropDown.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         dropDown.setMinimumSize(new Dimension(100, 50));
         dropDown.addActionListener(new ActionListener() {
@@ -173,7 +177,8 @@ public class VitalsDialog extends javax.swing.JDialog {
     public void setSelectedDatasetByName(String datasetName) {
         for(Dataset d : parent.getChartManager().getDatasets()) {
             if(d.getName().equals(datasetName)) {
-                setSelectedDataset(d);
+                if(windowInitialized)
+                    setSelectedDataset(d);
                 break;
             }
         }
@@ -187,8 +192,6 @@ public class VitalsDialog extends javax.swing.JDialog {
         vitalsPanel = new JPanel();
         vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
         mainPanel.add(vitalsPanel);
-        //redraw components
-        runVitals(dataset.getDataMap());
         //rebuild window
         VitalsDialog.this.pack();
         runVitals(d.getDataMap());
