@@ -44,16 +44,6 @@ public class ControlBar extends javax.swing.JPanel {
         mode = DomainMode.TIME;
         this.parent.getAppParameters().put("domainMode", mode);
         loadingText.setText("");
-
-        parent.getChartManager().addDatasetSizeChangeListener(new SizeListener() {
-            @Override
-            public void sizeUpdate(int newSize) {
-                openedFiles = newSize;
-                filesOpenLabel.setText(""+openedFiles);
-                if(newSize > 0)
-                    setVitals();
-            }
-        });
         
     }
     
