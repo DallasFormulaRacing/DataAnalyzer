@@ -5,11 +5,16 @@
  */
 package dataanalyzer.controlbar;
 
+import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.DataAnalyzer;
+import dataanalyzer.Dataset;
 import dataanalyzer.DomainMode;
 import dataanalyzer.InfiniteProgressPanel;
 import dataanalyzer.SizeListener;
+import dataanalyzer.dialog.VitalsDialog;
+import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.UIManager;
 
 /**
  *
@@ -40,8 +45,11 @@ public class ControlBar extends javax.swing.JPanel {
             public void sizeUpdate(int newSize) {
                 openedFiles = newSize;
                 filesOpenLabel.setText(""+openedFiles);
+                if(newSize > 0)
+                    setVitals();
             }
         });
+        
     }
     
     public DomainMode getMode() {
@@ -65,6 +73,25 @@ public class ControlBar extends javax.swing.JPanel {
         }
         
     }
+    
+    public void setVitals() {
+        
+        VitalsDialog vd = new VitalsDialog(parent, false, parent.getChartManager().getMainDataset());
+            ArrayList<CategoricalHashMap> maps = new ArrayList<>();
+        for (Dataset ds : parent.getChartManager().getDatasets()) {
+            maps.add(ds.getDataMap());
+        }
+        String ewis = vd.runVitals(maps);
+        vd.dispose();
+        vitalsTextDialog.setText(ewis);
+        if(Integer.parseInt(""+ewis.charAt(0)) > 0) {
+            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.errorIcon"));
+        } else if(Integer.parseInt(""+ewis.charAt(2)) > 0) {
+            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
+        } else {
+            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.informationIcon"));
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -83,6 +110,9 @@ public class ControlBar extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         loadingPanel = new javax.swing.JPanel();
         loadingText = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        vitalsTextDialog = new javax.swing.JLabel();
+        vitalsImageDialog = new javax.swing.JLabel();
 
         setMaximumSize(new java.awt.Dimension(1100, 20));
         setRequestFocusEnabled(false);
@@ -122,6 +152,20 @@ public class ControlBar extends javax.swing.JPanel {
 
         loadingText.setText("jLabel4");
 
+        jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        vitalsTextDialog.setText("0E0W0I");
+
+        vitalsImageDialog.setText("I");
+        vitalsImageDialog.setMaximumSize(new java.awt.Dimension(30, 18));
+        vitalsImageDialog.setMinimumSize(new java.awt.Dimension(5, 5));
+        vitalsImageDialog.setPreferredSize(new java.awt.Dimension(30, 15));
+        vitalsImageDialog.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                vitalsImageDialogMouseReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -132,12 +176,18 @@ public class ControlBar extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filesOpenLabel)
                 .addGap(18, 18, 18)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadingText)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 704, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 567, Short.MAX_VALUE)
+                .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(vitalsTextDialog)
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(domainSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -149,13 +199,17 @@ public class ControlBar extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
             .addComponent(domainSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(jLabel1)
+            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(jLabel2)
                 .addComponent(jLabel3)
-                .addComponent(filesOpenLabel)
-                .addComponent(loadingText))
-            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(filesOpenLabel))
+            .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(loadingText)
+                .addComponent(vitalsTextDialog)
+                .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -175,6 +229,14 @@ public class ControlBar extends javax.swing.JPanel {
         this.parent.triggerChartDomainUpdate();
     }//GEN-LAST:event_domainSliderMouseClicked
 
+    private void vitalsImageDialogMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_vitalsImageDialogMouseReleased
+        // Text shown is summation, but click will always take you to first dataset
+        if(parent.getChartManager().getMainDataset() != null) {
+            VitalsDialog vd = new VitalsDialog(parent, true, parent.getChartManager().getMainDataset());
+            vd.setVisible(true);
+        }
+    }//GEN-LAST:event_vitalsImageDialogMouseReleased
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSlider domainSlider;
@@ -183,8 +245,11 @@ public class ControlBar extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPanel loadingPanel;
     private javax.swing.JLabel loadingText;
+    private javax.swing.JLabel vitalsImageDialog;
+    private javax.swing.JLabel vitalsTextDialog;
     // End of variables declaration//GEN-END:variables
 
 }

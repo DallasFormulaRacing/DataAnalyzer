@@ -285,6 +285,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                     public Void doInBackground() {
                         applyPE3PostProcessing(dataset);
+                        controlBar.setVitals();
                         return null;
                     }
 
@@ -925,8 +926,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     } else if (fileExtension.equals(".txt")) {
                         da.openTXT(dataset, chosenFilePath);
                     }
-                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                    if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         da.applyPostProcessing(dataset);
+                        controlBar.setVitals();
+                    }
+                    
                 }
 
                 da.setVisible(true);
@@ -981,8 +985,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     } else if (fileExtension.equals(".txt")) {
                         openTXT(dataset, chosenFilePath);
                     }
-                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                    if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         applyPostProcessing(dataset);
+                        controlBar.setVitals();
+                    }
                 }
                 if(multipleWindows)
                     toCreateNewWindow = true;
@@ -1155,8 +1161,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             da.openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             da.applyPostProcessing(dataset);
+                            controlBar.setVitals();
+                        }
                     }
                     
                     da.setVisible(true);
@@ -1211,8 +1219,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             applyPostProcessing(dataset);
+                            controlBar.setVitals();
+                        }
                     }
                     if(multipleWindows)
                         toCreateNewWindow = true;
@@ -3181,6 +3191,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 if(applyPostProcessing) {
                     applyPE3PostProcessing(dataset);
                     applyPostProcessing(dataset);
+                    controlBar.setVitals();
                 }
                 
                 return null;

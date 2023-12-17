@@ -28,12 +28,18 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="filesOpenLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="loadingPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="loadingText" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="704" max="32767" attributes="0"/>
+              <EmptySpace pref="567" max="32767" attributes="0"/>
+              <Component id="vitalsImageDialog" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="vitalsTextDialog" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="jSeparator2" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="domainSlider" min="-2" pref="54" max="-2" attributes="0"/>
@@ -47,14 +53,19 @@
       <Group type="103" groupAlignment="1" attributes="0">
           <Component id="domainSlider" min="-2" max="-2" attributes="0"/>
           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+          <Component id="jSeparator1" alignment="1" min="-2" pref="18" max="-2" attributes="0"/>
+          <Component id="loadingPanel" alignment="1" min="-2" max="-2" attributes="0"/>
           <Group type="103" alignment="1" groupAlignment="3" attributes="0">
               <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
               <Component id="filesOpenLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              <Component id="loadingText" alignment="3" min="-2" max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="1" min="-2" pref="18" max="-2" attributes="0"/>
-          <Component id="loadingPanel" alignment="1" min="-2" max="-2" attributes="0"/>
+          <Component id="jSeparator2" alignment="1" min="-2" pref="18" max="-2" attributes="0"/>
+          <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+              <Component id="loadingText" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Component id="vitalsTextDialog" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Component id="vitalsImageDialog" alignment="3" min="-2" max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -123,6 +134,33 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="jLabel4"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator2">
+      <Properties>
+        <Property name="orientation" type="int" value="1"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="vitalsTextDialog">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="0E0W0I"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="vitalsImageDialog">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="I"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[30, 18]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[5, 5]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[30, 15]"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="vitalsImageDialogMouseReleased"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

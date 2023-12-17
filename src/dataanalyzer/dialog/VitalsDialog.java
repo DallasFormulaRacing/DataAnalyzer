@@ -260,10 +260,17 @@ public class VitalsDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    private void runVitals(List<CategoricalHashMap> dataMaps) {
-        for(CategoricalHashMap dataMap : dataMaps)
-            runVitals(dataMap);
+        
+    public String runVitals(List<CategoricalHashMap> dataMaps) {
+        EWITuple ewiTupleSum = new EWITuple();
+        for(CategoricalHashMap dataMap : dataMaps) {
+            EWITuple tuple = runVitals(dataMap);
+            ewiTupleSum.setErrors(ewiTupleSum.getErrors() + tuple.getErrors());
+            ewiTupleSum.setWarnings(ewiTupleSum.getWarnings()+ tuple.getWarnings());
+            ewiTupleSum.setInfos(ewiTupleSum.getInfos()+ tuple.getInfos());
+        }
+        
+        return ewiTupleSum.toString();
     }
     
     /**
@@ -271,9 +278,11 @@ public class VitalsDialog extends javax.swing.JDialog {
      * @param parent JFrame to spawn dialog from
      * @param dataMap dataMap to analyze
      */
-    private void runVitals(CategoricalHashMap dataMap) {
+    private EWITuple runVitals(CategoricalHashMap dataMap) {
         boolean clean = true;
         boolean noChannels = true;
+        int errors, warnings, infos;
+        errors = warnings = infos = 0;
         for(Vital vital : vitals) {
             boolean low = false;
             boolean high = false;
@@ -298,14 +307,17 @@ public class VitalsDialog extends javax.swing.JDialog {
                     switch(vital.getLowType()) {
                         case Error:
                             addError(vital.getChannel() + " low!");
+                            errors++;
                             clean = false;
                             break;
                         case Warn:
                             addWarning(vital.getChannel() + " low!");
+                            warnings++;
                             clean = false;
                             break;
                         default:
                             addLog(vital.getChannel() + " low!");
+                            infos++;
                             clean = false;
                             break;
                     }
@@ -315,14 +327,17 @@ public class VitalsDialog extends javax.swing.JDialog {
                     switch(vital.getHighType()) {
                         case Error:
                             addError(vital.getChannel() + " high!");
+                            errors++;
                             clean = false;
                             break;
                         case Warn:
                             addWarning(vital.getChannel() + " high!");
+                            warnings++;
                             clean = false;
                             break;
                         default:
                             addLog(vital.getChannel() + " high!");
+                            infos++;
                             clean = false;
                             break;
                     }
@@ -337,6 +352,9 @@ public class VitalsDialog extends javax.swing.JDialog {
         else if(clean) {
             addLog("All channels look clean chief!");
         }
+        
+        return new EWITuple(errors, warnings, infos);
+        
     }
     
     private void setupButtons() {
@@ -366,6 +384,50 @@ public class VitalsDialog extends javax.swing.JDialog {
                 VitalsDialog.this.setSize(498, 300);
             }
         });
+        
+    }
+    
+    
+    public class EWITuple {
+        private int errors, warnings, infos;
+        
+        public EWITuple() {
+            this(0,0,0);
+        }
+        
+        public EWITuple(int errors, int warnings, int infos) {
+            this.errors = errors;
+            this.warnings = warnings;
+            this.infos = infos;
+        }
+
+        public int getErrors() {
+            return errors;
+        }
+
+        public void setErrors(int errors) {
+            this.errors = errors;
+        }
+
+        public int getWarnings() {
+            return warnings;
+        }
+
+        public void setWarnings(int warnings) {
+            this.warnings = warnings;
+        }
+
+        public int getInfos() {
+            return infos;
+        }
+
+        public void setInfos(int infos) {
+            this.infos = infos;
+        }
+        
+        public String toString() {
+            return errors + "E" + warnings + "W" + infos + "I";
+        }
         
     }
 

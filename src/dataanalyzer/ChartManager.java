@@ -295,7 +295,10 @@ public class ChartManager {
      */
 
     public Dataset getMainDataset() {
-        return datasets.getFirst();
+        if (datasets.size() > 0)
+            return datasets.getFirst();
+        else
+            return null;
     }
 
     public int getLapBreakerActive() {
@@ -341,6 +344,10 @@ public class ChartManager {
 
     public void setCutDataActive(long cutDataActive) {
         this.cutDataActive = cutDataActive;
+        //if lapbreaker was cancelled or finished
+        if(cutDataActive == -1)
+            //rerun the vitalCheck
+            this.parent.controlBar.setVitals();
     }
 
     // enables or disables the swapper
