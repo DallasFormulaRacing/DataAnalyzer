@@ -17,6 +17,7 @@ import dataanalyzer.LogObject;
 import dataanalyzer.Selection;
 import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -26,14 +27,18 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -45,6 +50,7 @@ import javax.swing.UIManager;
 public class VitalsDialog extends javax.swing.JDialog {
 
     JPanel mainPanel;
+    JPanel vitalsPanel;
     ArrayList<Vital> vitals;
     Dataset dataset;
     DataAnalyzer parent;
@@ -63,6 +69,12 @@ public class VitalsDialog extends javax.swing.JDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);
         mainPanel.setVisible(true);
+        vitalsPanel = new JPanel();
+        vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+        createDropdownMenu();
+        setupButtons();
+        mainPanel.add(Box.createVerticalGlue());
+        mainPanel.add(vitalsPanel);
         try {
             loadVitals();
         } catch(FileNotFoundException e) {
@@ -70,7 +82,6 @@ public class VitalsDialog extends javax.swing.JDialog {
             Toast.makeToast(this, "Couldn't find vitals file! Starting fresh!", Toast.DURATION_LONG);
         }
         runVitals(dataset.getDataMap());
-        setupButtons();
     }
     
     /**
@@ -131,6 +142,58 @@ public class VitalsDialog extends javax.swing.JDialog {
         
     }
     
+    //is this looping? action performed breaks, combo box is fat
+    public void createDropdownMenu() {
+        LinkedList<Dataset> ds = parent.getChartManager().getDatasets();
+        String[] dsNames = new String[ds.size()];
+        int i = 0;
+        for (Dataset d : ds) {
+            dsNames[i] = d.getName();
+            i++;
+        }
+        
+        JComboBox dropDown = new JComboBox(dsNames);
+        dropDown.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        dropDown.setMinimumSize(new Dimension(100, 50));
+        dropDown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                for (Dataset d : ds) {
+                    if(d.getName().equals(dropDown.getSelectedItem().toString())) {
+                        setSelectedDataset(d);
+                        break;
+                    }
+                }
+            }
+        });
+        mainPanel.add(dropDown);
+    }
+    
+    
+    public void setSelectedDatasetByName(String datasetName) {
+        for(Dataset d : parent.getChartManager().getDatasets()) {
+            if(d.getName().equals(datasetName)) {
+                setSelectedDataset(d);
+                break;
+            }
+        }
+    }
+    
+    public void setSelectedDataset(Dataset d) {
+        this.dataset = d;
+        mainPanel.remove(vitalsPanel);
+        //reset main panel
+        mainPanel.remove(vitalsPanel);
+        vitalsPanel = new JPanel();
+        vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(vitalsPanel);
+        //redraw components
+        runVitals(dataset.getDataMap());
+        //rebuild window
+        VitalsDialog.this.pack();
+        runVitals(d.getDataMap());
+    }
+    
     private void addLog(String text) {
         Box box = Box.createHorizontalBox();
         JLabel image = new JLabel();
@@ -163,7 +226,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
 
     private void addError(String text) {
@@ -198,7 +261,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
     
     private void addWarning(String text) {
@@ -233,7 +296,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -351,7 +414,11 @@ public class VitalsDialog extends javax.swing.JDialog {
         }
         else if(clean) {
             addLog("All channels look clean chief!");
-        }
+        }   
+        
+        
+        //rebuild window
+        VitalsDialog.this.pack();
         
         return new EWITuple(errors, warnings, infos);
         
@@ -372,16 +439,14 @@ public class VitalsDialog extends javax.swing.JDialog {
                 //create VitalsEditDialog
                 new VitalsEditDialog(VitalsDialog.this, true, vitals, dataset.getDataMap()).setVisible(true);
                 //reset main panel
-                mainPanel = new JPanel();
-                mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-                VitalsDialog.this.setContentPane(mainPanel);
-                mainPanel.setVisible(true);
+                mainPanel.remove(vitalsPanel);
+                vitalsPanel = new JPanel();
+                vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+                mainPanel.add(vitalsPanel);
                 //redraw components
                 runVitals(dataset.getDataMap());
-                setupButtons();
                 //rebuild window
                 VitalsDialog.this.pack();
-                VitalsDialog.this.setSize(498, 300);
             }
         });
         

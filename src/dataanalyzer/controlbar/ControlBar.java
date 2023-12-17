@@ -12,8 +12,13 @@ import dataanalyzer.DomainMode;
 import dataanalyzer.InfiniteProgressPanel;
 import dataanalyzer.SizeListener;
 import dataanalyzer.dialog.VitalsDialog;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
 /**
@@ -84,13 +89,22 @@ public class ControlBar extends javax.swing.JPanel {
         String ewis = vd.runVitals(maps);
         vd.dispose();
         vitalsTextDialog.setText(ewis);
+        vitalsImageDialog.setText("");
         if(Integer.parseInt(""+ewis.charAt(0)) > 0) {
-            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.errorIcon"));
+            vitalsImageDialog.setIcon(rescaleIcon(UIManager.getIcon("OptionPane.errorIcon")));
         } else if(Integer.parseInt(""+ewis.charAt(2)) > 0) {
-            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
+            vitalsImageDialog.setIcon(rescaleIcon(UIManager.getIcon("OptionPane.warningIcon")));
         } else {
-            vitalsImageDialog.setIcon(UIManager.getIcon("OptionPane.informationIcon"));
+            vitalsImageDialog.setIcon(rescaleIcon(UIManager.getIcon("OptionPane.informationIcon")));
         }
+    }
+    
+    private ImageIcon rescaleIcon(Icon icon) {
+        BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB); 
+        Graphics2D g = bufferedImage.createGraphics(); 
+        icon.paintIcon(null, g, 0, 0); 
+        g.dispose(); 
+        return new ImageIcon(bufferedImage.getScaledInstance(20, 20, Image.SCALE_SMOOTH));
     }
 
     /**
@@ -147,7 +161,7 @@ public class ControlBar extends javax.swing.JPanel {
         );
         loadingPanelLayout.setVerticalGroup(
             loadingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 20, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         loadingText.setText("jLabel4");
@@ -155,11 +169,12 @@ public class ControlBar extends javax.swing.JPanel {
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
         vitalsTextDialog.setText("0E0W0I");
+        vitalsTextDialog.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         vitalsImageDialog.setText("I");
-        vitalsImageDialog.setMaximumSize(new java.awt.Dimension(30, 18));
+        vitalsImageDialog.setMaximumSize(new java.awt.Dimension(20, 20));
         vitalsImageDialog.setMinimumSize(new java.awt.Dimension(5, 5));
-        vitalsImageDialog.setPreferredSize(new java.awt.Dimension(30, 15));
+        vitalsImageDialog.setPreferredSize(new java.awt.Dimension(20, 20));
         vitalsImageDialog.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 vitalsImageDialogMouseReleased(evt);
@@ -181,9 +196,9 @@ public class ControlBar extends javax.swing.JPanel {
                 .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadingText)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 567, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 583, Short.MAX_VALUE)
                 .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(vitalsTextDialog)
                 .addGap(18, 18, 18)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -197,19 +212,24 @@ public class ControlBar extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-            .addComponent(domainSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(jLabel1)
-            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(loadingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(jLabel2)
-                .addComponent(jLabel3)
-                .addComponent(filesOpenLabel))
-            .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(loadingText)
-                .addComponent(vitalsTextDialog)
-                .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(domainSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(loadingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel3)
+                        .addComponent(filesOpenLabel))
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(loadingText)
+                        .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(vitalsTextDialog, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, 0)))
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
