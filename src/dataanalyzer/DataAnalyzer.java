@@ -1230,7 +1230,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 windowCount++;
                 }
-        
         }
     }//GEN-LAST:event_openBtnClicked
 
@@ -2730,6 +2729,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             public void done() {
                 openingAFile = false;
                 controlBar.setLoading(false, "Opened file.");
+                controlBar.setVitals();
             }
         };
         
@@ -2956,6 +2956,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 controlBar.setLoading(false, "Opened file: " + filepath);
+                controlBar.setVitals();
             }
         };
         
@@ -3136,6 +3137,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 controlBar.setLoading(false, "Opened file: " + filepath);
+                controlBar.setVitals();
             }
         };
         
@@ -3191,7 +3193,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 if(applyPostProcessing) {
                     applyPE3PostProcessing(dataset);
                     applyPostProcessing(dataset);
-                    controlBar.setVitals();
                 }
                 
                 return null;
@@ -3200,6 +3201,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             public void done() {
                 //Destroy the Loading Dialog
                 controlBar.setLoading(false, "Opened file: " + file.getName());
+                controlBar.setVitals();
             }
         };
         
