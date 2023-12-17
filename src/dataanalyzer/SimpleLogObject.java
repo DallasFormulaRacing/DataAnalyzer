@@ -5,11 +5,13 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.dialog.Valueable;
+
 /**
  *
  * @author aribdhuka
  */
-public class SimpleLogObject extends LogObject {
+public class SimpleLogObject extends LogObject implements Valueable {
     
     protected double value;
     

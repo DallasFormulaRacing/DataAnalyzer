@@ -5,6 +5,8 @@
  */
 package dataanalyzer;
 
+import dataanalyzer.dialog.Valueable;
+
 /**
  * equations used on raw data for graphing
  * @author aribdhuka

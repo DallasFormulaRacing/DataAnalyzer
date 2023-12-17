@@ -72,12 +72,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
    
     //holds if file operations are currently ongoing
     private boolean openingAFile;
-    
+  
     private enum FileType { EMPTY, DFR, DFRASM };
-    
+
     protected boolean rangeMarkersActive;
                
     ChartManager chartManager;
+    SteeringAngleDisplay saGraph;
     int heightFrame;
     int widthFrame;
     Settings settings;
@@ -108,7 +109,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
-        
+       
         // uses JDesktopPane to manage windows
 //        this.add(desktop);
         desktop.setSize(this.getSize());
@@ -301,10 +302,29 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vitals.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new VitalsDialog(DataAnalyzer.this, true, dataset.getDataMap()).setVisible(true);
+                new VitalsDialog(DataAnalyzer.this, true, dataset).setVisible(true);
             }
         });
         
+
+        //Steering Angle Display menu
+        JMenuItem steeringAngle = new JMenuItem("Steering Angle");
+        steeringAngle.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSteeringAngle(dataset);  
+            }
+        });
+        
+        JMenuItem trackMap = new JMenuItem("Track Map");
+        trackMap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showTrackMap(dataset);
+            }
+        });
+        
+
         //Engine Menu
         JMenu engineMenu = new JMenu("Engine");
         JMenuItem engineChartSetup = new JMenuItem("Setup Engine Charts");
@@ -360,7 +380,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
         vehicleMenu.add(saveVehicle);
         
         datasetSubMenu.add(engineMenu);
+        datasetSubMenu.add(trackMap);
         datasetSubMenu.add(vehicleMenu);
+        datasetSubMenu.add(steeringAngle);
         datasetSubMenu.add(vitals);
         datasetSubMenu.add(postProc);
         
@@ -459,13 +481,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
         }
     }
 
-    
+    // Add track map to be cleared
     private void clearAllCharts() {
         ArrayList<ChartAssembly> charts = chartManager.getCharts();
         for(ChartAssembly chart : charts) {
             chart.getChartFrame().dispose();
         }
         charts.clear();
+        chartManager.clearCharts();
     }
     
     private void initializeBasicView() {
@@ -535,6 +558,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         twoHorizontalMenuItem = new javax.swing.JMenuItem();
         swapChartsMenuItem = new javax.swing.JMenuItem();
         addChartMenuItem = new javax.swing.JMenuItem();
+        addPedalDisplay = new javax.swing.JMenuItem();
         defaultTheme_menuitem = new javax.swing.JMenuItem();
         systemTheme_menuitem = new javax.swing.JMenuItem();
         darkTheme_menuitem = new javax.swing.JMenuItem();
@@ -544,13 +568,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1100, 700));
-
-        desktop.setLayout(null);
         getContentPane().add(desktop, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -559,7 +581,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(newWindowMenuItem);
 
-        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        openBtn.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         openBtn.setText("Open");
         openBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -568,7 +590,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(openBtn);
 
-        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveMenuButton.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveMenuButton.setText("Save");
         saveMenuButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -577,7 +599,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveMenuButton);
 
-        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        saveAsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveAsMenuItem.setText("Save As");
         saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -586,7 +608,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(saveAsMenuItem);
 
-        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
+        exportMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exportMenuItem.setText("Export");
         exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -595,7 +617,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(exportMenuItem);
 
-        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        resetMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         resetMenuItem.setText("Reset");
         resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -612,7 +634,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         fileMenu.add(settingsMenuItem);
 
-        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        closeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeMenuItem.setText("Exit");
         closeMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -633,7 +655,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         editMenu.add(addMathChannelButton);
 
-        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        addLapConditionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addLapConditionMenuItem.setText("Add Lap Condition");
         addLapConditionMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -662,7 +684,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
         viewMenu.setText("View");
 
-        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        fullscreenMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         fullscreenMenuItem.setText("Fullscreen");
         fullscreenMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -711,7 +733,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         });
         viewMenu.add(swapChartsMenuItem);
 
-        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        addChartMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addChartMenuItem.setText("Add Chart");
         addChartMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -719,6 +741,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
             }
         });
         viewMenu.add(addChartMenuItem);
+
+        addPedalDisplay.setText("Add Pedal Display");
+        addPedalDisplay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPedalDisplayActionPerformed(evt);
+            }
+        });
+        viewMenu.add(addPedalDisplay);
 
         defaultTheme_menuitem.setText("Default");
         defaultTheme_menuitem.addActionListener(new java.awt.event.ActionListener() {
@@ -1099,7 +1129,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     int lastIndex = chosenFilePath.lastIndexOf(".");
                     //get file extension
                     String fileExtension = chosenFilePath.substring(lastIndex, chosenFilePath.length());
-                    
+    
                     //if its a created file
                     if(fileExtension.equals(".dfr")) {
                         da.openFile(dataset, chosenFilePath);
@@ -1189,7 +1219,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     openingAFile = false;
                 }
                 windowCount++;
-            }
+                }
         
         }
     }//GEN-LAST:event_openBtnClicked
@@ -1436,8 +1466,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
     private void singleViewMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleViewMenuItemActionPerformed
         //delete all current charts
-        for(ChartAssembly assembly : chartManager.getCharts())
-            assembly.chartFrame.dispose();
+        clearAllCharts();
         
         //reinitialize the initial basic view.
         initializeBasicView();
@@ -1560,6 +1589,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
             Toast.makeToast(this.getParent(), "Error reading charts directory!", Toast.DURATION_MEDIUM);
         }
     }//GEN-LAST:event_saveChartConfigurationActionPerformed
+
+    private void addPedalDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPedalDisplayActionPerformed
+        // TODO add your handling code here:
+        chartManager.addPedalDisplay();
+    }//GEN-LAST:event_addPedalDisplayActionPerformed
   
     private void showLambdaMap(Dataset dataset) {
         if(dataset.getDataMap().isEmpty()) {
@@ -1599,8 +1633,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         lambda.getChartFrame().setSize(frameSize.width / 2, frameSize.height / 3 - 22);
         lambda.getChartFrame().setLocation(frameSize.width / 2 + 1, frameSize.height / 3 * 2 - 22 + 1);
         
-        //set charts data
-
+        
         //if the datamap contains AFR data, RPM, and TPS, put them on the main chart
         if(dataset.getDataMap().getTags().contains("Time,AFRAveraged") && 
                 dataset.getDataMap().getTags().contains("Time,TPS[%]") && 
@@ -1674,6 +1707,58 @@ public class DataAnalyzer extends javax.swing.JFrame {
             fot.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
         }
     }
+    
+
+    private void showSteeringAngle(Dataset dataset){
+        /* 
+         * checks for steering data within the dataset, and if so it creates a steering angle display.
+         * The steering angle graph automatically rotates with hovering input to a chart data loaded.
+        */
+        if(dataset.getDataMap().getTags().contains("Time,SteeringAngle")){
+            saGraph = chartManager.addSteeringAngleDisplay();
+            saGraph.setSteering(dataset);
+        } else{
+            new MessageBox(DataAnalyzer.this, "Please use a dataset containing the tag \"Time,Steering\".", true).setVisible(true);
+        }
+    }
+    
+    private void showTrackMap(Dataset dataset) {         
+        
+        GPSGraphInternalFrame trackMapInternalFrame;
+     
+       //boolean to check if contains
+        boolean ifContains = false;
+        
+        //if tags include lat and long then set to true
+        if(dataset.getDataMap().tags.contains("Time,Latitude") && dataset.getDataMap().tags.contains("Time,Longitude")){
+            ifContains = true;
+        }
+        
+        //if contains is true
+        if(ifContains){
+           
+            //calls the correct constructor based on wheather data has been loaded
+            if(dataset.getDataMap().isEmpty()){
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, currTheme);
+            } else {
+                trackMapInternalFrame = new GPSGraphInternalFrame(this, dataset.getDataMap(), currTheme);
+            }
+                trackMapInternalFrame.setVisible(true);
+        
+            //adds the trackMapInternalFrame to a list, to keep track of them
+            //sets the location and size of the trackMapInternalFrame
+            Dimension frameSize = this.getSize();
+            trackMapInternalFrame.setLocation((frameSize.width/4)*3, 0);
+            trackMapInternalFrame.setSize((frameSize.width/4)-18, (int) (frameSize.height/2.5));
+            
+            chartManager.addTrackMap(trackMapInternalFrame);
+            }
+            else{
+                 new MessageBox(DataAnalyzer.this, "Error: Invalid Data Selection could not be approved", true).setVisible(true);
+         }
+        
+    }
+            
     
     public void invertRangeMarkersActive() {
         //invert showing range markers
@@ -3185,6 +3270,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         chartManager.triggerChartDomainUpdate();
     }
     
+    public JDesktopPane getDesktop() {
+        return desktop;
+    }
+    
     public boolean isOpeningAFile() {
         return openingAFile;
     }
@@ -3256,6 +3345,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private javax.swing.JMenuItem addLapConditionMenuItem;
     private javax.swing.JMenuItem addMathChannelButton;
     private javax.swing.JMenuItem addNotesMenuItem;
+    private javax.swing.JMenuItem addPedalDisplay;
     private javax.swing.JMenu chartMenu;
     private javax.swing.JMenuItem closeMenuItem;
     private javax.swing.JMenuItem cutDataMenuItem;
