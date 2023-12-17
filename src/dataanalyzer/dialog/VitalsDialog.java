@@ -5,14 +5,35 @@
  */
 package dataanalyzer.dialog;
 
+import com.arib.toast.Toast;
 import dataanalyzer.CategoricalHashMap;
+import dataanalyzer.ChartAssembly;
+import dataanalyzer.DataAnalyzer;
+import dataanalyzer.Dataset;
+import dataanalyzer.DatasetSelection;
+import dataanalyzer.FunctionOfLogObject;
+import dataanalyzer.Installer;
 import dataanalyzer.LogObject;
+import dataanalyzer.Selection;
 import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -24,32 +45,89 @@ import javax.swing.UIManager;
 public class VitalsDialog extends javax.swing.JDialog {
 
     JPanel mainPanel;
+    ArrayList<Vital> vitals;
+    Dataset dataset;
+    DataAnalyzer parent;
+
     /**
      * Creates new form VitalsDialog
      */
-    public VitalsDialog(java.awt.Frame parent, boolean modal, CategoricalHashMap dataMap) {
+    public VitalsDialog(DataAnalyzer parent, boolean modal, Dataset dataset) {
         super(parent, modal);
+        this.parent = parent;
+        vitals = new ArrayList<>();
+        this.dataset = dataset;
         initComponents();
         ScreenLocation.getInstance().calculateCenter(this);
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);
         mainPanel.setVisible(true);
-        runVitals(dataMap);
-        
+        try {
+            loadVitals();
+        } catch(FileNotFoundException e) {
+            //this should never happen
+            Toast.makeToast(this, "Couldn't find vitals file! Starting fresh!", Toast.DURATION_LONG);
+        }
+        runVitals(dataset.getDataMap());
+        setupButtons();
     }
     
     /**
      * Creates new form VitalsDialog
+     * WILL CAUSE ERROR WITH EDITING VITALS!
+     * @deprecated 
      */
-    public VitalsDialog(java.awt.Frame parent, boolean modal, LinkedList<CategoricalHashMap> dataMap) {
+    public VitalsDialog(DataAnalyzer parent, boolean modal, LinkedList<Dataset> datasets) {
         super(parent, modal);
+        this.parent = parent;
+        vitals = new ArrayList<>();
         initComponents();
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);
         mainPanel.setVisible(true);
-        runVitals(dataMap);
+        try {
+            loadVitals();
+        } catch(FileNotFoundException e) {
+            //this should never happen
+            Toast.makeToast(this, "Couldn't find vitals file! Starting fresh!", Toast.DURATION_LONG);
+        }
+        runVitals(dataset.getDataMap());
+        setupButtons();
+        
+    }
+    
+    private void loadVitals() throws FileNotFoundException {
+        //get filepath from installer
+        String vitalsPath = Installer.getHomePath() + "Vitals/";
+        
+        //open and read file
+        Scanner vitalsFile = new Scanner(new File(vitalsPath + "vitals.dfrvit"));
+        while(vitalsFile.hasNextLine()) {
+            //channel,lowactive,highactive,lowtype,hightype,lowvalue,highvalue
+            String[] attributes = vitalsFile.nextLine().split(";");
+            
+            Vital vital = new Vital();
+            vital.setChannel(attributes[0]);
+            if(attributes[1].equals("true")) {
+                vital.setLowActive(true);
+            } else {
+                vital.setLowActive(false);
+            }
+            if(attributes[2].equals("true")) {
+                vital.setHighActive(true);
+            } else {
+                vital.setHighActive(false);
+            }
+            vital.setLowType(VitalType.valueOf(attributes[3]));
+            vital.setHighType(VitalType.valueOf(attributes[4]));
+            //these doubles should never be unparsable
+            vital.setLowValue(Double.parseDouble(attributes[5]));
+            vital.setHighValue(Double.parseDouble(attributes[6]));
+            
+            this.vitals.add(vital);
+        }
         
     }
     
@@ -60,6 +138,31 @@ public class VitalsDialog extends javax.swing.JDialog {
         box.add(image);
         box.add(new JLabel(text));
         box.setVisible(true);
+        box.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                String channel = text.split(" ")[0];
+                if(!dataset.getDataMap().getTags().contains(channel)) {
+                    return;
+                }
+                ArrayList<String> selectedTags = new ArrayList<>();
+                selectedTags.add(channel);
+                DatasetSelection ds = new DatasetSelection(dataset, selectedTags, new ArrayList<Integer>());
+                LinkedList<DatasetSelection> dss = new LinkedList<>();
+                dss.add(ds);
+                Selection selection = new Selection(dss);
+                ChartAssembly ca = parent.getChartManager().addChart();
+                ca.setSelection(selection);
+                ca.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+                try {
+                    ca.getChartFrame().setSelected(true);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(VitalsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+        });
         mainPanel.add(box);
     }
 
@@ -70,6 +173,31 @@ public class VitalsDialog extends javax.swing.JDialog {
         box.add(image);
         box.add(new JLabel(text));
         box.setVisible(true);
+        box.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                String channel = text.split(" ")[0];
+                if(!dataset.getDataMap().getTags().contains(channel)) {
+                    return;
+                }
+                ArrayList<String> selectedTags = new ArrayList<>();
+                selectedTags.add(channel);
+                DatasetSelection ds = new DatasetSelection(dataset, selectedTags, new ArrayList<Integer>());
+                LinkedList<DatasetSelection> dss = new LinkedList<>();
+                dss.add(ds);
+                Selection selection = new Selection(dss);
+                ChartAssembly ca = parent.getChartManager().addChart();
+                ca.setSelection(selection);
+                ca.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+                try {
+                    ca.getChartFrame().setSelected(true);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(VitalsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+        });
         mainPanel.add(box);
     }
     
@@ -80,6 +208,31 @@ public class VitalsDialog extends javax.swing.JDialog {
         box.add(image);
         box.add(new JLabel(text));
         box.setVisible(true);
+        box.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                String channel = text.split(" ")[0];
+                if(!dataset.getDataMap().getTags().contains(channel)) {
+                    return;
+                }
+                ArrayList<String> selectedTags = new ArrayList<>();
+                selectedTags.add(channel);
+                DatasetSelection ds = new DatasetSelection(dataset, selectedTags, new ArrayList<Integer>());
+                LinkedList<DatasetSelection> dss = new LinkedList<>();
+                dss.add(ds);
+                Selection selection = new Selection(dss);
+                ChartAssembly ca = parent.getChartManager().addChart();
+                ca.setSelection(selection);
+                ca.setChart(selection.getUniqueTags().toArray(new String[selection.getUniqueTags().size()]));
+                try {
+                    ca.getChartFrame().setSelected(true);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(VitalsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+        });
         mainPanel.add(box);
     }
     /**
@@ -108,34 +261,6 @@ public class VitalsDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     
-      
-    //Oil pressures
-    private static final int    OIL_PRESSURE_LOW        = 45;
-    private static final int    OIL_PRESSURE_HIGH       = 90;
-    
-    //coolant temperatures
-    private static final int    COOLANT_TEMP_HIGH       = 212;
-    
-    //battery Voltages
-    private static final double BATTERY_VOLTS_LOW       = 12.0;
-    private static final double BATTERY_VOLTS_HIGH      = 15.0;
-    
-    //Oil pressures
-    private static final int    RPM_LOW                 = 0;
-    private static final int    RPM_HIGH                = 12500;
-    
-    //Ignition Angle 
-    private static final double    IGN_ANGLE_LOW        = 10;
-    private static final double    IGN_ANGLE_HIGH       = 35;
-    
-    //Throttle Position 
-    private static final double    TPS_LOW              = 0;
-    private static final double    TPS_HIGH             = 100;
-    
-    //AFR
-    private static final double    AFR_LOW              = 10.4;
-    private static final double    AFR_HIGH             = 22.06;
-    
     private void runVitals(List<CategoricalHashMap> dataMaps) {
         for(CategoricalHashMap dataMap : dataMaps)
             runVitals(dataMap);
@@ -147,183 +272,101 @@ public class VitalsDialog extends javax.swing.JDialog {
      * @param dataMap dataMap to analyze
      */
     private void runVitals(CategoricalHashMap dataMap) {
-        if(dataMap.getTags().contains("Time,OilPressure")) {
-            checkOilPressure(dataMap.getList("Time,OilPressure"));
-        }
-        if(dataMap.getTags().contains("Time,CoolantTemp")) {
-            checkCoolantTemp(dataMap.getList("Time,CoolantTemp"));
-        }
-        if(dataMap.getTags().contains("Time,BatteryVolt")) {
-            checkBatteryVoltage(dataMap.getList("Time,BatteryVolt"));
-        }
-        if(dataMap.getTags().contains("Time,RPM")) {
-            checkEngineRPM(dataMap.getList("Time,RPM"));
-        }
-        if(dataMap.getTags().contains("Time,IgnitionAngle")) {
-            checkIgnitionAngle(dataMap.getList("Time,IgnitionAngle"));
-        }
-        if(dataMap.getTags().contains("Time,TPS")) {
-            checkThrottlePosition(dataMap.getList("Time,TPS"));
-        }
-        if(dataMap.getTags().contains("Time,AFRAveraged")) {
-            checkAFR(dataMap.getList("Time,AFRAveraged"));
-        }
-        
-        
-    }
-    
-    private void checkOilPressure(LinkedList<LogObject> oilPressures) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        for(LogObject lo : oilPressures) {
-            if(((SimpleLogObject) lo).getValue() < OIL_PRESSURE_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > OIL_PRESSURE_HIGH) {
-                high = true;
-            }
-        }
-        
-        if(low)
-            addError("Oil Pressure Low!");
-        else if(high)
-            addWarning("Oil Pressure High!");
-        else if(low && high)
-            addError("Oil Pressure Low and High!");
-        else
-            addLog("Oil Pressure Ok.");
-        
-    }
-    
-    private void checkCoolantTemp(LinkedList<LogObject> coolantTemp) {
-        for(LogObject lo : coolantTemp) {
-            if(((SimpleLogObject) lo).getValue() > COOLANT_TEMP_HIGH) {
-                addError("Coolant Temp High!");
-            }
-        }
-        
-        addLog("Coolant Temp Ok.");
-    }
-    
-    private void checkBatteryVoltage(LinkedList<LogObject> batteryVoltage) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        for(LogObject lo : batteryVoltage) {
-            //ignore first 10 seconds of data
-            if(lo.getTime() < 10000)
-                continue;
-            if(((SimpleLogObject) lo).getValue() < BATTERY_VOLTS_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > BATTERY_VOLTS_HIGH) {
-                high = true;
+        boolean clean = true;
+        boolean noChannels = true;
+        for(Vital vital : vitals) {
+            boolean low = false;
+            boolean high = false;
+            if(dataMap.getTags().contains(vital.getChannel())) {
+                noChannels = false;
+                for(LogObject lo : dataMap.getList(vital.getChannel())) {
+                    if (lo instanceof Valueable) {
+                        if(vital.isLowActive()) {
+                            if(((Valueable) lo).getValue() < vital.getLowValue()) {
+                                low = true;
+                            }
+                        }
+                        if(vital.isHighActive()) {
+                            if(((Valueable) lo).getValue() > vital.getHighValue()) {
+                                high = true;
+                            }
+                        }
+                    }
+                }
+                
+                if(low) {
+                    switch(vital.getLowType()) {
+                        case Error:
+                            addError(vital.getChannel() + " low!");
+                            clean = false;
+                            break;
+                        case Warn:
+                            addWarning(vital.getChannel() + " low!");
+                            clean = false;
+                            break;
+                        default:
+                            addLog(vital.getChannel() + " low!");
+                            clean = false;
+                            break;
+                    }
+                }
+                
+                if(high) {
+                    switch(vital.getHighType()) {
+                        case Error:
+                            addError(vital.getChannel() + " high!");
+                            clean = false;
+                            break;
+                        case Warn:
+                            addWarning(vital.getChannel() + " high!");
+                            clean = false;
+                            break;
+                        default:
+                            addLog(vital.getChannel() + " high!");
+                            clean = false;
+                            break;
+                    }
+                }
+                
             }
         }
         
-        if(low)
-            addWarning("Battery Voltage Low!");
-        else if(high)
-            addError("Battery Voltage High!");
-        else if(low && high)
-            addError("Battery Voltage Low and High!");
-        else
-            addLog("Battery Voltage Ok.");
-    }
-    
-    private void checkEngineRPM(LinkedList<LogObject> RPM) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        for(LogObject lo : RPM) {
-            if(((SimpleLogObject) lo).getValue() < RPM_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > RPM_HIGH) {
-                high = true;
-            }
+        if(noChannels) {
+            addError("I couldn't find any data boss!");
         }
-        
-        if(low)
-            addLog("This idiot stalled!");
-        else if(high)
-            addWarning("Exceeding Rev Limiter!");
-        else if(low && high)
-            addWarning("Stall + Exceeding Rev Limiter!");
-        else
-            addLog("RPMs Ok.");
-    }
-    
-    private void checkIgnitionAngle(LinkedList<LogObject> ignAngle) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        for(LogObject lo : ignAngle) {
-            if(((SimpleLogObject) lo).getValue() < IGN_ANGLE_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > IGN_ANGLE_HIGH) {
-                high = true;
-            }
-        }
-        
-        if(low)
-            addWarning("Ignition Angle too retarded!");
-        else if(high)
-            addWarning("Ignition Angle too advanced!");
-        else if(low && high)
-            addWarning("Ignition Angle too retarded and too advanced!");
-        else
-            addLog("Igniition Angle Ok.");
-    }
-    
-    private void checkThrottlePosition(LinkedList<LogObject> tps) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        double lowest = 100;
-        for(LogObject lo : tps) {
-            if(((SimpleLogObject) lo).getValue() < lowest) {
-                lowest = ((SimpleLogObject) lo).getValue();
-            }
-            if(((SimpleLogObject) lo).getValue() < TPS_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > TPS_HIGH) {
-                high = true;
-            }
-        }
-        
-        if(low)
-            addError("Throttle Position Sensor Malfunction! Reading Low.");
-        else if(high)
-            addError("Throttle Position Sensor Malfunction! Reading High.");
-        else if(low && high)
-            addError("Throttle Position Sensor Malfunction! Reading High and Low.");
-        else {
-            if(lowest != 0)
-                addWarning("TPS Ok. Possibly miscalibrated.");
-            else
-                addLog("TPS Ok. Calibration Ok.");
+        else if(clean) {
+            addLog("All channels look clean chief!");
         }
     }
     
-    private void checkAFR(LinkedList<LogObject> afr) {
-        //for each object check for low and high pressures
-        boolean low = false, high = false;
-        for(LogObject lo : afr) {
-            if(((SimpleLogObject) lo).getValue() < AFR_LOW) {
-                low = true;
-            }
-            if(((SimpleLogObject) lo).getValue() > AFR_HIGH) {
-                high = true;
-            }
-        }
+    private void setupButtons() {
+        Box editBox = Box.createHorizontalBox();
+        JButton editButton = new JButton();
+        editButton.setText("Edit");
+        editBox.add(editButton);
+        editBox.setVisible(true);
         
-        if(low)
-            addWarning("AFR Sensor reading low!");
-        else if(high)
-            addWarning("AFR Sensor reading high!");
-        else if(low && high)
-            addWarning("AFR Sensor reading too high and too low!");
-        else
-            addLog("AFR Sensor Ok.");
+        mainPanel.add(editBox);
+        
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //create VitalsEditDialog
+                new VitalsEditDialog(VitalsDialog.this, true, vitals, dataset.getDataMap()).setVisible(true);
+                //reset main panel
+                mainPanel = new JPanel();
+                mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+                VitalsDialog.this.setContentPane(mainPanel);
+                mainPanel.setVisible(true);
+                //redraw components
+                runVitals(dataset.getDataMap());
+                setupButtons();
+                //rebuild window
+                VitalsDialog.this.pack();
+                VitalsDialog.this.setSize(498, 300);
+            }
+        });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
