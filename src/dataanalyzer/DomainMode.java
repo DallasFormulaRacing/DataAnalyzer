@@ -7,8 +7,8 @@ package dataanalyzer;
 
 /**
  *
- * @author aribdhuka
+ * @author aribd
  */
-public interface SizeListener {
-    void sizeUpdate(int newSize);
+public enum DomainMode {
+    TIME, DISTANCE;
 }

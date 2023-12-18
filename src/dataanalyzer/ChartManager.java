@@ -47,7 +47,7 @@ public class ChartManager {
     ChartAssembly first, second;
 
     // dataset size change listener
-    private ArrayList<SizeListener> listeners;
+    private static final ArrayList<SizeListener> listeners = new ArrayList<>();;
 
     public DataAnalyzer getParent(){
         return parent;
@@ -65,7 +65,6 @@ public class ChartManager {
         tracks = new ArrayList<>();
         first = null;
         second = null;
-        listeners = new ArrayList<>();
         datasets = new LinkedList<>();
         tracks = new ArrayList<>();
     }
@@ -219,8 +218,14 @@ public class ChartManager {
 
     }
 
-    public void addDatasetSizeChangeListener(SizeListener sizeListener) {
+    public static void addDatasetSizeChangeListener(SizeListener sizeListener) {
         listeners.add(sizeListener);
+    }
+    
+    private void broadcastDatasetSizeChangeListener() {
+        listeners.forEach(l -> {
+            l.sizeUpdate(datasets.size());
+        });
     }
 
     public void addDataset(Dataset d) throws DuplicateDatasetNameException {
@@ -233,15 +238,14 @@ public class ChartManager {
         // on new element entry of dataMap, update the view
         d.getDataMap().addTagSizeChangeListener(new SizeListener() {
             @Override
-            public void sizeUpdate() {
-                if (!parent.isOpeningAFile()) {
+            public void sizeUpdate(int newSize) {
+                if(!parent.isOpeningAFile()) {
                     Lap.applyToDataset(d.getDataMap(), d.getLapBreaker());
 
                 }
             }
         });
-        for (SizeListener l : listeners)
-            l.sizeUpdate();
+        broadcastDatasetSizeChangeListener();
     }
 
     public void removeDataset(String name) {
@@ -249,8 +253,7 @@ public class ChartManager {
         for (int i = 0; i < datasets.size(); i++) {
             if (datasets.get(i).getName().equals(name)) {
                 datasets.remove(i);
-                for (SizeListener l : listeners)
-                    l.sizeUpdate();
+                broadcastDatasetSizeChangeListener();
             }
         }
     }
@@ -268,12 +271,21 @@ public class ChartManager {
         for (int i = 0; i < datasets.size(); i++) {
             if (datasets.get(i).getName().equals(name)) {
                 datasets.set(i, updated);
-                for (SizeListener l : listeners)
-                    l.sizeUpdate();
+                broadcastDatasetSizeChangeListener();
             }
         }
     }
-
+    
+    public void triggerChartDomainUpdate() {
+        for (ChartAssembly ca : charts) {
+            //error check empty charts (happy vs age preservation)
+            if(ca.selection.getAllSelectedDatasets().size() < 1)
+                continue;
+            ca.selection.modeUpdate((DomainMode) parent.appParameters.get("domainMode"));
+            ca.setChart(ca.selection.getUniqueTags().toArray(new String[ca.selection.getUniqueTags().size()]));
+        }
+    }
+    
     /**
      * 
      * 
@@ -285,7 +297,10 @@ public class ChartManager {
      */
 
     public Dataset getMainDataset() {
-        return datasets.getFirst();
+        if (datasets.size() > 0)
+            return datasets.getFirst();
+        else
+            return null;
     }
 
     public int getLapBreakerActive() {
@@ -304,7 +319,7 @@ public class ChartManager {
         this.newLap = newLap;
     }
 
-    public JFrame getParentFrame() {
+    public DataAnalyzer getParentFrame() {
         return parent;
     }
     
@@ -331,6 +346,10 @@ public class ChartManager {
 
     public void setCutDataActive(long cutDataActive) {
         this.cutDataActive = cutDataActive;
+        //if lapbreaker was cancelled or finished
+        if(cutDataActive == -1)
+            //broadcast that the datasets have changed
+            broadcastDatasetSizeChangeListener();
     }
 
     // enables or disables the swapper

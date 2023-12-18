@@ -54,8 +54,12 @@ public class TagChooserDialog extends javax.swing.JDialog {
     //All active panels
     LinkedList<TagChooserPanel> activePanels;
     
-    public TagChooserDialog(java.awt.Frame parent, LinkedList<Dataset> datasets, Selection selection) {
+    //parent Frame
+    DataAnalyzer parent;
+    
+    public TagChooserDialog(DataAnalyzer parent, LinkedList<Dataset> datasets, Selection selection) {
         super(parent, true);
+        this.parent = parent;
         initComponents();
         running = true;
         this.selection = selection;
@@ -170,6 +174,10 @@ public class TagChooserDialog extends javax.swing.JDialog {
      */
     public boolean isRunning() {
         return running;
+    }
+    
+    public DataAnalyzer getParent() {
+        return this.parent;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

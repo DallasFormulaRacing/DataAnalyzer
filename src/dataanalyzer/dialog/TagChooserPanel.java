@@ -9,13 +9,16 @@ import dataanalyzer.DatasetSelection;
 import com.arib.toast.Toast;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Dataset;
+import dataanalyzer.DomainMode;
 import dataanalyzer.Lap;
 import dataanalyzer.LogObject;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListSelectionModel;
@@ -314,19 +317,20 @@ public class TagChooserPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_dataListMouseClicked
 
     private void fillDataList(ArrayList<String> allTags) {
-        // Use the tags list to get the title for each tag
-        titles = new String[allTags.size()];
-
-        // Make a list of titles
-        // Get (Title)"RPM vs Time" from (Tag)"Time, RPM"
-        String str = "";
-        for (int i = 0; i < titles.length; i++) {
-            str = "";
-            str += allTags.get(i).split(",")[1];
-            str += " vs ";
-            str += allTags.get(i).split(",")[0];
-            titles[i] = str;
+        
+        //reduce tags down to just the signal name
+        Set<String> reducedTags = new HashSet<>();
+        for(String tag : allTags) {
+            if(tag.matches("Time,.*") || tag.matches("Distance,.*"))
+                reducedTags.add(tag.split(",")[1]);
+            else
+                reducedTags.add(tag);
         }
+        
+        // Use the tags list to get the title for each tag
+        titles = new String[reducedTags.size()];
+        reducedTags.toArray(titles);
+
         // Add the list of titles to the data List View 
         dataList.setListData(titles);
         
@@ -427,6 +431,7 @@ public class TagChooserPanel extends javax.swing.JPanel {
                         List<String> prevSelected = new ArrayList<>();
                         if(chosenTags != null) {
                             for(int i = 0; i < chosenTags.length; i++) {
+                                //if its not in the selected list and its no longer in the datalist, then it was previously selected, but is now just missing so add it as well
                                 if(!selected.contains(tagToTitle(chosenTags[i])) && dataList.getNextMatch(tagToTitle(chosenTags[i]), 0, Position.Bias.Forward) == -1) {
                                     prevSelected.add(chosenTags[i]);
                                 }
@@ -625,15 +630,12 @@ public class TagChooserPanel extends javax.swing.JPanel {
      * @param tag a tag
      * @return a title based on the tag
      */
-    private String tagToTitle(String tag) {
-        if(tag == null || tag.isEmpty()){
-            return "";
-        }
-        String title = "";
-        title += tag.split(",")[1];
-        title += " vs ";
-        title += tag.split(",")[0];
-        return title;
+    private String tagToTitle(String tag) {        
+        if(tag.matches("Time,.*") || tag.matches("Distance,.*"))
+            return tag.split(",")[1];
+        else
+            return tag;
+
     }
     
     //given a chart title or dataList title we can create the tag
@@ -648,11 +650,22 @@ public class TagChooserPanel extends javax.swing.JPanel {
             return null;
         }
         
-        //create array of tags
-        String[] titleSplit = title.split(" vs ");
-        String[] tags = new String[titleSplit.length - 1];
-        for (int i = 0; i < titleSplit.length - 1; i++) {
-            tags[i] = titleSplit[titleSplit.length - 1] + "," + titleSplit[i];
+        //may need to handle multi titles, i.e. wheelspeed vs airtemp vs gear vs time
+        //although i cannot find any references
+
+        String[] tags = new String[1];
+        
+        //get domain mode
+        //TODO: UPDATE DONT HARDCODE.
+        DomainMode mode = (DomainMode) parent.getParent().getAppParameters().get("domainMode");
+        if(title.contains(",")) {
+            tags[0] = title;
+            return tags;
+        }
+        if(mode == DomainMode.TIME) {
+            tags[0] = "Time," + title;
+        } else if (mode == DomainMode.DISTANCE) {
+            tags[0] = "Distance," + title;
         }
         
         return tags;

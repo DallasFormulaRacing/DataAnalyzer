@@ -172,7 +172,7 @@ public class CategoricalHashMap {
     
     private void broadcastSizeChange() {
         for(SizeListener listener : listeners) {
-            listener.sizeUpdate();
+            listener.sizeUpdate(tags.size());
         }
     }
     

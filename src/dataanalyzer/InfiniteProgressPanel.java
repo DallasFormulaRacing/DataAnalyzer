@@ -26,7 +26,7 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
     protected float   shield     = 0.70f;
     protected String  text       = "";
     protected int     barsCount  = 14;
-    protected float   fps        = 15.0f;
+    protected float   fps        = 8.0f;
 
     protected RenderingHints hints = null;
 
@@ -114,14 +114,14 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
         if (started)
         {
             int width  = getWidth();
-            int height = getHeight();
+            int height = getHeight();  
 
             double maxY = 0.0; 
 
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHints(hints);
             
-            g2.setColor(new Color(255, 255, 255, (int) (alphaLevel * shield)));
+            g2.setColor(new Color(0, 0, 0, 0));
             g2.fillRect(0, 0, getWidth(), getHeight());
 
             for (int i = 0; i < ticker.length; i++)
@@ -134,7 +134,7 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
                 if (bounds.getMaxY() > maxY)
                     maxY = bounds.getMaxY();
             }
-
+            
             if (text != null && text.length() > 0)
             {
 	            FontRenderContext context = g2.getFontRenderContext();
@@ -158,7 +158,7 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
             Area primitive = buildPrimitive();
 
             AffineTransform toCenter = AffineTransform.getTranslateInstance(center.getX(), center.getY());
-            AffineTransform toBorder = AffineTransform.getTranslateInstance(45.0, -6.0);
+            AffineTransform toBorder = AffineTransform.getTranslateInstance(5.625, -0.75);
             AffineTransform toCircle = AffineTransform.getRotateInstance(-i * fixedAngle, center.getX(), center.getY());
 
             AffineTransform toWheel = new AffineTransform();
@@ -176,9 +176,9 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
 
     private Area buildPrimitive()
     {
-        Rectangle2D.Double body = new Rectangle2D.Double(6, 0, 30, 12);
-        Ellipse2D.Double   head = new Ellipse2D.Double(0, 0, 12, 12);
-        Ellipse2D.Double   tail = new Ellipse2D.Double(30, 0, 12, 12);
+        Rectangle2D.Double body = new Rectangle2D.Double(1, 0, 5, 2);
+        Ellipse2D.Double   head = new Ellipse2D.Double(0, 0, 2, 2);
+        Ellipse2D.Double   tail = new Ellipse2D.Double(5, 0, 2, 2);
 
         Area tick = new Area(body);
         tick.add(new Area(head));

@@ -17,6 +17,7 @@ import dataanalyzer.LogObject;
 import dataanalyzer.Selection;
 import dataanalyzer.ScreenLocation;
 import dataanalyzer.SimpleLogObject;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -26,14 +27,18 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -45,15 +50,18 @@ import javax.swing.UIManager;
 public class VitalsDialog extends javax.swing.JDialog {
 
     JPanel mainPanel;
+    JPanel vitalsPanel;
     ArrayList<Vital> vitals;
     Dataset dataset;
     DataAnalyzer parent;
+    boolean windowInitialized = false;
 
     /**
      * Creates new form VitalsDialog
      */
     public VitalsDialog(DataAnalyzer parent, boolean modal, Dataset dataset) {
         super(parent, modal);
+        windowInitialized = false;
         this.parent = parent;
         vitals = new ArrayList<>();
         this.dataset = dataset;
@@ -63,6 +71,12 @@ public class VitalsDialog extends javax.swing.JDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         this.setContentPane(mainPanel);
         mainPanel.setVisible(true);
+        vitalsPanel = new JPanel();
+        vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+        createDropdownMenu();
+        setupButtons();
+        mainPanel.add(Box.createVerticalGlue());
+        mainPanel.add(vitalsPanel);
         try {
             loadVitals();
         } catch(FileNotFoundException e) {
@@ -70,7 +84,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             Toast.makeToast(this, "Couldn't find vitals file! Starting fresh!", Toast.DURATION_LONG);
         }
         runVitals(dataset.getDataMap());
-        setupButtons();
+        windowInitialized = true;
     }
     
     /**
@@ -131,6 +145,58 @@ public class VitalsDialog extends javax.swing.JDialog {
         
     }
     
+    //is this looping? action performed breaks, combo box is fat
+    public void createDropdownMenu() {
+        LinkedList<Dataset> ds = parent.getChartManager().getDatasets();
+        String[] dsNames = new String[ds.size()];
+        int i = 0;
+        for (Dataset d : ds) {
+            dsNames[i] = d.getName();
+            i++;
+        }
+        
+        JComboBox dropDown = new JComboBox(dsNames);
+        dropDown.setSelectedItem(dataset.getName());
+        dropDown.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        dropDown.setMinimumSize(new Dimension(100, 50));
+        dropDown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                for (Dataset d : ds) {
+                    if(d.getName().equals(dropDown.getSelectedItem().toString())) {
+                        setSelectedDataset(d);
+                        break;
+                    }
+                }
+            }
+        });
+        mainPanel.add(dropDown);
+    }
+    
+    
+    public void setSelectedDatasetByName(String datasetName) {
+        for(Dataset d : parent.getChartManager().getDatasets()) {
+            if(d.getName().equals(datasetName)) {
+                if(windowInitialized)
+                    setSelectedDataset(d);
+                break;
+            }
+        }
+    }
+    
+    public void setSelectedDataset(Dataset d) {
+        this.dataset = d;
+        mainPanel.remove(vitalsPanel);
+        //reset main panel
+        mainPanel.remove(vitalsPanel);
+        vitalsPanel = new JPanel();
+        vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(vitalsPanel);
+        //rebuild window
+        VitalsDialog.this.pack();
+        runVitals(d.getDataMap());
+    }
+    
     private void addLog(String text) {
         Box box = Box.createHorizontalBox();
         JLabel image = new JLabel();
@@ -163,7 +229,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
 
     private void addError(String text) {
@@ -198,7 +264,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
     
     private void addWarning(String text) {
@@ -233,7 +299,7 @@ public class VitalsDialog extends javax.swing.JDialog {
             }
             
         });
-        mainPanel.add(box);
+        vitalsPanel.add(box);
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -260,10 +326,17 @@ public class VitalsDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    private void runVitals(List<CategoricalHashMap> dataMaps) {
-        for(CategoricalHashMap dataMap : dataMaps)
-            runVitals(dataMap);
+        
+    public String runVitals(List<CategoricalHashMap> dataMaps) {
+        EWITuple ewiTupleSum = new EWITuple();
+        for(CategoricalHashMap dataMap : dataMaps) {
+            EWITuple tuple = runVitals(dataMap);
+            ewiTupleSum.setErrors(ewiTupleSum.getErrors() + tuple.getErrors());
+            ewiTupleSum.setWarnings(ewiTupleSum.getWarnings()+ tuple.getWarnings());
+            ewiTupleSum.setInfos(ewiTupleSum.getInfos()+ tuple.getInfos());
+        }
+        
+        return ewiTupleSum.toString();
     }
     
     /**
@@ -271,9 +344,11 @@ public class VitalsDialog extends javax.swing.JDialog {
      * @param parent JFrame to spawn dialog from
      * @param dataMap dataMap to analyze
      */
-    private void runVitals(CategoricalHashMap dataMap) {
+    private EWITuple runVitals(CategoricalHashMap dataMap) {
         boolean clean = true;
         boolean noChannels = true;
+        int errors, warnings, infos;
+        errors = warnings = infos = 0;
         for(Vital vital : vitals) {
             boolean low = false;
             boolean high = false;
@@ -298,14 +373,17 @@ public class VitalsDialog extends javax.swing.JDialog {
                     switch(vital.getLowType()) {
                         case Error:
                             addError(vital.getChannel() + " low!");
+                            errors++;
                             clean = false;
                             break;
                         case Warn:
                             addWarning(vital.getChannel() + " low!");
+                            warnings++;
                             clean = false;
                             break;
                         default:
                             addLog(vital.getChannel() + " low!");
+                            infos++;
                             clean = false;
                             break;
                     }
@@ -315,14 +393,17 @@ public class VitalsDialog extends javax.swing.JDialog {
                     switch(vital.getHighType()) {
                         case Error:
                             addError(vital.getChannel() + " high!");
+                            errors++;
                             clean = false;
                             break;
                         case Warn:
                             addWarning(vital.getChannel() + " high!");
+                            warnings++;
                             clean = false;
                             break;
                         default:
                             addLog(vital.getChannel() + " high!");
+                            infos++;
                             clean = false;
                             break;
                     }
@@ -336,7 +417,14 @@ public class VitalsDialog extends javax.swing.JDialog {
         }
         else if(clean) {
             addLog("All channels look clean chief!");
-        }
+        }   
+        
+        
+        //rebuild window
+        VitalsDialog.this.pack();
+        
+        return new EWITuple(errors, warnings, infos);
+        
     }
     
     private void setupButtons() {
@@ -354,18 +442,60 @@ public class VitalsDialog extends javax.swing.JDialog {
                 //create VitalsEditDialog
                 new VitalsEditDialog(VitalsDialog.this, true, vitals, dataset.getDataMap()).setVisible(true);
                 //reset main panel
-                mainPanel = new JPanel();
-                mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-                VitalsDialog.this.setContentPane(mainPanel);
-                mainPanel.setVisible(true);
+                mainPanel.remove(vitalsPanel);
+                vitalsPanel = new JPanel();
+                vitalsPanel.setLayout(new BoxLayout(vitalsPanel, BoxLayout.Y_AXIS));
+                mainPanel.add(vitalsPanel);
                 //redraw components
                 runVitals(dataset.getDataMap());
-                setupButtons();
                 //rebuild window
                 VitalsDialog.this.pack();
-                VitalsDialog.this.setSize(498, 300);
             }
         });
+        
+    }
+    
+    
+    public class EWITuple {
+        private int errors, warnings, infos;
+        
+        public EWITuple() {
+            this(0,0,0);
+        }
+        
+        public EWITuple(int errors, int warnings, int infos) {
+            this.errors = errors;
+            this.warnings = warnings;
+            this.infos = infos;
+        }
+
+        public int getErrors() {
+            return errors;
+        }
+
+        public void setErrors(int errors) {
+            this.errors = errors;
+        }
+
+        public int getWarnings() {
+            return warnings;
+        }
+
+        public void setWarnings(int warnings) {
+            this.warnings = warnings;
+        }
+
+        public int getInfos() {
+            return infos;
+        }
+
+        public void setInfos(int infos) {
+            this.infos = infos;
+        }
+        
+        public String toString() {
+            return errors + "E" + warnings + "W" + infos + "I";
+        }
         
     }
 

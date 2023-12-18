@@ -11,9 +11,9 @@ import dataanalyzer.dialog.MathChannelDialog;
 import com.arib.toast.Toast;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import dataanalyzer.controlbar.ControlBar;
 import dataanalyzer.dialog.FileNameDialog;
 import dataanalyzer.dialog.FileNotesDialog;
-import dataanalyzer.dialog.LoadingDialog;
 import dataanalyzer.dialog.MessageBox;
 import dataanalyzer.dialog.SettingsDialog;
 import dataanalyzer.dialog.VitalsDialog;
@@ -59,6 +59,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 
 /**
  *
@@ -92,15 +93,32 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //holds if file save button was pressed
     private boolean fileWasSaved = false;
     
+    //holds the ControlBar for this window
+    ControlBar controlBar;
+    private final int CONTROL_BAR_SIZE = 75;
+    
+    //class that holds global parameters
+    public HashMap<String, Object> appParameters;
+    
+    //file opened listeners
+    private static List<FileOpenedListener> fileOpenedListeners = new LinkedList<>();
+    
+    //loading listeners that control the controlbar loading panel
+    private static List<LoadingListener> loadingListeners = new LinkedList<>();
+    
     public DataAnalyzer() {
         initComponents();
+        
+        //parameters instance
+        appParameters = new HashMap<>();
         
         // gets dimensions for resizing charts
         heightFrame = getHeight();
         widthFrame = getWidth();
        
         // uses JDesktopPane to manage windows
-        this.setContentPane(desktop);
+//        this.add(desktop);
+        desktop.setSize(this.getSize());
         
         //Setup directories
         Installer.runInstaller();
@@ -113,6 +131,13 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         //initialize chart manager
         chartManager = new ChartManager(this);
+                        
+        //setup the bottom control bar after chart manager
+        controlBar = new ControlBar(this);
+        this.add(controlBar);
+        controlBar.setLocation(0, heightFrame-25);
+        controlBar.setVisible(true);
+
         
         //Set the title of the frame
         this.setTitle("DataAnalyzer");
@@ -178,6 +203,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 heightFrame = getHeight();
                 widthFrame = getWidth();
+                desktop.setSize(widthFrame, heightFrame-CONTROL_BAR_SIZE);
+                controlBar.setSize(widthFrame, 25);
+                controlBar.setLocation(0, heightFrame-CONTROL_BAR_SIZE);
                 
                 ScreenLocation sc = ScreenLocation.getInstance();
                 sc.update(curr);
@@ -215,7 +243,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         
         chartManager.addDatasetSizeChangeListener(new SizeListener() {
             @Override
-            public void sizeUpdate() {
+            public void sizeUpdate(int newSize) {
                 initializeDatasetMenu();
             }
         });
@@ -238,7 +266,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 System.out.println("Had trouble parsing your app name. Please don't change your appname.");
             }
         }
-        
+
         ScreenLocation.getInstance().update(this);
     }
     
@@ -256,20 +284,21 @@ public class DataAnalyzer extends javax.swing.JFrame {
         postProc.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                LoadingDialog loading = new LoadingDialog("Post Processing");
-                loading.setVisible(true);
+                
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Post Processing"));
 
                 SwingWorker worker = new SwingWorker<Void, Void>() {
 
                     public Void doInBackground() {
                         applyPE3PostProcessing(dataset);
+                        //this is egregious
+                        broadcastFileOpened(dataset);
                         return null;
                     }
 
                     public void done() {
                         //Destroy the Loading Dialog
-                        loading.stop();
+                        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, ""));
                     }
                 };
 
@@ -474,7 +503,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         ChartAssembly chart = chartManager.addChart();
         chart.getChartFrame().setLocation(0, 0);
         Dimension frameSize = this.getSize();
-        chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())));
+        chart.getChartFrame().setSize(frameSize.width, frameSize.height - (2 * ((int) menuBar.getSize().getHeight())) - CONTROL_BAR_SIZE);
     }
     
     private void twoVerticalView() {
@@ -904,8 +933,11 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     } else if (fileExtension.equals(".txt")) {
                         da.openTXT(dataset, chosenFilePath);
                     }
-                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                    if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         da.applyPostProcessing(dataset);
+                        broadcastFileOpened(dataset);
+                    }
+                    
                 }
 
                 da.setVisible(true);
@@ -960,8 +992,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     } else if (fileExtension.equals(".txt")) {
                         openTXT(dataset, chosenFilePath);
                     }
-                    if(applyPostProcessing && !fileExtension.equals(".csv"))
+                    if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         applyPostProcessing(dataset);
+                        broadcastFileOpened(dataset);
+                    }
                 }
                 if(multipleWindows)
                     toCreateNewWindow = true;
@@ -1134,8 +1168,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             da.openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             da.applyPostProcessing(dataset);
+                            broadcastFileOpened(dataset);
+                        }
                     }
                     
                     da.setVisible(true);
@@ -1190,8 +1226,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         } else if (fileExtension.equals(".txt")) {
                             openTXT(dataset, chosenFilePath);
                         }
-                        if(applyPostProcessing && !fileExtension.equals(".csv"))
+                        if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             applyPostProcessing(dataset);
+                            broadcastFileOpened(dataset);
+                        }
                     }
                     if(multipleWindows)
                         toCreateNewWindow = true;
@@ -1199,7 +1237,6 @@ public class DataAnalyzer extends javax.swing.JFrame {
                 }
                 windowCount++;
                 }
-        
         }
     }//GEN-LAST:event_openBtnClicked
 
@@ -2686,8 +2723,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening File..."));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -2699,7 +2735,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                loading.stop();
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file."));
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -2772,8 +2809,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void openFile(Dataset dataset, String filepath) {
             
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -2926,7 +2962,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                loading.stop();
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -2939,8 +2976,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openFileAssembly(String filepath) {
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -3107,7 +3143,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                loading.stop();
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
+                broadcastFileOpened(null);
             }
         };
         
@@ -3121,8 +3158,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openPE3Files(Dataset dataset, File file, boolean applyPostProcessing) throws FileNotFoundException {
         
-        LoadingDialog loading = new LoadingDialog(file.getName());
-        loading.setVisible(true);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + file.getName()));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3171,7 +3207,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             public void done() {
                 //Destroy the Loading Dialog
-                loading.stop();
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + file.getName()));
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -3186,8 +3223,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        LoadingDialog loading = new LoadingDialog(filepath);
-        loading.setVisible(true);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3199,7 +3235,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                loading.stop();
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
             }
         };
         
@@ -3219,6 +3255,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
         //get the current version of the file.
         String version = filename.substring(0, filename.lastIndexOf('.')).split("DataAnalyzer")[0];
         return version;
+    }
+    
+    public HashMap<String, Object> getAppParameters() {
+        return appParameters;
     }
     
     public long getLastTime(Dataset dataset) {
@@ -3244,6 +3284,10 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //returns chartManager
     public ChartManager getChartManager() {
         return chartManager;
+    }
+    
+    public void triggerChartDomainUpdate() {
+        chartManager.triggerChartDomainUpdate();
     }
     
     public JDesktopPane getDesktop() {
@@ -3314,6 +3358,26 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } else {
             return false;
         }
+    }
+    
+    public static void addFileOpenedListener(FileOpenedListener fol) {
+        fileOpenedListeners.add(fol);
+    }
+    
+    private void broadcastFileOpened(Object o) {
+        fileOpenedListeners.forEach(fol -> {
+            fol.fileOpened(o);
+        });
+    }
+    
+    public static void addLoadingListener(LoadingListener loadingListener) {
+        loadingListeners.add(loadingListener);
+    }
+    
+    public static void triggerLoadingEvt(LoadingEvent evt) {
+        loadingListeners.forEach(loadingListener -> {
+            loadingListener.loadingEvent(evt);
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
