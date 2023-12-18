@@ -9,6 +9,7 @@ import dataanalyzer.CategoricalHashMap;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Dataset;
 import dataanalyzer.DomainMode;
+import dataanalyzer.FileOpenedListener;
 import dataanalyzer.InfiniteProgressPanel;
 import dataanalyzer.SizeListener;
 import dataanalyzer.dialog.VitalsDialog;
@@ -44,11 +45,31 @@ public class ControlBar extends javax.swing.JPanel {
         mode = DomainMode.TIME;
         this.parent.getAppParameters().put("domainMode", mode);
         loadingText.setText("");
-        
+    
+        setupListeners();
+
     }
     
     public DomainMode getMode() {
         return mode;
+    }
+    
+    private void setupListeners() {
+        parent.getChartManager().addDatasetSizeChangeListener(new SizeListener() {
+            @Override
+            public void sizeUpdate(int newSize) {
+                openedFiles = newSize;
+                filesOpenLabel.setText(""+openedFiles);
+            }
+        });
+        
+        DataAnalyzer.addFileOpenedListener(new FileOpenedListener() {
+            @Override
+            public void fileOpened(Object o) {
+                System.out.println(".fileOpened()");
+                setVitals();
+            }
+        });
     }
     
     public void setLoading(boolean isLoading, String text) {
@@ -212,12 +233,11 @@ public class ControlBar extends javax.swing.JPanel {
                         .addComponent(jLabel3)
                         .addComponent(filesOpenLabel))
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(loadingText)
-                        .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(vitalsTextDialog, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(0, 0, 0)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(vitalsTextDialog, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(loadingText)
+                            .addComponent(vitalsImageDialog, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );

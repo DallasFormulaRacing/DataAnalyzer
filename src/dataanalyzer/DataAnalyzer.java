@@ -100,11 +100,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //class that holds global parameters
     public HashMap<String, Object> appParameters;
     
+    private static List<FileOpenedListener> fileOpenedListeners;
+    
     public DataAnalyzer() {
         initComponents();
         
         //parameters instance
         appParameters = new HashMap<>();
+        
+        //file opened listeners
+        fileOpenedListeners = new LinkedList<>();
         
         // gets dimensions for resizing charts
         heightFrame = getHeight();
@@ -285,7 +290,8 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                     public Void doInBackground() {
                         applyPE3PostProcessing(dataset);
-                        controlBar.setVitals();
+                        //this is egregious
+                        broadcastFileOpened(dataset);
                         return null;
                     }
 
@@ -928,7 +934,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     }
                     if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         da.applyPostProcessing(dataset);
-                        controlBar.setVitals();
+                        broadcastFileOpened(dataset);
                     }
                     
                 }
@@ -987,7 +993,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                     }
                     if(applyPostProcessing && !fileExtension.equals(".csv")) {
                         applyPostProcessing(dataset);
-                        controlBar.setVitals();
+                        broadcastFileOpened(dataset);
                     }
                 }
                 if(multipleWindows)
@@ -1163,7 +1169,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         }
                         if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             da.applyPostProcessing(dataset);
-                            controlBar.setVitals();
+                            broadcastFileOpened(dataset);
                         }
                     }
                     
@@ -1221,7 +1227,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
                         }
                         if(applyPostProcessing && !fileExtension.equals(".csv")) {
                             applyPostProcessing(dataset);
-                            controlBar.setVitals();
+                            broadcastFileOpened(dataset);
                         }
                     }
                     if(multipleWindows)
@@ -2729,7 +2735,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             public void done() {
                 openingAFile = false;
                 controlBar.setLoading(false, "Opened file.");
-                controlBar.setVitals();
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -2956,7 +2962,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 controlBar.setLoading(false, "Opened file: " + filepath);
-                controlBar.setVitals();
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -3137,7 +3143,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 controlBar.setLoading(false, "Opened file: " + filepath);
-                controlBar.setVitals();
+                broadcastFileOpened(null);
             }
         };
         
@@ -3201,7 +3207,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             public void done() {
                 //Destroy the Loading Dialog
                 controlBar.setLoading(false, "Opened file: " + file.getName());
-                controlBar.setVitals();
+                broadcastFileOpened(dataset);
             }
         };
         
@@ -3351,6 +3357,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
         } else {
             return false;
         }
+    }
+    
+    public static void addFileOpenedListener(FileOpenedListener fol) {
+        fileOpenedListeners.add(fol);
+    }
+    
+    private void broadcastFileOpened(Object o) {
+        fileOpenedListeners.forEach(fol -> {
+            fol.fileOpened(o);
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

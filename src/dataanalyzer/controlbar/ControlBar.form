@@ -62,12 +62,11 @@
                       <Component id="filesOpenLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jSeparator2" alignment="1" min="-2" pref="18" max="-2" attributes="0"/>
-                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                      <Component id="loadingText" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="vitalsImageDialog" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="vitalsTextDialog" min="-2" pref="20" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                  <Group type="103" alignment="1" groupAlignment="0" attributes="0">
+                      <Component id="vitalsTextDialog" alignment="1" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="loadingText" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="vitalsImageDialog" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="jLabel2" alignment="1" max="32767" attributes="0"/>
