@@ -47,7 +47,7 @@ public class ChartManager {
     ChartAssembly first, second;
 
     // dataset size change listener
-    private ArrayList<SizeListener> listeners;
+    private static final ArrayList<SizeListener> listeners = new ArrayList<>();;
 
     public DataAnalyzer getParent(){
         return parent;
@@ -65,7 +65,6 @@ public class ChartManager {
         tracks = new ArrayList<>();
         first = null;
         second = null;
-        listeners = new ArrayList<>();
         datasets = new LinkedList<>();
         tracks = new ArrayList<>();
     }
@@ -219,8 +218,14 @@ public class ChartManager {
 
     }
 
-    public void addDatasetSizeChangeListener(SizeListener sizeListener) {
+    public static void addDatasetSizeChangeListener(SizeListener sizeListener) {
         listeners.add(sizeListener);
+    }
+    
+    private void broadcastDatasetSizeChangeListener() {
+        listeners.forEach(l -> {
+            l.sizeUpdate(datasets.size());
+        });
     }
 
     public void addDataset(Dataset d) throws DuplicateDatasetNameException {
@@ -240,8 +245,7 @@ public class ChartManager {
                 }
             }
         });
-        for(SizeListener l : listeners)
-            l.sizeUpdate(datasets.size());
+        broadcastDatasetSizeChangeListener();
     }
 
     public void removeDataset(String name) {
@@ -249,8 +253,7 @@ public class ChartManager {
         for (int i = 0; i < datasets.size(); i++) {
             if (datasets.get(i).getName().equals(name)) {
                 datasets.remove(i);
-                for(SizeListener l : listeners)
-                    l.sizeUpdate(datasets.size());
+                broadcastDatasetSizeChangeListener();
             }
         }
     }
@@ -268,8 +271,7 @@ public class ChartManager {
         for (int i = 0; i < datasets.size(); i++) {
             if (datasets.get(i).getName().equals(name)) {
                 datasets.set(i, updated);
-                for(SizeListener l : listeners)
-                    l.sizeUpdate(datasets.size());
+                broadcastDatasetSizeChangeListener();
             }
         }
     }

@@ -6,6 +6,7 @@
 package dataanalyzer.controlbar;
 
 import dataanalyzer.CategoricalHashMap;
+import dataanalyzer.ChartManager;
 import dataanalyzer.DataAnalyzer;
 import dataanalyzer.Dataset;
 import dataanalyzer.DomainMode;
@@ -55,20 +56,13 @@ public class ControlBar extends javax.swing.JPanel {
     }
     
     private void setupListeners() {
-        parent.getChartManager().addDatasetSizeChangeListener(new SizeListener() {
-            @Override
-            public void sizeUpdate(int newSize) {
-                openedFiles = newSize;
-                filesOpenLabel.setText(""+openedFiles);
-            }
+        ChartManager.addDatasetSizeChangeListener((int newSize) -> {
+            openedFiles = newSize;
+            filesOpenLabel.setText(""+openedFiles);
         });
         
-        DataAnalyzer.addFileOpenedListener(new FileOpenedListener() {
-            @Override
-            public void fileOpened(Object o) {
-                System.out.println(".fileOpened()");
-                setVitals();
-            }
+        DataAnalyzer.addFileOpenedListener((Object o) -> {
+            setVitals();
         });
     }
     

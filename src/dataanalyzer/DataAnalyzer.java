@@ -100,16 +100,14 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //class that holds global parameters
     public HashMap<String, Object> appParameters;
     
-    private static List<FileOpenedListener> fileOpenedListeners;
+    //file opened listeners
+    private static List<FileOpenedListener> fileOpenedListeners = new LinkedList<>();
     
     public DataAnalyzer() {
         initComponents();
         
         //parameters instance
         appParameters = new HashMap<>();
-        
-        //file opened listeners
-        fileOpenedListeners = new LinkedList<>();
         
         // gets dimensions for resizing charts
         heightFrame = getHeight();
