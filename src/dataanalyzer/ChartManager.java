@@ -348,8 +348,8 @@ public class ChartManager {
         this.cutDataActive = cutDataActive;
         //if lapbreaker was cancelled or finished
         if(cutDataActive == -1)
-            //rerun the vitalCheck
-            this.parent.controlBar.setVitals();
+            //broadcast that the datasets have changed
+            broadcastDatasetSizeChangeListener();
     }
 
     // enables or disables the swapper

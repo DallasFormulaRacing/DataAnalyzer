@@ -103,6 +103,9 @@ public class DataAnalyzer extends javax.swing.JFrame {
     //file opened listeners
     private static List<FileOpenedListener> fileOpenedListeners = new LinkedList<>();
     
+    //loading listeners that control the controlbar loading panel
+    private static List<LoadingListener> loadingListeners = new LinkedList<>();
+    
     public DataAnalyzer() {
         initComponents();
         
@@ -282,7 +285,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 
-                controlBar.setLoading(true, "Post Processing");
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Post Processing"));
 
                 SwingWorker worker = new SwingWorker<Void, Void>() {
 
@@ -295,7 +298,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
                     public void done() {
                         //Destroy the Loading Dialog
-                        controlBar.setLoading(false, "");
+                        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, ""));
                     }
                 };
 
@@ -2720,7 +2723,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        controlBar.setLoading(true, "Opening File...");
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening File..."));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -2732,7 +2735,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                controlBar.setLoading(false, "Opened file.");
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file."));
                 broadcastFileOpened(dataset);
             }
         };
@@ -2806,7 +2809,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void openFile(Dataset dataset, String filepath) {
             
         //show loading screen
-        controlBar.setLoading(true, "Opening file: " + filepath);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -2959,7 +2962,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                controlBar.setLoading(false, "Opened file: " + filepath);
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
                 broadcastFileOpened(dataset);
             }
         };
@@ -2973,7 +2976,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openFileAssembly(String filepath) {
         //show loading screen
-        controlBar.setLoading(true, "Opening file: " + filepath);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         //holds the context to give into the swing worker
         DataAnalyzer me = this;
@@ -3140,7 +3143,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             @Override
             public void done() {
-                controlBar.setLoading(false, "Opened file: " + filepath);
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
                 broadcastFileOpened(null);
             }
         };
@@ -3155,7 +3158,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
      */
     private void openPE3Files(Dataset dataset, File file, boolean applyPostProcessing) throws FileNotFoundException {
         
-        controlBar.setLoading(true, "Opening file: " + file.getName());
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + file.getName()));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3204,7 +3207,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
 
             public void done() {
                 //Destroy the Loading Dialog
-                controlBar.setLoading(false, "Opened file: " + file.getName());
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + file.getName()));
                 broadcastFileOpened(dataset);
             }
         };
@@ -3220,7 +3223,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
         openingAFile = true;
 
         //show loading screen
-        controlBar.setLoading(true, "Opening file: " + filepath);
+        triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.RUNNING, "Opening file: " + filepath));
         
         SwingWorker worker = new SwingWorker<Void, Void>() {
             
@@ -3232,7 +3235,7 @@ public class DataAnalyzer extends javax.swing.JFrame {
             @Override
             public void done() {
                 openingAFile = false;
-                controlBar.setLoading(false, "Opened file: " + filepath);
+                triggerLoadingEvt(new LoadingEvent(LoadingEvent.LoadingState.FINISHED, "Opened file: " + filepath));
             }
         };
         
@@ -3364,6 +3367,16 @@ public class DataAnalyzer extends javax.swing.JFrame {
     private void broadcastFileOpened(Object o) {
         fileOpenedListeners.forEach(fol -> {
             fol.fileOpened(o);
+        });
+    }
+    
+    public static void addLoadingListener(LoadingListener loadingListener) {
+        loadingListeners.add(loadingListener);
+    }
+    
+    public static void triggerLoadingEvt(LoadingEvent evt) {
+        loadingListeners.forEach(loadingListener -> {
+            loadingListener.loadingEvent(evt);
         });
     }
 
